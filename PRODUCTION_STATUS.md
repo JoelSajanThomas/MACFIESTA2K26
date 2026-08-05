@@ -8,6 +8,8 @@ Historical MCA and viva documentation is preserved in `docs/archive/MCA_SUBMISSI
 
 **This file is the main operational document** (feature inventory + official launch checklist).
 
+For post-exposure secret rotation and the final 14-step deploy order, see [SECRET_ROTATION.md](./SECRET_ROTATION.md).
+
 ---
 
 ## Committee login system
