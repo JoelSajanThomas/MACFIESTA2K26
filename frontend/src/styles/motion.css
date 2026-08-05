@@ -1,0 +1,282 @@
+/* MacFiesta Pro — motion tokens & interaction timing */
+
+:root {
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --dur-hover: 200ms;
+  --dur-card: 220ms;
+  --dur-reveal: 550ms;
+  --dur-modal: 220ms;
+}
+
+/* ── Buttons ───────────────────────────────────────────── */
+
+.btn {
+  transition:
+    transform var(--dur-hover) var(--ease-out),
+    box-shadow var(--dur-card) var(--ease-out),
+    background var(--dur-hover) var(--ease-out),
+    border-color var(--dur-hover) var(--ease-out),
+    color var(--dur-hover) var(--ease-out);
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 120ms;
+}
+
+/* ── Navbar ────────────────────────────────────────────── */
+
+.nav-link {
+  position: relative;
+  transition: color var(--dur-hover) var(--ease-out), background var(--dur-hover) var(--ease-out);
+}
+
+.nav-link:not(.nav-logout-btn)::after {
+  content: "";
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.2rem;
+  height: 2px;
+  background: var(--gold-400);
+  border-radius: 1px;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-card) var(--ease-premium);
+}
+
+.nav-link.active::after,
+.nav-link:not(.nav-logout-btn):hover::after {
+  transform: scaleX(1);
+}
+
+.nav-link.active::after {
+  transform: scaleX(1);
+}
+
+@media (max-width: 768px) {
+  .nav-link::after {
+    display: none;
+  }
+}
+
+/* ── Cards & tiles ─────────────────────────────────────── */
+
+.event-card-premium {
+  transition: border-color var(--dur-card) var(--ease-out), box-shadow var(--dur-card) var(--ease-out);
+}
+
+.event-card-premium:hover {
+  transform: none;
+}
+
+.event-card-premium .event-card-image {
+  overflow: hidden;
+}
+
+.event-card-premium .event-card-image img {
+  transition: transform var(--dur-card) var(--ease-out), filter var(--dur-card) var(--ease-out);
+}
+
+.event-card-premium:hover .event-card-image img {
+  transform: scale(1.03);
+  filter: brightness(1.06);
+}
+
+.home-type-tile {
+  transition: border-color var(--dur-hover) var(--ease-out), box-shadow var(--dur-card) var(--ease-out);
+}
+
+.home-type-tile:hover {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+}
+
+.home-theme-bg img {
+  transition: transform 800ms var(--ease-premium);
+}
+
+.home-theme.section:has(.home-theme-content.is-visible) .home-theme-bg img,
+.home-theme:hover .home-theme-bg img {
+  transform: scale(1.02);
+}
+
+.home-rewind-tile img {
+  transition: transform var(--dur-card) var(--ease-out), filter var(--dur-card) var(--ease-out);
+}
+
+.home-rewind-tile-overlay {
+  transition: opacity var(--dur-card) var(--ease-out);
+}
+
+.home-rewind-tile:hover img {
+  transform: scale(1.03);
+}
+
+.home-rewind-tile:hover .home-rewind-tile-overlay {
+  opacity: 0.92;
+}
+
+.home-sponsor-logo {
+  transition: transform var(--dur-hover) var(--ease-out), opacity var(--dur-hover) var(--ease-out);
+}
+
+.home-sponsor-item:hover .home-sponsor-logo {
+  transform: scale(1.04);
+  opacity: 1;
+}
+
+.home-sponsor-logo img {
+  transition: opacity var(--dur-hover) var(--ease-out);
+}
+
+.gallery-item-image img {
+  transition: transform var(--dur-card) var(--ease-out), filter var(--dur-card) var(--ease-out);
+}
+
+.gallery-item.clickable:hover .gallery-item-image img {
+  transform: scale(1.03);
+  filter: brightness(1.05);
+}
+
+.gallery-item-hover {
+  transition: opacity var(--dur-hover) var(--ease-out);
+}
+
+.gallery-item.clickable:hover .gallery-item-hover {
+  opacity: 1;
+}
+
+/* ── Forms ─────────────────────────────────────────────── */
+
+input,
+textarea,
+select {
+  transition:
+    border-color var(--dur-hover) var(--ease-out),
+    box-shadow var(--dur-hover) var(--ease-out),
+    background var(--dur-hover) var(--ease-out);
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  transition-duration: 180ms;
+}
+
+.form-error {
+  animation: motionFadeIn 220ms var(--ease-out) both;
+}
+
+@keyframes motionFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Modals ────────────────────────────────────────────── */
+
+.confirm-dialog-backdrop {
+  animation: motionBackdropIn var(--dur-modal) var(--ease-out) both;
+}
+
+.confirm-dialog {
+  animation: motionDialogIn 240ms var(--ease-premium) both;
+}
+
+@keyframes motionBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes motionDialogIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.lightbox-premium {
+  transition: opacity var(--dur-modal) var(--ease-out);
+}
+
+.lightbox-inner {
+  transition:
+    opacity var(--dur-modal) var(--ease-out),
+    transform 240ms var(--ease-premium);
+}
+
+/* ── Admin ─────────────────────────────────────────────── */
+
+.admin-dashboard,
+.admin-manage-body,
+.admin-insights-page .dash-section {
+  animation: motionAdminIn 320ms var(--ease-out) both;
+}
+
+.admin-insights-page .dash-section:nth-child(2) { animation-delay: 40ms; }
+.admin-insights-page .dash-section:nth-child(3) { animation-delay: 80ms; }
+.admin-insights-page .dash-section:nth-child(4) { animation-delay: 120ms; }
+
+@keyframes motionAdminIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── Mobile: lighter motion ────────────────────────────── */
+
+@media (max-width: 768px) {
+  :root {
+    --dur-reveal: 420ms;
+  }
+
+  .btn:hover {
+    transform: none;
+  }
+
+  .event-card-premium:hover .event-card-image img,
+  .home-rewind-tile:hover img,
+  .gallery-item.clickable:hover .gallery-item-image img {
+    transform: scale(1.02);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .btn:hover,
+  .btn:active {
+    transform: none;
+  }
+
+  .event-card-premium:hover .event-card-image img,
+  .home-rewind-tile:hover img,
+  .gallery-item.clickable:hover .gallery-item-image img,
+  .home-theme-bg img {
+    transform: none;
+    filter: none;
+  }
+
+  .navbar-menu {
+    transform: none !important;
+  }
+}

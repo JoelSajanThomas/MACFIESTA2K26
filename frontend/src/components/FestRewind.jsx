@@ -1,30 +1,23 @@
-import { motion } from "framer-motion";
-import SectionHeading from "./SectionHeading";
+import ScrollReveal from "./ScrollReveal";
 import { REWIND_HIGHLIGHTS } from "../utils/constants";
 
-export default function FestRewind() {
+export default function FestRewind({ items = [] }) {
+  const tiles = items.length ? items : REWIND_HIGHLIGHTS;
   return (
-    <section className="section rewind-section">
+    <section className="home-rewind section">
       <div className="container">
-        <SectionHeading
-          eyebrow="Macfiesta rewind"
-          title="Where the Magic Began"
-          subtitle="Electrifying moments from last year's Macfiesta — this year we're raising the bar even higher."
-        />
-        <div className="rewind-grid">
-          {REWIND_HIGHLIGHTS.map((item, i) => (
-            <motion.div
-              key={item.title}
-              className="rewind-card"
-              initial={{ opacity: 0, scale: 0.95 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ delay: i * 0.1 }}
-              whileHover={{ scale: 1.03 }}
-            >
-              <span className="rewind-icon">{item.icon}</span>
+        <ScrollReveal>
+          <h2 className="home-section-title">2024 Rewind</h2>
+        </ScrollReveal>
+        <div className="home-rewind-grid">
+          {tiles.map((item, i) => (
+            <ScrollReveal key={item.title} delay={i} className="home-rewind-tile">
+              {item.image && (
+                <img src={item.image} alt={item.alt || item.title} loading="lazy" decoding="async" sizes="(max-width: 640px) 50vw, 25vw" />
+              )}
+              <div className="home-rewind-tile-overlay" />
               <h3>{item.title}</h3>
-            </motion.div>
+            </ScrollReveal>
           ))}
         </div>
       </div>

@@ -1,14 +1,37 @@
+import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { fadeUp } from "../utils/animations";
+import { useMotionPrefs } from "../hooks/useMotionPrefs";
+import {
+  buildAdminFade,
+  buildFadeUp,
+  buildScaleIn,
+} from "../utils/animations";
 
-export default function ScrollReveal({ children, className = "", delay = 0 }) {
+const VARIANT_BUILDERS = {
+  default: buildFadeUp,
+  scale: buildScaleIn,
+  admin: buildAdminFade,
+};
+
+export default function ScrollReveal({
+  children,
+  className = "",
+  delay = 0,
+  variant = "default",
+}) {
+  const prefs = useMotionPrefs();
+  const variants = useMemo(
+    () => VARIANT_BUILDERS[variant]?.(prefs) ?? buildFadeUp(prefs),
+    [prefs, variant],
+  );
+
   return (
     <motion.div
       className={className}
-      variants={fadeUp}
+      variants={variants}
       initial="hidden"
       whileInView="visible"
-      viewport={{ once: true, margin: "-60px" }}
+      viewport={{ once: true, margin: "-40px" }}
       custom={delay}
     >
       {children}

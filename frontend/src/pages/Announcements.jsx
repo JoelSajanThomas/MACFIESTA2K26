@@ -7,7 +7,9 @@ import LoadingState from "../components/ui/LoadingState";
 import ErrorState from "../components/ui/ErrorState";
 import EmptyState from "../components/ui/EmptyState";
 import { getAnnouncements } from "../services/api";
-import { isUsingPlaceholders, resolveAnnouncements } from "../utils/announcementUtils";
+import { isUsingPlaceholders, resolveAnnouncements, getLastUpdated, formatAnnouncementDate } from "../utils/announcementUtils";
+import { BRAND } from "../utils/brand";
+import { categoryImages } from "../utils/assets";
 
 export default function Announcements() {
   const [announcements, setAnnouncements] = useState([]);
@@ -29,18 +31,24 @@ export default function Announcements() {
 
   const items = resolveAnnouncements(announcements);
   const usingPlaceholders = isUsingPlaceholders(announcements);
+  const lastUpdated = getLastUpdated(items);
 
   return (
     <>
       <PageHeader
         eyebrow="Fest updates"
         title="Announcements"
-        subtitle="Official MacFiesta alerts, schedule updates, and coordinator notices."
-        image="https://images.unsplash.com/photo-1505373877841-8d25f39d4666?w=1920&q=80"
+        subtitle={`Official ${BRAND.festName} alerts, schedule updates, and coordinator notices.`}
+        image={categoryImages.stage}
       />
 
       <section className="section page-content announcements-page">
         <div className="container narrow-wide">
+          {lastUpdated && !loading && (
+            <p className="announcements-last-updated">
+              Last updated: <time dateTime={lastUpdated.toISOString()}>{formatAnnouncementDate(lastUpdated.toISOString())}</time>
+            </p>
+          )}
           {loading && <LoadingState message="Loading announcements…" />}
           {error && <ErrorState message={error} onRetry={load} />}
 

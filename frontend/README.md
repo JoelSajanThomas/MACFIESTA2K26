@@ -100,13 +100,21 @@ python manage.py runserver
 - Responsive navbar with logout and dashboard links
 - SEO meta tags and MF favicon branding
 
-## Test Account
+## Staff accounts
 
-If seeded in the backend:
+Committee desk accounts are documented in `docs/ADMIN_GUIDE.md` (usernames and modules only).
 
-- Username: `testuser`
-- Password: `testpass123`
-- Staff account — redirects to admin dashboard after login
+Do **not** commit seed passwords. Seed with:
+
+```powershell
+cd ../backend
+.\venv\Scripts\Activate.ps1
+# Optional: $env:COMMITTEE_SEED_PASSWORD = "your-strong-password"
+python manage.py seed_committee_accounts
+python manage.py seed_committee_accounts --disable-testuser
+```
+
+Accounts must change password on first login (`/change-password`).
 
 ## Project Structure
 

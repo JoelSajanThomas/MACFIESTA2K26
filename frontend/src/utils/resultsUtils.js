@@ -49,6 +49,16 @@ export function sortByPosition(items) {
   );
 }
 
+export function sortEventGroups(groups, sortBy = "name") {
+  const sorted = [...groups];
+  if (sortBy === "date") {
+    sorted.sort((a, b) => new Date(b.date || 0) - new Date(a.date || 0));
+    return sorted;
+  }
+  sorted.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+  return sorted;
+}
+
 export function filterResults(results, positionFilter, searchQuery) {
   let filtered = results;
 

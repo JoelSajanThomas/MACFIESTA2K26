@@ -1,20 +1,34 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import PageHeader from "../components/PageHeader";
-import { SPONSOR_TIERS } from "../utils/constants";
+import { FEST_YEAR } from "../utils/constants";
+import { sponsorsBackgroundImage } from "../utils/assets";
+import { resolveSponsorTiers } from "../utils/cmsUtils";
+import { getSponsors } from "../services/api";
 
 export default function Sponsors() {
+  const [tiers, setTiers] = useState(null);
+
+  useEffect(() => {
+    getSponsors()
+      .then((res) => setTiers(resolveSponsorTiers(res.data)))
+      .catch(() => setTiers(resolveSponsorTiers([])));
+  }, []);
+
+  const displayTiers = tiers || resolveSponsorTiers([]);
+
   return (
     <>
       <PageHeader
         eyebrow="Partners"
         title="Sponsors"
-        subtitle="MacFiesta is made possible by organizations that invest in student talent."
-        image="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1920&q=80"
+        subtitle={`Brands and campus partners backing Macfiesta ${FEST_YEAR}.`}
+        image={sponsorsBackgroundImage}
       />
       <section className="section page-content sponsors-page">
         <div className="container">
-          {SPONSOR_TIERS.map((tier) => (
+          {displayTiers.map((tier) => (
             <div key={tier.title} className="sponsor-tier-block">
               <h2 className="sponsor-tier-title">{tier.title}</h2>
               <div className={`sponsors-grid tier-${tier.size || "default"}`}>
@@ -28,7 +42,13 @@ export default function Sponsors() {
                     transition={{ delay: i * 0.06 }}
                     whileHover={{ y: -4 }}
                   >
-                    <div className="sponsor-logo-placeholder">{sponsor.name.charAt(0)}</div>
+                    <div className="sponsor-logo-placeholder">
+                      {sponsor.logo ? (
+                        <img src={sponsor.logo} alt={sponsor.name} loading="lazy" decoding="async" />
+                      ) : (
+                        sponsor.name.charAt(0)
+                      )}
+                    </div>
                     <strong>{sponsor.name}</strong>
                     {sponsor.tag && <span>{sponsor.tag}</span>}
                   </motion.div>

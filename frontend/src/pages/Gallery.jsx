@@ -7,11 +7,13 @@ import LoadingState from "../components/ui/LoadingState";
 import ErrorState from "../components/ui/ErrorState";
 import EmptyState from "../components/ui/EmptyState";
 import { getGallery } from "../services/api";
+import { PAGE_IMAGES } from "../utils/assets";
 import {
   GALLERY_FILTERS,
   filterGalleryItems,
   normalizeGalleryItems,
 } from "../utils/galleryUtils";
+import { GALLERY_VIDEO_SAMPLES } from "../utils/pageContent";
 
 export default function Gallery() {
   const [rawItems, setRawItems] = useState([]);
@@ -54,12 +56,33 @@ export default function Gallery() {
       <PageHeader
         eyebrow="Memories"
         title="Gallery"
-        subtitle="A premium media wall of MacFiesta stages, crowds, tech battles, and victory moments."
-        image="https://images.unsplash.com/photo-1492684223066-81342ee5ff30?w=1920&q=80"
+        subtitle="Glimpses from MacFiesta — photos and highlight reels."
+        image={PAGE_IMAGES.gallery}
       />
 
       <section className="section page-content gallery-page">
         <div className="container">
+          {GALLERY_VIDEO_SAMPLES.length > 0 && (
+            <div className="gallery-video-glimpses">
+              <h2 className="home-section-title">Video Glimpses</h2>
+              <div className="gallery-video-grid">
+                {GALLERY_VIDEO_SAMPLES.map((vid) => (
+                  <figure key={vid.id} className="gallery-video-card">
+                    <video
+                      src={vid.src}
+                      poster={vid.poster}
+                      controls
+                      playsInline
+                      preload="metadata"
+                      aria-label={vid.title}
+                    />
+                    <figcaption>{vid.title}</figcaption>
+                  </figure>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="gallery-toolbar">
             <div className="gallery-filters">
               {GALLERY_FILTERS.map((f) => (

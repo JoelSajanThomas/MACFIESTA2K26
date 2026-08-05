@@ -15,6 +15,7 @@ class Result(models.Model):
     college_name = models.CharField(max_length=200)
     position = models.CharField(max_length=20, choices=POSITION_CHOICES)
     remarks = models.TextField(blank=True)
+    winner_photo = models.ImageField(upload_to='results/', blank=True, null=True)
 
     def __str__(self):
         return f"{self.event.title} - {self.position}"

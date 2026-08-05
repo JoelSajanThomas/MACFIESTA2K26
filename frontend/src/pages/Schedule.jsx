@@ -6,6 +6,7 @@ import LoadingState from "../components/ui/LoadingState";
 import ErrorState from "../components/ui/ErrorState";
 import EmptyState from "../components/ui/EmptyState";
 import { getEvents } from "../services/api";
+import { PAGE_IMAGES } from "../utils/assets";
 import {
   SCHEDULE_CATEGORIES,
   filterScheduleEvents,
@@ -53,7 +54,7 @@ export default function Schedule() {
         eyebrow="Plan your fest"
         title="Event Schedule"
         subtitle="Day-wise timetable of all MacFiesta competitions — never miss a moment."
-        image="https://images.unsplash.com/photo-1505373877841-8d25f39d4666?w=1920&q=80"
+        image={PAGE_IMAGES.schedule}
       />
 
       <section className="section page-content schedule-page">

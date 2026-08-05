@@ -1,5 +1,5 @@
 import { mediaUrl } from "../services/api";
-import { GALLERY_PLACEHOLDERS } from "./constants";
+import { galleryPlaceholders } from "./assets";
 
 export const GALLERY_FILTERS = [
   { value: "all", label: "All" },
@@ -22,10 +22,11 @@ export function inferGalleryCategory(title = "") {
 
 export function normalizeGalleryItems(items = [], usePlaceholders = false) {
   if (items.length === 0 && usePlaceholders) {
-    return GALLERY_PLACEHOLDERS.map((p) => ({
+    return galleryPlaceholders.map((p) => ({
       id: p.id,
       title: p.title,
       src: p.src,
+      alt: p.alt || p.title,
       category: p.category,
       uploaded_at: p.uploaded_at,
       isPlaceholder: true,
@@ -37,6 +38,7 @@ export function normalizeGalleryItems(items = [], usePlaceholders = false) {
     id: item.id,
     title: item.title,
     src: mediaUrl(item.image),
+    alt: item.title,
     category: inferGalleryCategory(item.title),
     uploaded_at: item.uploaded_at,
     isPlaceholder: false,

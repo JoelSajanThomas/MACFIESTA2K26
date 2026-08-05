@@ -1,0 +1,16 @@
+{
+  "appId": "com.macfast.macfiestapro",
+  "appName": "MacFiestaPro",
+  "webDir": "dist",
+  "server": {
+    "cleartext": false,
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "StatusBar": {
+      "overlaysWebView": false,
+      "backgroundColor": "#04040f",
+      "style": "DARK"
+    }
+  }
+}

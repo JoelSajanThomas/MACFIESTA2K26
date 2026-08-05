@@ -1,81 +1,57 @@
 import { Link } from "react-router-dom";
-import { FEST_YEAR, OFFICIAL_SITE } from "../utils/constants";
-
-const FOOTER_LINKS = {
-  Explore: [
-    { to: "/events", label: "Events" },
-    { to: "/schedule", label: "Schedule" },
-    { to: "/results", label: "Results" },
-    { to: "/gallery", label: "Gallery" },
-    { to: "/announcements", label: "Announcements" },
-  ],
-  Festival: [
-    { to: "/about", label: "About" },
-    { to: "/sponsors", label: "Sponsors" },
-    { to: "/contact", label: "Contact" },
-    { to: "/login", label: "Login" },
-    { to: "/student-dashboard", label: "Student Dashboard" },
-  ],
-};
+import { useSiteSettings } from "../hooks/useSiteSettings";
+import { BRAND } from "../utils/brand";
 
 export default function Footer() {
+  const settings = useSiteSettings();
+
+  const contactEmail = settings?.contact_email || BRAND.contactEmail;
+  const contactPhone = settings?.contact_phone || BRAND.contactPhone;
+  const venue = settings?.venue || BRAND.venue;
+  const collegeName = settings?.college_name || BRAND.collegeName;
+  const festName = settings?.fest_name || BRAND.festName;
+  const copyright = settings?.footer_copyright || `© ${new Date().getFullYear()} ${festName} · ${collegeName}. All rights reserved.`;
+  const tagline = settings?.footer_tagline;
+
+  const socialLinks = [
+    { label: "Instagram", href: settings?.instagram_url || BRAND.socialLinks.instagram },
+    { label: "YouTube", href: settings?.youtube_url || BRAND.socialLinks.youtube },
+    { label: "Facebook", href: settings?.facebook_url || BRAND.socialLinks.facebook },
+    { label: "Official Site", href: settings?.official_website || BRAND.socialLinks.website },
+  ].filter((s) => s.href);
+
   return (
-    <footer className="site-footer-premium">
-      <div className="footer-glow" aria-hidden="true" />
-      <div className="container footer-grid">
-        <div className="footer-brand-col">
-          <Link to="/" className="footer-logo">
-            <span className="logo-icon">MF</span>
-            Macfiesta {FEST_YEAR}
-          </Link>
+    <footer className="site-footer-simple">
+      <div className="container site-footer-simple-inner">
+        <div className="footer-simple-contact">
+          <h2>Contact Us</h2>
           <p>
-            MacFiesta Pro is the official event platform for MACFAST&apos;s national-level fest.
-            Register for competitions, track results, and stay updated — alongside{" "}
-            <a href={OFFICIAL_SITE} target="_blank" rel="noopener noreferrer">
-              macfiesta.macfast.org
-            </a>
-            .
+            <a href={`mailto:${contactEmail}`}>{contactEmail}</a>
           </p>
-          <div className="footer-social">
-            <a href={OFFICIAL_SITE} target="_blank" rel="noopener noreferrer" aria-label="Official site">
-              Web
-            </a>
-            <a href="#" aria-label="Instagram">IG</a>
-            <a href="#" aria-label="YouTube">YT</a>
-          </div>
+          <p>
+            <a href={`tel:${contactPhone.replace(/\s/g, "")}`}>{contactPhone}</a>
+          </p>
+          <p>{venue}</p>
+          {tagline && <p className="footer-simple-tagline">{tagline}</p>}
         </div>
 
-        {Object.entries(FOOTER_LINKS).map(([title, links]) => (
-          <div key={title} className="footer-col">
-            <h4>{title}</h4>
-            <ul>
-              {links.map(({ to, label }) => (
-                <li key={to}>
-                  <Link to={to}>{label}</Link>
-                </li>
+        {socialLinks.length > 0 && (
+          <div className="footer-simple-social">
+            <h3>Follow Us</h3>
+            <div className="footer-simple-links">
+              {socialLinks.map((s) => (
+                <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer">{s.label}</a>
               ))}
-            </ul>
+            </div>
           </div>
-        ))}
+        )}
 
-        <div className="footer-col">
-          <h4>Contact</h4>
-          <ul className="footer-contact">
-            <li>
-              <a href={OFFICIAL_SITE} target="_blank" rel="noopener noreferrer">
-                macfiesta.macfast.org
-              </a>
-            </li>
-            <li>MACFAST, Thiruvalla</li>
-            <li>Kerala, India</li>
-          </ul>
-        </div>
-      </div>
-
-      <div className="footer-bottom">
-        <div className="container footer-bottom-inner">
-          <p>© {new Date().getFullYear()} Macfiesta · MACFAST. All rights reserved.</p>
-          <p className="footer-credit">MacFiesta Pro — event management platform</p>
+        <div className="footer-simple-legal">
+          <p>{copyright}</p>
+          <div className="footer-legal-links">
+            <Link to="/terms">Terms</Link>
+            <Link to="/privacy">Privacy</Link>
+          </div>
         </div>
       </div>
     </footer>

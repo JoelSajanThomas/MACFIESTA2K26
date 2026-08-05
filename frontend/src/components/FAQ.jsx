@@ -1,9 +1,8 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FAQ_ITEMS } from "../utils/constants";
 import SectionHeading from "./SectionHeading";
 
-export default function FAQ() {
+export default function FAQ({ items = [], sectionMeta = {} }) {
   const [open, setOpen] = useState(0);
 
   return (
@@ -11,13 +10,13 @@ export default function FAQ() {
       <div className="container narrow">
         <SectionHeading
           eyebrow="Got questions?"
-          title="Frequently Asked Questions"
-          subtitle="Everything you need to know before the fest begins."
+          title={sectionMeta.title || "Frequently Asked Questions"}
+          subtitle={sectionMeta.subtitle || "Everything you need to know before the fest begins."}
         />
         <div className="faq-list">
-          {FAQ_ITEMS.map((item, i) => (
+          {items.map((item, i) => (
             <motion.div
-              key={item.q}
+              key={item.q || item.question}
               className={`faq-item${open === i ? " open" : ""}`}
               initial={{ opacity: 0, y: 15 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -30,7 +29,7 @@ export default function FAQ() {
                 onClick={() => setOpen(open === i ? -1 : i)}
                 aria-expanded={open === i}
               >
-                {item.q}
+                {item.q || item.question}
                 <span className="faq-icon">{open === i ? "−" : "+"}</span>
               </button>
               <AnimatePresence>
@@ -42,7 +41,7 @@ export default function FAQ() {
                     exit={{ height: 0, opacity: 0 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <p>{item.a}</p>
+                    <p>{item.a || item.answer}</p>
                   </motion.div>
                 )}
               </AnimatePresence>

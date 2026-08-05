@@ -1,6 +1,9 @@
+import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { formatGalleryDate } from "../utils/galleryUtils";
+import { useMotionPrefs } from "../hooks/useMotionPrefs";
+import { buildFadeUp } from "../utils/animations";
 
 export default function GalleryGrid({
   items = [],
@@ -9,6 +12,8 @@ export default function GalleryGrid({
   onItemClick,
   showPlaceholderNote = false,
 }) {
+  const prefs = useMotionPrefs();
+  const fadeUp = useMemo(() => buildFadeUp(prefs), [prefs]);
   const sliced = limit ? items.slice(0, limit) : items;
 
   if (sliced.length === 0) {
@@ -34,18 +39,27 @@ export default function GalleryGrid({
           <motion.figure
             key={item.id}
             className={`gallery-item size-${(i % 3) + 1}${onItemClick ? " clickable" : ""}`}
-            initial={{ opacity: 0, scale: 0.95 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true }}
-            transition={{ delay: (i % 6) * 0.06, duration: 0.5 }}
-            whileHover={{ scale: 1.02 }}
+            variants={fadeUp}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-30px" }}
+            custom={i % 8}
             onClick={onItemClick ? () => onItemClick(item) : undefined}
             onKeyDown={onItemClick ? (e) => e.key === "Enter" && onItemClick(item) : undefined}
             role={onItemClick ? "button" : undefined}
             tabIndex={onItemClick ? 0 : undefined}
           >
             <div className="gallery-item-image">
-              <img src={item.src} alt={item.title} loading="lazy" />
+              <img
+                src={item.src}
+                alt={item.alt || item.title}
+                loading="lazy"
+                decoding="async"
+                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              />
+              <div className="gallery-item-hover">
+                <span>View</span>
+              </div>
               <span className="gallery-item-category">{item.category}</span>
             </div>
             <figcaption>

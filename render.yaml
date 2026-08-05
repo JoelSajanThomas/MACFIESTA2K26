@@ -1,0 +1,43 @@
+{
+  "$schema": "https://render.com/schema/render.yaml.json",
+  "services": [
+    {
+      "type": "web",
+      "name": "macfiesta-pro-api",
+      "runtime": "python",
+      "rootDir": "backend",
+      "buildCommand": "bash build.sh",
+      "startCommand": "gunicorn config.wsgi:application --bind 0.0.0.0:$PORT --workers 2 --timeout 120",
+      "envVars": [
+        {
+          "key": "PYTHON_VERSION",
+          "value": "3.12.8"
+        },
+        {
+          "key": "DEBUG",
+          "value": "false"
+        },
+        {
+          "key": "SECRET_KEY",
+          "generateValue": true
+        },
+        {
+          "key": "DATABASE_URL",
+          "sync": false
+        },
+        {
+          "key": "ALLOWED_HOSTS",
+          "sync": false
+        },
+        {
+          "key": "CORS_ALLOWED_ORIGINS",
+          "sync": false
+        },
+        {
+          "key": "CSRF_TRUSTED_ORIGINS",
+          "sync": false
+        }
+      ]
+    }
+  ]
+}

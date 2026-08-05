@@ -1,0 +1,98 @@
+# -----------------------------
+# Python / Django
+# -----------------------------
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.py,cover
+.Python
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+backend/venv/
+backend/.venv/
+
+# Django local/runtime artifacts
+*.sqlite3
+db.sqlite3
+backend/db.sqlite3
+media/
+backend/media/
+staticfiles/
+backend/staticfiles/
+
+# -----------------------------
+# Node / React / Vite
+# -----------------------------
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+dist-ssr/
+.vite/
+*.tsbuildinfo
+
+# -----------------------------
+# Environment / secrets
+# -----------------------------
+.env
+.env.*
+backend/.env
+frontend/.env
+frontend/.env.local
+frontend/.env.production
+frontend/.env.production.local
+!.env.example
+!**/.env.example
+!**/.env.production.example
+
+# -----------------------------
+# Logs / temporary files
+# -----------------------------
+*.log
+logs/
+log/
+*.tmp
+*.temp
+*.bak
+*.old
+*.orig
+e2e-smoke-results.json
+
+# -----------------------------
+# Build / packaging artifacts
+# -----------------------------
+*.egg-info/
+.eggs/
+build/
+site/
+pip-wheel-metadata/
+
+# -----------------------------
+# IDE / OS
+# -----------------------------
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# -----------------------------
+# Archives / binary certificates
+# -----------------------------
+*.pem
+*.key
+*.crt
+*.p12

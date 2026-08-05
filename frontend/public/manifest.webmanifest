@@ -1,0 +1,53 @@
+{
+
+  "id": "/",
+
+  "name": "MacFiesta Pro",
+
+  "short_name": "MacFiesta",
+
+  "description": "MACFAST national inter-college fest — events, registration, schedule, results, and gallery.",
+
+  "start_url": "/",
+
+  "scope": "/",
+
+  "display": "standalone",
+
+  "orientation": "portrait-primary",
+
+  "background_color": "#04040f",
+
+  "theme_color": "#04040f",
+
+  "icons": [
+
+    {
+
+      "src": "/assets/official/macfiesta-logo-192.png",
+
+      "sizes": "192x192",
+
+      "type": "image/png",
+
+      "purpose": "any"
+
+    },
+
+    {
+
+      "src": "/assets/official/macfiesta-logo.png",
+
+      "sizes": "512x512",
+
+      "type": "image/png",
+
+      "purpose": "maskable"
+
+    }
+
+  ]
+
+}
+
+

@@ -1,21 +1,20 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { SPONSORS } from "../utils/constants";
 import SectionHeading from "./SectionHeading";
 
-export default function SponsorSection() {
+export default function SponsorSection({ sponsors = [], sectionMeta = {} }) {
   return (
     <section className="section sponsors-section" id="sponsors">
       <div className="container">
         <SectionHeading
           eyebrow="Partners"
-          title="Our Sponsors"
-          subtitle="Proudly supported by brands that believe in student excellence."
+          title={sectionMeta.title || "Our Sponsors"}
+          subtitle={sectionMeta.subtitle || "Campus partners and sponsors who keep the fest running across venues."}
         />
         <div className="sponsors-grid">
-          {SPONSORS.map((sponsor, i) => (
+          {sponsors.map((sponsor, i) => (
             <motion.div
-              key={sponsor.name}
+              key={sponsor.id || sponsor.name}
               className="sponsor-card"
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
@@ -24,10 +23,14 @@ export default function SponsorSection() {
               whileHover={{ y: -5 }}
             >
               <div className="sponsor-logo-placeholder">
-                {sponsor.name.charAt(0)}
+                {sponsor.logo ? (
+                  <img src={sponsor.logo} alt={sponsor.name} loading="lazy" decoding="async" />
+                ) : (
+                  sponsor.name.charAt(0)
+                )}
               </div>
               <strong>{sponsor.name}</strong>
-              <span>{sponsor.tier}</span>
+              <span>{sponsor.tier || sponsor.sponsor_type}</span>
             </motion.div>
           ))}
         </div>

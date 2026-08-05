@@ -5,9 +5,10 @@ import PageHeader from "../components/PageHeader";
 import LoadingState from "../components/ui/LoadingState";
 import ErrorState from "../components/ui/ErrorState";
 import EmptyState from "../components/ui/EmptyState";
-import { getCurrentUser, getMyRegistrations, getEvents, isLoggedIn } from "../services/api";
+import { getCurrentUser, getMyRegistrations, getEvents, isLoggedIn, cancelRegistration } from "../services/api";
 import { isUnauthorized, logout } from "../utils/auth";
 import { formatScheduleTime } from "../utils/scheduleUtils";
+import { EASE_PREMIUM, MOTION } from "../utils/animations";
 
 function formatDate(d) {
   if (!d) return "—";
@@ -21,6 +22,23 @@ export default function StudentDashboard() {
   const [user, setUser] = useState(null);
   const [registrations, setRegistrations] = useState([]);
   const [error, setError] = useState("");
+
+  const [busyId, setBusyId] = useState(null);
+
+  async function handleCancel(regId) {
+    if (!window.confirm("Cancel this registration? If you were confirmed, the next waitlisted participant may be promoted.")) {
+      return;
+    }
+    setBusyId(regId);
+    try {
+      await cancelRegistration(regId);
+      load();
+    } catch (err) {
+      setError(err?.response?.data?.detail || "Could not cancel registration.");
+    } finally {
+      setBusyId(null);
+    }
+  }
 
   const load = useCallback(() => {
     if (!isLoggedIn()) {
@@ -130,23 +148,43 @@ export default function StudentDashboard() {
                   <motion.article
                     key={reg.id}
                     className="student-reg-card detail-panel"
-                    initial={{ opacity: 0, y: 16 }}
+                    initial={{ opacity: 0, y: 12 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: i * 0.05 }}
+                    transition={{ delay: i * MOTION.stagger, duration: MOTION.reveal, ease: EASE_PREMIUM }}
                   >
                     <div className="student-reg-head">
                       <h3>{reg.event_title || ev?.title}</h3>
                       <span className={`dash-badge payment-${reg.payment_status}`}>
                         {reg.payment_status}
                       </span>
+                      {reg.is_waiting_list && (
+                        <span className="dash-badge payment-pending">waiting list</span>
+                      )}
                     </div>
+                    <p className="student-reg-number">Reg #{reg.registration_number}</p>
                     <ul className="student-reg-meta">
                       <li><strong>Date</strong>{ev ? formatDate(ev.event_date) : "—"}</li>
                       <li><strong>Time</strong>{ev ? formatScheduleTime(ev.event_time) : "—"}</li>
                       <li><strong>Venue</strong>{ev?.venue || "—"}</li>
                       <li><strong>Participant</strong>{reg.participant_name}</li>
+                      {reg.approval_status && (
+                        <li><strong>Status</strong>{reg.approval_status}</li>
+                      )}
                     </ul>
-                    <Link to={detailPath} className="btn btn-card">View Event</Link>
+                    <div className="student-reg-actions">
+                      <Link to={detailPath} className="btn btn-card">View Event</Link>
+                      <Link to={`/pass/${reg.id}`} className="btn btn-card">Digital Pass / QR</Link>
+                      {!reg.attendance_marked && reg.approval_status !== "cancelled" && (
+                        <button
+                          type="button"
+                          className="btn btn-outline btn-sm"
+                          disabled={busyId === reg.id}
+                          onClick={() => handleCancel(reg.id)}
+                        >
+                          {busyId === reg.id ? "Cancelling…" : "Cancel"}
+                        </button>
+                      )}
+                    </div>
                   </motion.article>
                 );
               })}

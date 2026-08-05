@@ -1,12 +1,18 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { useMemo, useState } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import PageHeader from "../components/PageHeader";
-import { login, getCurrentUser } from "../services/api";
+import { login, getCurrentUser, storeAuthTokens } from "../services/api";
+import { PAGE_IMAGES } from "../utils/assets";
 import { notifyAuthChange } from "../utils/auth";
+import { EASE_PREMIUM, MOTION } from "../utils/animations";
+import { defaultAdminPath } from "../utils/committeeAccess";
 
 export default function Login() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const nextPath = useMemo(() => searchParams.get("next") || "", [searchParams]);
+
   const [form, setForm] = useState({ username: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -23,8 +29,7 @@ export default function Login() {
     setError("");
     try {
       const res = await login(form);
-      localStorage.setItem("access_token", res.data.access);
-      localStorage.setItem("refresh_token", res.data.refresh);
+      storeAuthTokens(res.data);
       notifyAuthChange();
 
       let user;
@@ -36,17 +41,28 @@ export default function Login() {
         return;
       }
 
-      if (user.is_staff || user.is_superuser) {
-        navigate("/admin-dashboard");
+      if (nextPath.startsWith("/")) {
+        navigate(nextPath);
+      } else if (user.must_change_password) {
+        navigate("/change-password");
+      } else if (user.is_staff || user.is_superuser) {
+        navigate(defaultAdminPath(user.modules));
       } else {
         navigate("/student-dashboard");
       }
-    } catch {
-      setError("Invalid username or password. Please try again.");
+    } catch (err) {
+      const status = err?.response?.status;
+      if (status === 429) {
+        setError("Too many login attempts. Please wait a minute and try again.");
+      } else {
+        setError("Invalid username or password. Please try again.");
+      }
     } finally {
       setLoading(false);
     }
   }
+
+  const registerHref = nextPath ? `/register?next=${encodeURIComponent(nextPath)}` : "/register";
 
   return (
     <>
@@ -54,15 +70,17 @@ export default function Login() {
         eyebrow="Account"
         title="Login"
         subtitle="Sign in to register for events or access your coordinator dashboard."
-        image="https://images.unsplash.com/photo-1557804506-669a67965ba0?w=1920&q=80"
+        seoDescription="Sign in to register for MacFiesta events or access your coordinator dashboard."
+        image={PAGE_IMAGES.login}
       />
       <section className="section page-content">
         <div className="container narrow">
           <motion.form
             className="login-form-premium detail-panel"
             onSubmit={handleSubmit}
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: MOTION.reveal, ease: EASE_PREMIUM }}
           >
             <label>
               Username
@@ -98,10 +116,30 @@ export default function Login() {
                 </button>
               </div>
             </label>
-            {error && <p className="form-error">{error}</p>}
+            <p className="auth-switch-text auth-forgot-row">
+              <Link to="/forgot-password">Forgot Password?</Link>
+            </p>
+            <AnimatePresence mode="wait">
+              {error && (
+                <motion.p
+                  key={error}
+                  className="form-error"
+                  role="alert"
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -4 }}
+                  transition={{ duration: 0.22, ease: EASE_PREMIUM }}
+                >
+                  {error}
+                </motion.p>
+              )}
+            </AnimatePresence>
             <button type="submit" className="btn btn-gold btn-full" disabled={loading}>
               {loading ? "Signing in…" : "Sign In"}
             </button>
+            <p className="auth-switch-text">
+              New here? <Link to={registerHref}>Create Account</Link>
+            </p>
           </motion.form>
         </div>
       </section>

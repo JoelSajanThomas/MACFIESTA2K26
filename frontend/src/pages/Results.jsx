@@ -6,10 +6,12 @@ import LoadingState from "../components/ui/LoadingState";
 import ErrorState from "../components/ui/ErrorState";
 import EmptyState from "../components/ui/EmptyState";
 import { getResults } from "../services/api";
+import { PAGE_IMAGES } from "../utils/assets";
 import {
   FILTER_OPTIONS,
   filterResults,
   groupResultsByEvent,
+  sortEventGroups,
 } from "../utils/resultsUtils";
 
 export default function Results() {
@@ -18,6 +20,7 @@ export default function Results() {
   const [error, setError] = useState("");
   const [positionFilter, setPositionFilter] = useState("all");
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("name");
 
   useEffect(() => {
     setLoading(true);
@@ -42,7 +45,10 @@ export default function Results() {
     [results, positionFilter, search]
   );
 
-  const groups = useMemo(() => groupResultsByEvent(filtered), [filtered]);
+  const groups = useMemo(
+    () => sortEventGroups(groupResultsByEvent(filtered), sortBy),
+    [filtered, sortBy]
+  );
 
   return (
     <>
@@ -50,7 +56,7 @@ export default function Results() {
         eyebrow="Champions"
         title="Results"
         subtitle="Official podium placements across MacFiesta competitions."
-        image="https://images.unsplash.com/photo-1523580495183-5f5a5c1c4c0e?w=1920&q=80"
+        image={PAGE_IMAGES.results}
       />
 
       <section className="section page-content results-page">
@@ -71,6 +77,15 @@ export default function Results() {
             </div>
 
             <div className="results-filters">
+              <select
+                className="admin-select results-sort"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+                aria-label="Sort results"
+              >
+                <option value="name">Sort: Event name</option>
+                <option value="date">Sort: Event date</option>
+              </select>
               {FILTER_OPTIONS.map((opt) => (
                 <button
                   key={opt.value}

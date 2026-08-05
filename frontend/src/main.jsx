@@ -3,6 +3,13 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import "./index.css";
 import App from "./App.jsx";
+import { initCapacitorShell } from "./utils/capacitorShell";
+
+if ("scrollRestoration" in history) {
+  history.scrollRestoration = "manual";
+}
+
+initCapacitorShell();
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>

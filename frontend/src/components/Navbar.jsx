@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import BrandLogo from "./BrandLogo";
 import { getCurrentUser, isLoggedIn } from "../services/api";
 import { AUTH_CHANGE_EVENT, logout, isUnauthorized } from "../utils/auth";
 
@@ -12,7 +12,9 @@ const PUBLIC_LINKS = [
   { to: "/gallery", label: "Gallery" },
   { to: "/announcements", label: "Announcements" },
   { to: "/sponsors", label: "Sponsors" },
+  { to: "/committees", label: "Committees" },
   { to: "/about", label: "About" },
+  { to: "/history", label: "History" },
   { to: "/contact", label: "Contact" },
 ];
 
@@ -31,9 +33,18 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  function closeMenu() {
+    setOpen(false);
+  }
+
   useEffect(() => {
     setOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    document.body.classList.toggle("nav-menu-open", open);
+    return () => document.body.classList.remove("nav-menu-open");
+  }, [open]);
 
   useEffect(() => {
     function loadUser() {
@@ -55,6 +66,7 @@ export default function Navbar() {
   }, [location.pathname]);
 
   function handleLogout() {
+    closeMenu();
     logout();
     setUser(null);
     navigate("/");
@@ -63,19 +75,11 @@ export default function Navbar() {
   const isStaff = user?.is_staff || user?.is_superuser;
 
   return (
-    <motion.header
+    <header
       className={`site-navbar${scrolled ? " scrolled" : ""}${isHome && !scrolled ? " transparent" : ""}`}
-      initial={{ y: -80 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
     >
       <div className="navbar-container">
-        <Link to="/" className="navbar-logo">
-          <span className="logo-icon">MF</span>
-          <span className="logo-text">
-            MacFiesta<span className="logo-accent">.</span>
-          </span>
-        </Link>
+        <BrandLogo className="navbar-logo" onClick={closeMenu} />
 
         <button
           type="button"
@@ -87,12 +91,13 @@ export default function Navbar() {
           <span /><span /><span />
         </button>
 
-        <nav className={`navbar-menu${open ? " open" : ""}`}>
+        <nav className={`navbar-menu${open ? " open" : ""}`} aria-label="Main">
           {PUBLIC_LINKS.map(({ to, label, end }) => (
             <NavLink
               key={to}
               to={to}
               end={end}
+              onClick={closeMenu}
               className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}
             >
               {label}
@@ -102,6 +107,7 @@ export default function Navbar() {
           {user && (
             <NavLink
               to="/student-dashboard"
+              onClick={closeMenu}
               className={({ isActive }) => `nav-link nav-link-dash${isActive ? " active" : ""}`}
             >
               My Dashboard
@@ -110,7 +116,8 @@ export default function Navbar() {
 
           {isStaff && (
             <NavLink
-              to="/admin-dashboard"
+              to="/admin/insights"
+              onClick={closeMenu}
               className={({ isActive }) => `nav-link nav-link-admin${isActive ? " active" : ""}`}
             >
               Admin
@@ -118,12 +125,22 @@ export default function Navbar() {
           )}
 
           {!user ? (
-            <NavLink
-              to="/login"
-              className={({ isActive }) => `nav-link nav-link-login${isActive ? " active" : ""}`}
-            >
-              Login
-            </NavLink>
+            <>
+              <NavLink
+                to="/register"
+                onClick={closeMenu}
+                className={({ isActive }) => `nav-link${isActive ? " active" : ""}`}
+              >
+                Create Account
+              </NavLink>
+              <NavLink
+                to="/login"
+                onClick={closeMenu}
+                className={({ isActive }) => `nav-link nav-link-login${isActive ? " active" : ""}`}
+              >
+                Login
+              </NavLink>
+            </>
           ) : (
             <button type="button" className="nav-link nav-logout-btn" onClick={handleLogout}>
               Logout
@@ -132,17 +149,14 @@ export default function Navbar() {
         </nav>
       </div>
 
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            className="nav-mobile-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setOpen(false)}
-          />
-        )}
-      </AnimatePresence>
-    </motion.header>
+      {open && (
+        <button
+          type="button"
+          className="nav-mobile-backdrop"
+          aria-label="Close menu"
+          onClick={() => setOpen(false)}
+        />
+      )}
+    </header>
   );
 }

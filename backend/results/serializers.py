@@ -1,8 +1,10 @@
 from rest_framework import serializers
+
+from config.serializers_mixins import ImageValidationMixin
 from .models import Result
 
 
-class ResultSerializer(serializers.ModelSerializer):
+class ResultSerializer(ImageValidationMixin, serializers.ModelSerializer):
     event_title = serializers.CharField(source='event.title', read_only=True)
     event_category = serializers.CharField(source='event.category', read_only=True)
     event_venue = serializers.CharField(source='event.venue', read_only=True)

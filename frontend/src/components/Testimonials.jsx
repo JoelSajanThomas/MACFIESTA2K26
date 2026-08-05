@@ -1,31 +1,29 @@
 import { motion } from "framer-motion";
-import { TESTIMONIALS } from "../utils/constants";
 import SectionHeading from "./SectionHeading";
 
-export default function Testimonials() {
+export default function Testimonials({ items = [], sectionMeta = {} }) {
   return (
     <section className="section testimonials-section">
       <div className="container">
         <SectionHeading
           eyebrow="Voices"
-          title="What Students Say"
-          subtitle="Memories from past editions of MacFiesta."
+          title={sectionMeta.title || "What People Say"}
+          subtitle={sectionMeta.subtitle || "Delegates, coordinators, and campus clubs on the MacFiesta experience."}
         />
         <div className="testimonials-grid">
-          {TESTIMONIALS.map((t, i) => (
+          {items.map((t, i) => (
             <motion.blockquote
-              key={t.name}
+              key={`${t.name}-${i}`}
               className="testimonial-card"
-              initial={{ opacity: 0, y: 30 }}
+              initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: i * 0.12 }}
-              whileHover={{ y: -6 }}
+              transition={{ delay: i * 0.08 }}
             >
-              <p className="testimonial-quote">"{t.quote}"</p>
+              <p>&ldquo;{t.quote}&rdquo;</p>
               <footer>
                 <strong>{t.name}</strong>
-                <span>{t.role}</span>
+                {t.role && <span>{t.role}</span>}
               </footer>
             </motion.blockquote>
           ))}
