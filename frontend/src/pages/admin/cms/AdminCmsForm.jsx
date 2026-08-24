@@ -54,15 +54,21 @@ export default function AdminCmsForm() {
       let payload;
       if (hasImage && imageFile) {
         payload = new FormData();
+        const imgField = config.fields.find((f) => f.type === "image");
         Object.entries(form).forEach(([k, v]) => {
-          if (v !== null && v !== undefined && k !== "image" && k !== "logo") {
+          if (v !== null && v !== undefined && k !== imgField?.name && k !== "image" && k !== "logo") {
             payload.append(k, typeof v === "boolean" ? (v ? "true" : "false") : v);
           }
         });
-        const imgField = config.fields.find((f) => f.type === "image");
-        payload.append(imgField.name, imageFile);
+        if (imgField) {
+          payload.append(imgField.name, imageFile);
+        }
       } else {
         payload = { ...form };
+        const imgField = config.fields.find((f) => f.type === "image");
+        if (imgField && typeof payload[imgField.name] === "string") {
+          delete payload[imgField.name];
+        }
       }
       if (isEdit) await config.api.update(id, payload);
       else await config.api.create(payload);

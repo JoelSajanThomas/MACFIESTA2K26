@@ -34,8 +34,11 @@ DEBUG = env_bool("DEBUG", True)
 SECRET_KEY = os.environ.get("SECRET_KEY")
 if not SECRET_KEY:
     if DEBUG:
-        # Local-only fallback (rotated). Production MUST set SECRET_KEY in the environment.
-        SECRET_KEY = "django-insecure-hRhcJ4tvnDwF2pAJ-yirQbmuJrflvWd37fbnBAtveYjbLbrloLwuvF8qxYrSKIa1"
+        # Ephemeral local-only key — regenerates each process start so a known
+        # committed string is never a stable signing secret. Production MUST set SECRET_KEY.
+        import secrets as _secrets
+
+        SECRET_KEY = f"django-insecure-dev-{_secrets.token_urlsafe(48)}"
     else:
         raise ValueError("SECRET_KEY environment variable is required when DEBUG=False")
 
@@ -65,11 +68,12 @@ REST_FRAMEWORK = {
         "rest_framework.throttling.UserRateThrottle",
     ],
     "DEFAULT_THROTTLE_RATES": {
-        "anon": "120/min",
-        "user": "300/min",
-        "login": "10/min",
-        "signup": "10/min",
-        "password_reset": "5/min",
+        "anon": "1000/min" if DEBUG else "120/min",
+        "user": "2000/min" if DEBUG else "300/min",
+        "login": "60/min" if DEBUG else "10/min",
+        "signup": "60/min" if DEBUG else "10/min",
+        "password_reset": "30/min" if DEBUG else "5/min",
+        "jwt_refresh": "120/min" if DEBUG else "30/min",
     },
 }
 
@@ -93,7 +97,55 @@ EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
+EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", False)
 DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "MacFiesta Pro <noreply@macfiesta.local>")
+
+# --- Fest payment + add-on fees (from .env — never hardcode live UPI/bank in source) ---
+from decimal import Decimal as _Decimal
+
+PAYMENT_ACCOUNT_NAME = os.environ.get("PAYMENT_ACCOUNT_NAME", "MacFiesta / MACFAST")
+PAYMENT_UPI_ID = os.environ.get("PAYMENT_UPI_ID", "")
+PAYMENT_BANK_NAME = os.environ.get("PAYMENT_BANK_NAME", "")
+PAYMENT_ACCOUNT_NUMBER = os.environ.get("PAYMENT_ACCOUNT_NUMBER", "")
+PAYMENT_IFSC = os.environ.get("PAYMENT_IFSC", "")
+PAYMENT_INSTRUCTIONS = os.environ.get(
+    "PAYMENT_INSTRUCTIONS",
+    "Pay the total amount to the MacFiesta fest account. Keep the UPI/bank receipt - "
+    "the desk will verify payment against your registration number.",
+)
+
+FOOD_PACKAGE_FEE = _Decimal(os.environ.get("FOOD_PACKAGE_FEE", "150.00"))
+ACCOMMODATION_FEE_PER_PERSON = _Decimal(os.environ.get("ACCOMMODATION_FEE_PER_PERSON", "300.00"))
+TRANSPORT_ASSIST_FEE = _Decimal(os.environ.get("TRANSPORT_ASSIST_FEE", "100.00"))
+
+# Public QR image renderer used by digital pass (client may also set VITE_QR_API_URL)
+QR_IMAGE_API_URL = os.environ.get(
+    "QR_IMAGE_API_URL",
+    "https://api.qrserver.com/v1/create-qr-code/",
+)
+
+# Official MacFiesta payment QR (common for all students). Absolute URL or /media/… path.
+PAYMENT_QR_IMAGE_URL = os.environ.get("PAYMENT_QR_IMAGE_URL", "")
+
+# --- Desk seed credentials (passwords MUST live in .env — never in source/docs) ---
+DESK_USERNAME_TEMPLATE = os.environ.get("DESK_USERNAME_TEMPLATE", "macfiesta{committee}admin")
+DESK_EMAIL_DOMAIN = os.environ.get("DESK_EMAIL_DOMAIN", "macfiesta.local")
+DESK_PASSWORD_TEMPLATE = os.environ.get("DESK_PASSWORD_TEMPLATE", "")
+# Optional per-desk overrides: DESK_PASSWORD_FINANCE, DESK_PASSWORD_FOOD, …
+
+# QR / pass HMAC salt (uses Django SECRET_KEY under the hood; salt should be unique per deploy)
+REGISTRATION_SIGNER_SALT = os.environ.get("REGISTRATION_SIGNER_SALT", "macfiesta.registration.pass")
+REGISTRATION_PASS_MAX_AGE_DAYS = int(os.environ.get("REGISTRATION_PASS_MAX_AGE_DAYS", "60"))
+
+# Public contact fallbacks (CMS site-settings can override on the site)
+CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "")
+CONTACT_PHONE = os.environ.get("CONTACT_PHONE", "")
+REGISTRATION_HELP_EMAIL = os.environ.get("REGISTRATION_HELP_EMAIL", "")
+REGISTRATION_HELP_PHONE = os.environ.get("REGISTRATION_HELP_PHONE", "")
+OFFICIAL_WEBSITE = os.environ.get("OFFICIAL_WEBSITE", "")
+INSTAGRAM_URL = os.environ.get("INSTAGRAM_URL", "")
+YOUTUBE_URL = os.environ.get("YOUTUBE_URL", "")
+FACEBOOK_URL = os.environ.get("FACEBOOK_URL", "")
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -112,6 +164,7 @@ INSTALLED_APPS = [
     "dashboard",
     "cms",
     "accounts",
+    "accommodation",
 ]
 
 MIDDLEWARE = [
@@ -169,6 +222,16 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
+# Explicit hashers — passwords are NEVER stored in plain text.
+# create_user / set_password / check_password all use this stack (PBKDF2 by default).
+PASSWORD_HASHERS = [
+    "django.contrib.auth.hashers.PBKDF2PasswordHasher",
+    "django.contrib.auth.hashers.PBKDF2SHA1PasswordHasher",
+    "django.contrib.auth.hashers.Argon2PasswordHasher",
+    "django.contrib.auth.hashers.BCryptSHA256PasswordHasher",
+    "django.contrib.auth.hashers.ScryptPasswordHasher",
+]
+
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Asia/Kolkata"
 USE_I18N = True
@@ -202,6 +265,25 @@ from datetime import timedelta
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
-    "ROTATE_REFRESH_TOKENS": False,
+    "ROTATE_REFRESH_TOKENS": True,
     "UPDATE_LAST_LOGIN": False,
 }
+
+# --- Email Configuration (SMTP / Console fallback) ---
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.smtp.EmailBackend"
+    if os.environ.get("EMAIL_HOST_USER") or os.environ.get("EMAIL_HOST")
+    else "django.core.mail.backends.console.EmailBackend",
+)
+EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
+EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", False)
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL",
+    f"MACFIESTA 2026 <{EMAIL_HOST_USER or 'noreply@macfiesta.org'}>",
+)
+

@@ -8,6 +8,11 @@ import {
 
 export default function ScheduleInfoCard({ event }) {
   const status = getEventStatus(event);
+  const timeLabel = event.event_time
+    ? `${formatScheduleTime(event.event_time)}${
+        event.event_end_time ? ` – ${formatScheduleTime(event.event_end_time)}` : ""
+      }`
+    : "TBD";
 
   return (
     <div className="detail-panel schedule-info-card">
@@ -19,11 +24,11 @@ export default function ScheduleInfoCard({ event }) {
         </div>
         <div>
           <dt>Time</dt>
-          <dd>{formatScheduleTime(event.event_time)}</dd>
+          <dd>{timeLabel}</dd>
         </div>
         <div>
           <dt>Venue</dt>
-          <dd>{event.venue}</dd>
+          <dd>{event.venue || "TBD"}</dd>
         </div>
         <div>
           <dt>Status</dt>

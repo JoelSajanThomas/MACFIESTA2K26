@@ -5,10 +5,13 @@ import {
   getEventStatus,
   STATUS_LABELS,
 } from "../../utils/scheduleUtils";
+import { formatDurationHours, formatPrizePool, formatRegistrationFee, isCollegeEvent } from "../../utils/festDays";
 
 export default function ScheduleEventCard({ event, index = 0 }) {
   const status = getEventStatus(event);
   const detailPath = `/events/${event.slug || event.id}`;
+  const duration = formatDurationHours(event);
+  const prize = formatPrizePool(event);
 
   return (
     <motion.article
@@ -19,7 +22,13 @@ export default function ScheduleEventCard({ event, index = 0 }) {
       transition={{ delay: index * 0.06, duration: 0.45 }}
     >
       <div className="schedule-timeline-time">
-        <span className="schedule-time-value">{formatScheduleTime(event.event_time)}</span>
+        <span className="schedule-time-value">
+          {event.event_time ? formatScheduleTime(event.event_time) : "TBD"}
+        </span>
+        {event.event_end_time ? (
+          <span className="schedule-time-end">– {formatScheduleTime(event.event_end_time)}</span>
+        ) : null}
+        {duration ? <span className="schedule-time-end">{duration}</span> : null}
         <span className={`schedule-status-label ${status}`}>{STATUS_LABELS[status]}</span>
       </div>
 
@@ -29,7 +38,7 @@ export default function ScheduleEventCard({ event, index = 0 }) {
 
       <div className="schedule-timeline-body">
         <div className="schedule-card-top">
-          <span className="event-cat-tag">{event.category}</span>
+          <span className="event-cat-tag">{event.department || event.category}</span>
           <span className={`event-badge inline ${event.is_registration_open ? "open" : "closed"}`}>
             {event.is_registration_open ? "Open" : "Closed"}
           </span>
@@ -42,8 +51,15 @@ export default function ScheduleEventCard({ event, index = 0 }) {
             <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z" />
             <circle cx="12" cy="10" r="3" />
           </svg>
-          {event.venue}
+          {event.venue || "TBD"}
         </p>
+
+        {isCollegeEvent(event) ? (
+          <p className="schedule-venue">
+            Fee {formatRegistrationFee(event)}
+            {prize ? ` · Prize ${prize}` : ""}
+          </p>
+        ) : null}
 
         <div className="schedule-card-footer">
           <span className="schedule-participants">

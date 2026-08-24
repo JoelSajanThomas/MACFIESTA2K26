@@ -42,16 +42,41 @@ export const FEST_LOCATION = BRAND.location.split(",")[0];
 export const OFFICIAL_SITE = BRAND.officialWebsite;
 export const FEST_TAGLINE = BRAND.tagline;
 export const FEST_SUBTITLE = BRAND.subtitle;
-export const FEST_THEME = "Retro Fiesta";
+export const FEST_THEME = "MACFIESTA 2026 — MARVEL × DC";
 export const FEST_THEME_DESC =
-  "A vibrant throwback celebration — neon lights, classic beats, and campus nights that feel timeless.";
+  "Two days of competition, creativity, technology, culture, and entertainment come together at MACFAST as students rise to take on the MacFiesta arena.";
 
 export const EVENT_FORMATS = [
-  { id: "solo", label: "Solo", desc: "Walk in alone — one participant, one shot at the podium.", link: "/events" },
-  { id: "duo", label: "Duo", desc: "Pair up with a teammate for two-person competitions.", link: "/events" },
-  { id: "trio", label: "Trio", desc: "Form a three-member team for group-format events.", link: "/events" },
-  { id: "squad", label: "Squad", desc: "Four students per squad — common for gaming and tech battles.", link: "/events" },
-  { id: "group", label: "Group", desc: "Full crew events for cultural performances and stage acts.", link: "/events" },
+  {
+    id: "solo",
+    label: "Solo",
+    desc: "Compete individually and represent your skill.",
+    link: "/events",
+  },
+  {
+    id: "duo",
+    label: "Duo",
+    desc: "Team up with one partner.",
+    link: "/events",
+  },
+  {
+    id: "trio",
+    label: "Trio",
+    desc: "Compete as a three-member team.",
+    link: "/events",
+  },
+  {
+    id: "squad",
+    label: "Squad",
+    desc: "Designed for gaming, technology, and team challenges.",
+    link: "/events",
+  },
+  {
+    id: "group",
+    label: "Group",
+    desc: "Built for performances and larger team competitions.",
+    link: "/events",
+  },
 ];
 
 export const CATEGORIES = [
@@ -68,19 +93,19 @@ export const CATEGORIES = [
 ];
 
 export const REWIND_HIGHLIGHTS = [
-  { title: "Music Band", image: rewindImages.music, alt: "Macfiesta music band performance" },
-  { title: "Cultural Events", image: rewindImages.cultural, alt: "Macfiesta cultural events crowd" },
-  { title: "Fashion", image: rewindImages.fashion, alt: "Macfiesta fashion show" },
-  { title: "DJ Night", image: rewindImages.djNight, alt: "Macfiesta DJ night" },
+  { title: "Music", image: rewindImages.music, alt: "MacFiesta music performance" },
+  { title: "Cultural Events", image: rewindImages.cultural, alt: "MacFiesta cultural events" },
+  { title: "Fashion", image: rewindImages.fashion, alt: "MacFiesta fashion show" },
+  { title: "DJ Night", image: rewindImages.djNight, alt: "MacFiesta DJ night" },
 ];
 
 export const GUEST_PROFILES = [
   {
-    name: "Akhil Marar",
-    role: "Director & Writer",
-    bio: "Guest session with the Bigg Boss Malayalam Season 5 winner — an open conversation on cinema, storytelling, and campus life.",
+    name: "Sayip OP",
+    role: "Kerala Gamer · Eagle Gaming",
+    bio: "BGMI streamer and Kerala gaming creator Sayip OP joins MacFiesta 2026 for a special Eagle Gaming session featuring gameplay, interaction, and live audience engagement.",
     image: guestPlaceholder,
-    alt: "Akhil Marar — Macfiesta guest",
+    alt: "Sayip OP at MacFiesta 2026",
   },
 ];
 
@@ -103,8 +128,8 @@ export const ANNOUNCEMENT_PLACEHOLDERS = [
   },
   {
     id: "ph3",
-    title: "Guest Session — Akhil Marar",
-    message: "An evening session with director Akhil Marar at the auditorium.",
+    title: "Guest Session — Sayip OP",
+    message: "Eagle Gaming guest night with Kerala gamer Sayip OP — gameplay vibes at the fest arena.",
     is_active: true,
     created_at: "2026-08-15T14:00:00Z",
     isPlaceholder: true,

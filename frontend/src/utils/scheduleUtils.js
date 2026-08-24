@@ -8,7 +8,13 @@ export const SCHEDULE_CATEGORIES = [
 ];
 
 export function parseEventDateTime(event) {
-  const [h, m, s = "0"] = (event.event_time || "00:00:00").split(":");
+  if (!event?.event_date) return new Date(0);
+  if (!event.event_time) {
+    const dt = new Date(event.event_date);
+    dt.setHours(23, 59, 59, 0);
+    return dt;
+  }
+  const [h, m, s = "0"] = String(event.event_time).split(":");
   const dt = new Date(event.event_date);
   dt.setHours(Number(h), Number(m), Number(s), 0);
   return dt;
@@ -34,8 +40,8 @@ export const STATUS_LABELS = {
 };
 
 export function formatScheduleTime(timeStr) {
-  if (!timeStr) return "TBA";
-  const [h, m] = timeStr.split(":");
+  if (!timeStr) return "TBD";
+  const [h, m] = String(timeStr).split(":");
   const dt = new Date();
   dt.setHours(Number(h), Number(m));
   return dt.toLocaleTimeString("en-IN", { hour: "numeric", minute: "2-digit" });
@@ -59,14 +65,14 @@ export function formatShortDateTime(event) {
 
 export function sortEvents(events) {
   return [...events].sort((a, b) => {
-    const da = `${a.event_date}T${a.event_time}`;
-    const db = `${b.event_date}T${b.event_time}`;
+    const da = `${a.event_date}T${a.event_time || "99:99:99"}`;
+    const db = `${b.event_date}T${b.event_time || "99:99:99"}`;
     return da.localeCompare(db);
   });
 }
 
 export function filterScheduleEvents(events, category, search) {
-  let filtered = events;
+  let filtered = events.filter((e) => e.status !== "cancelled");
 
   if (category !== "all") {
     filtered = filtered.filter((e) => e.category === category);
@@ -77,7 +83,8 @@ export function filterScheduleEvents(events, category, search) {
     filtered = filtered.filter(
       (e) =>
         e.title?.toLowerCase().includes(q) ||
-        e.venue?.toLowerCase().includes(q)
+        e.venue?.toLowerCase().includes(q) ||
+        e.department?.toLowerCase().includes(q)
     );
   }
 

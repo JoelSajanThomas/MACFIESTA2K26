@@ -2,64 +2,84 @@
 
 ## Committee login system
 
-All users authenticate through the same `/login` page. After authentication, MacFiesta Pro determines the user’s assigned committee and permission set. Each committee member sees a customized Admin Dashboard with only the modules for their role. Backend API permissions enforce the same restrictions, so protected URLs and write endpoints stay blocked even if someone navigates to them manually.
+Each operations committee has a dedicated desk login page, plus a shared portal:
 
-Create or refresh desk accounts (passwords are **not** stored in this guide — see the seed command / private deployment notes):
+- Portal: `/desks`
+- Desk login: `/desk/<committee>/login`  
+  Examples: `/desk/hospitality/login`, `/desk/event/login`
+
+After sign-in, MacFiesta opens the Admin Dashboard filtered to that committee’s modules. Backend APIs enforce the same module permissions.
+
+Student / general accounts still use `/login`.
+
+### Create desk admin accounts
+
+1. Copy `backend/.env.example` → `backend/.env`
+2. Set desk passwords in `.env` (never commit this file):
+
+```env
+DESK_PASSWORD_TEMPLATE=your-strong-local-{committee}-password
+# Or set each desk separately:
+# DESK_PASSWORD_FINANCE=...
+# DESK_PASSWORD_FOOD=...
+```
+
+3. Seed:
 
 ```powershell
 cd backend
-.\venv\Scripts\Activate.ps1
+.\.venv\Scripts\Activate.ps1
+python manage.py seed_committee_desk_admins
+```
+
+Passwords are read from `.env` and **never printed** by the command. Share credentials with heads out-of-band (password manager / sealed note).
+
+Optional: deactivate legacy short usernames (`finance`, `food`, …):
+
+```powershell
+python manage.py seed_committee_desk_admins --deactivate-legacy-shortnames
+```
+
+Legacy shared seed (older short usernames) still uses `COMMITTEE_SEED_PASSWORD` in `.env`:
+
+```powershell
 python manage.py seed_committee_accounts
 ```
 
-Optional local-only test account:
+**Rotate every password before public launch.** Do not reuse local/staging passwords in production.
 
-```powershell
-python manage.py seed_committee_accounts --dev-testuser
-```
-
-Set the seed password via environment variable `COMMITTEE_SEED_PASSWORD` when deploying. Change every seeded password immediately after first login.
-
-## Committee accounts
-
-Each committee is assigned a dedicated staff account.
-
-| Committee | Username | Access |
-|-----------|----------|--------|
-| Core Team | `core` | Full administration |
-| Finance | `finance` | Registrations, Verification, Reports |
-| Food | `food` | Reports, Announcements |
-| Hospitality | `hospitality` | Registrations, Verification, Reports |
-| Event | `event` | Events, Registrations, Results, Schedule, Verification |
-| Program | `program` | Events, Schedule, Announcements, Results |
-| Cultural | `cultural` | Events, Results, Gallery, Announcements |
-| Publicity | `publicity` | Announcements, Gallery, CMS, Sponsors |
-| Invitation | `invitation` | Announcements, Guests, CMS |
-| Verification | `verification` | Participant Verification and Registrations |
-
-Assign a real head’s details in Django Admin → Users → Staff profile (committee, display name, phone).
-
-### Example permissions
+## Committee module access
 
 | Committee | Main modules |
 |-----------|----------------|
-| Core Team | Full system administration |
 | Finance | Registrations, payment status, verification, reports |
-| Event | Events, schedule, registrations, results |
+| Food | Reports, announcements |
+| Hospitality | Verification, registrations, reports |
+| Event | Events, schedule, registrations, results, verification |
 | Program | Schedule, announcements, results |
 | Cultural | Events, gallery, results |
 | Publicity | Gallery, sponsors, CMS, announcements |
-| Hospitality | Verification, registrations, reports |
-| Food | Reports, food preferences (via reports), announcements |
 | Invitation | Guests, CMS, announcements |
-| Verification | QR / registration-number verification, registrations |
+
+Assign a real head’s details in Django Admin → Users → Staff profile (display name, phone).
 
 ## Desk workflows
 
 **Finance:** Registrations → Paid / Waived  
-**Verification:** Verification → reg # / QR  
-**Food / Hospitality / Transport planning:** Reports → CSV  
+**Verification tools:** available on Finance / Hospitality / Event desks  
+**Food / Hospitality planning:** Reports → CSV  
 **Publicity:** Announcements, Gallery, Website Content  
+**Event / Program / Cultural:** Events, Schedule, Results as listed above  
+
+## Secrets checklist
+
+Keep all of these in `backend/.env` / host env only:
+
+- `SECRET_KEY`, `DATABASE_URL`
+- SMTP `EMAIL_HOST_USER` / `EMAIL_HOST_PASSWORD`
+- Payment UPI / bank fields
+- `DESK_PASSWORD_*` / `DESK_PASSWORD_TEMPLATE` / `COMMITTEE_SEED_PASSWORD`
+- `REGISTRATION_SIGNER_SALT`
 
 ## After each edition
 
@@ -70,6 +90,5 @@ Assign a real head’s details in Django Admin → Users → Staff profile (comm
 
 ## Related
 
-- [PRODUCTION_STATUS.md](../PRODUCTION_STATUS.md)
-- [USER_GUIDE.md](./USER_GUIDE.md)
-- [DEPLOYMENT.md](../DEPLOYMENT.md)
+- User guide: `docs/USER_GUIDE.md`
+- Deployment: `DEPLOYMENT.md`

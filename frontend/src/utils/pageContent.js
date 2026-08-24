@@ -1,7 +1,7 @@
 /** Public page copy — sample/reference content only (no real participant data). */
 
 function asset(path) {
-  return `/assets/official/${path}`;
+  return `/assets/image all/official/${path}`;
 }
 
 export const MACFAST_ABOUT = {
@@ -44,6 +44,11 @@ export const FEST_HISTORY = [
     title: "Retro Fiesta",
     body: "The Retro Fiesta edition celebrated throwback themes, DJ nights, and record registration numbers — captured in the fest rewind gallery.",
   },
+  {
+    year: "2026",
+    title: "Marvel × DC",
+    body: "MacFiesta 2026 goes fully modern cinematic — Marvel × DC — Heroes Rise. Legends Compete. Two universes, one ultimate fest.",
+  },
 ];
 
 export const EVENT_GUIDELINES = [
@@ -55,33 +60,48 @@ export const EVENT_GUIDELINES = [
   "Fest management may disqualify teams for misconduct or false registrations.",
 ];
 
-export const PRIZE_POOL_SAMPLE = [
-  { tier: "Main Stage Events", amount: "₹1,00,000+", note: "Combined pool across flagship competitions" },
-  { tier: "Tech & Gaming", amount: "₹50,000+", note: "Coding, gaming, and innovation tracks" },
-  { tier: "Cultural & Arts", amount: "₹40,000+", note: "Dance, music, fashion, and literary events" },
-  { tier: "Sports & Management", amount: "₹25,000+", note: "Indoor and management games" },
-];
+/** Informational trophies — not a scoring engine. */
+export const BEST_PARTICIPATING_SCHOOL = {
+  title: "Best Participating School — Overall Trophy",
+  day: "Day 1 — School Event Day",
+  points: [
+    "Awarded at the end of Day 1",
+    "Based on overall points earned across events",
+    "Additional points for active participation",
+    "Encourages schools to participate in multiple events",
+  ],
+};
 
-export const GALLERY_VIDEO_SAMPLES = [
-  {
-    id: "v1",
-    title: "Fest Highlights Reel",
-    src: asset("hero/hero-480p.mp4"),
-    poster: asset("hero/hero-poster.webp"),
-  },
-];
+export const BEST_PARTICIPATING_COLLEGE = {
+  title: "Best Participating College — Overall Trophy",
+  day: "Day 2 — College Event Day",
+  points: [
+    "Awarded at the end of Day 2",
+    "Based on overall points earned across events",
+    "Additional points for active participation",
+  ],
+};
 
-/** Sample coordinator accounts for admin UI demos — not real users. */
-export const SAMPLE_COORDINATORS = [
-  { id: "s1", name: "Fest Coordinator (Sample)", role: "Super Admin", email: "coordinator.sample@macfast.test" },
-  { id: "s2", name: "Events Desk (Sample)", role: "Events", email: "events.sample@macfast.test" },
-  { id: "s3", name: "Finance Desk (Sample)", role: "Finance", email: "finance.sample@macfast.test" },
-  { id: "s4", name: "Volunteer Lead (Sample)", role: "Volunteer", email: "volunteer.sample@macfast.test" },
-];
-
-/** Illustrative gender split when profile gender is not collected — demo only. */
-export const SAMPLE_GENDER_DISTRIBUTION = [
-  { label: "Male", value: 52, sample: true },
-  { label: "Female", value: 45, sample: true },
-  { label: "Prefer not to say", value: 3, sample: true },
-];
+/**
+ * Mini Games & Activity Zone — public information only.
+ * Not competitive Event records (excluded from results / main registration catalogue).
+ */
+export const MINI_GAMES_ZONE = {
+  title: "Mini Games & Activity Zone",
+  subtitle: "Common activity zone across the fest",
+  activities: [
+    "Target Throw",
+    "Ping-Pong Cup Toss",
+    "Knock the Cans",
+    "Ring Toss",
+    "Bell Protocol",
+    "Carrom",
+    "Spin the Wheel",
+    "Rubik's Cube",
+  ],
+  pricing: [
+    "Most games: ₹10",
+    "Bell Protocol: ₹20",
+    "Some activities: Free",
+  ],
+};

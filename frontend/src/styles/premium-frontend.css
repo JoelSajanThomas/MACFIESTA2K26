@@ -1,0 +1,273 @@
+/**
+ * MacFiesta Pro — Premium Frontend Polish
+ * Global UI enhancements, animations, and visual refinements.
+ * This file adds the finishing touches to make the frontend world-class.
+ */
+
+/* ─── Premium Animations ──────────────────────────────── */
+@keyframes mf-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes mf-pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(237, 29, 36, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(237, 29, 36, 0.6); }
+}
+
+@keyframes mf-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes mf-border-sweep {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes mf-scale-in {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ─── Global link hover improvements ─────────────────── */
+.app:not(:has(.admin-shell)) a:not([class]) {
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+/* ─── Premium Card hover effects ─────────────────────── */
+.app:not(:has(.admin-shell)) .student-reg-card,
+.app:not(:has(.admin-shell)) .detail-panel {
+  transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+}
+
+.app:not(:has(.admin-shell)) .student-reg-card:hover,
+.app:not(:has(.admin-shell)) .detail-panel:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.5) !important;
+}
+
+/* ─── Page header improvements ───────────────────────── */
+.app:not(:has(.admin-shell)) .page-header {
+  background: linear-gradient(180deg, rgba(15, 18, 35, 0.95) 0%, rgba(8, 10, 18, 0.9) 100%);
+  border-bottom: 1px solid rgba(237, 29, 36, 0.15);
+  position: relative;
+  overflow: hidden;
+}
+
+.app:not(:has(.admin-shell)) .page-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #ED1D24, #FFD666, #00D4FF, transparent);
+  opacity: 0.6;
+}
+
+/* ─── Premium scroll-to-top button ───────────────────── */
+.app:not(:has(.admin-shell)) .scroll-to-top,
+.app:not(:has(.admin-shell)) [class*="scroll-top"] {
+  background: linear-gradient(135deg, #ED1D24, #C8121A) !important;
+  box-shadow: 0 4px 20px rgba(237, 29, 36, 0.4) !important;
+  border-radius: 12px !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.app:not(:has(.admin-shell)) .scroll-to-top:hover,
+.app:not(:has(.admin-shell)) [class*="scroll-top"]:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: 0 8px 30px rgba(237, 29, 36, 0.6) !important;
+}
+
+/* ─── Event card improvements ────────────────────────── */
+.app:not(:has(.admin-shell)) .event-card,
+.app:not(:has(.admin-shell)) [class*="event-card"] {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease !important;
+}
+
+/* ─── Section heading improvements ───────────────────── */
+.app:not(:has(.admin-shell)) .section-heading h2,
+.app:not(:has(.admin-shell)) .home-section-title {
+  position: relative;
+}
+
+/* ─── Premium button glow ─────────────────────────────── */
+.app:not(:has(.admin-shell)) .btn-gold {
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.app:not(:has(.admin-shell)) .btn-gold:hover:not(:disabled) {
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 28px rgba(240, 193, 75, 0.5) !important;
+}
+
+/* ─── Schedule improvements ──────────────────────────── */
+.app:not(:has(.admin-shell)) .schedule-day-group {
+  background: rgba(10, 13, 24, 0.6) !important;
+  border-radius: 16px !important;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+.app:not(:has(.admin-shell)) .schedule-day-header {
+  background: rgba(237, 29, 36, 0.08) !important;
+  border-bottom: 1px solid rgba(237, 29, 36, 0.2) !important;
+}
+
+/* ─── Student Dashboard improvements ─────────────────── */
+.app:not(:has(.admin-shell)) .student-stat-card {
+  background: rgba(10, 13, 24, 0.8) !important;
+  border: 1px solid rgba(237, 29, 36, 0.25) !important;
+  border-radius: 16px !important;
+  transition: transform 0.2s ease !important;
+}
+
+.app:not(:has(.admin-shell)) .student-stat-value {
+  background: linear-gradient(135deg, #ED1D24, #FFD666);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  font-family: "Excon-Black", "Excon", sans-serif !important;
+}
+
+/* ─── Login/Register page improvements ───────────────── */
+.app:not(:has(.admin-shell)) .auth-card,
+.app:not(:has(.admin-shell)) .login-card,
+.app:not(:has(.admin-shell)) .register-card {
+  background: rgba(10, 13, 24, 0.92) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(237,29,36,0.06) !important;
+}
+
+/* ─── Mobile bottom bar enhancement ─────────────────── */
+.mf1-mobile-dock {
+  border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+  background: rgba(6, 8, 15, 0.96) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+}
+
+.mf1-mobile-dock__pass {
+  background: linear-gradient(135deg, #ED1D24, #C8121A) !important;
+  box-shadow: 0 -4px 20px rgba(237, 29, 36, 0.35), 0 4px 20px rgba(237, 29, 36, 0.35) !important;
+}
+
+.mf1-mobile-dock__tab.is-active .mf1-mobile-dock__pip {
+  background: #ED1D24 !important;
+  box-shadow: 0 0 8px rgba(237, 29, 36, 0.6) !important;
+}
+
+/* ─── JarvisAssistant button polish ──────────────────── */
+.app:not(:has(.admin-shell)) [class*="jarvis"],
+.app:not(:has(.admin-shell)) [class*="assistant-btn"] {
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+/* ─── Loading screen polish ──────────────────────────── */
+.app:not(:has(.admin-shell)) [class*="loading-screen"] {
+  background: #05050A !important;
+}
+
+/* ─── Selection color ─────────────────────────────────── */
+.app:not(:has(.admin-shell)) ::selection {
+  background: rgba(237, 29, 36, 0.3);
+  color: #fff;
+}
+
+/* ─── Scrollbar styling ───────────────────────────────── */
+.app:not(:has(.admin-shell)) ::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.app:not(:has(.admin-shell)) ::-webkit-scrollbar-track {
+  background: rgba(5, 5, 10, 0.8);
+}
+
+.app:not(:has(.admin-shell)) ::-webkit-scrollbar-thumb {
+  background: rgba(237, 29, 36, 0.4);
+  border-radius: 999px;
+}
+
+.app:not(:has(.admin-shell)) ::-webkit-scrollbar-thumb:hover {
+  background: rgba(237, 29, 36, 0.7);
+}
+
+/* ─── Toast/notification improvements ────────────────── */
+.app:not(:has(.admin-shell)) [class*="toast"],
+.app:not(:has(.admin-shell)) [class*="notification"] {
+  border-radius: 12px !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+/* ─── Gallery page improvements ──────────────────────── */
+.app:not(:has(.admin-shell)) .gallery-item,
+.app:not(:has(.admin-shell)) [class*="gallery-card"] {
+  border-radius: 12px !important;
+  overflow: hidden;
+  transition: transform 0.25s ease !important;
+}
+
+.app:not(:has(.admin-shell)) .gallery-item:hover,
+.app:not(:has(.admin-shell)) [class*="gallery-card"]:hover {
+  transform: scale(1.02) !important;
+}
+
+/* ─── Improved form inputs ────────────────────────────── */
+.app:not(:has(.admin-shell)) input:not([type="radio"]):not([type="checkbox"]):not([type="range"]),
+.app:not(:has(.admin-shell)) select,
+.app:not(:has(.admin-shell)) textarea {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.app:not(:has(.admin-shell)) input:not([type="radio"]):not([type="checkbox"]):not([type="range"]):focus,
+.app:not(:has(.admin-shell)) select:focus,
+.app:not(:has(.admin-shell)) textarea:focus {
+  border-color: rgba(237, 29, 36, 0.6) !important;
+  box-shadow: 0 0 0 2px rgba(237, 29, 36, 0.15) !important;
+  outline: none !important;
+}
+
+/* ─── Announcements page ─────────────────────────────── */
+.app:not(:has(.admin-shell)) .announcement-card,
+.app:not(:has(.admin-shell)) [class*="announcement"] {
+  border-radius: 14px !important;
+}
+
+/* ─── Sponsors section ───────────────────────────────── */
+.app:not(:has(.admin-shell)) .sponsor-logo,
+.app:not(:has(.admin-shell)) [class*="sponsor-item"] {
+  transition: transform 0.2s ease, filter 0.2s ease !important;
+}
+
+.app:not(:has(.admin-shell)) .sponsor-logo:hover,
+.app:not(:has(.admin-shell)) [class*="sponsor-item"]:hover {
+  transform: scale(1.05) !important;
+  filter: brightness(1.1) !important;
+}
+
+/* ─── About/History page improvements ────────────────── */
+.app:not(:has(.admin-shell)) .about-section,
+.app:not(:has(.admin-shell)) .history-section {
+  border-radius: 16px !important;
+}
+
+/* ─── Improved error/empty states ────────────────────── */
+.app:not(:has(.admin-shell)) .empty-state,
+.app:not(:has(.admin-shell)) .error-state {
+  background: rgba(10, 13, 24, 0.5) !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* ─── Nav brand text show on wider screens ────────────── */
+@media (min-width: 1221px) {
+  .mf-nav-brand-text {
+    display: flex !important;
+  }
+}

@@ -1,0 +1,79 @@
+/**
+ * MacFiesta cinematic design tokens — Multiverse Championship UI.
+ * Prefer these over hard-coded colors in new cinematic styles.
+ */
+
+:root {
+  --mf-red: #ed1d24;
+  --mf-red-bright: #ff2a33;
+  --mf-red-dark: #8f1018;
+  --mf-cyan: #00d4ff;
+  --mf-cyan-dim: #00a3c7;
+  --mf-gold: #f0c14b;
+  --mf-gold-light: #ffe08a;
+  --mf-ink: #0a1020;
+  --mf-ink-elevated: #121a2e;
+  --mf-surface: #161f35;
+  --mf-glass: rgba(16, 24, 42, 0.72);
+  --mf-glass-strong: rgba(12, 18, 32, 0.88);
+  --mf-border: rgba(0, 212, 255, 0.28);
+  --mf-border-red: rgba(237, 29, 36, 0.45);
+  --mf-border-gold: rgba(240, 193, 75, 0.45);
+  --mf-glow-red: 0 0 28px rgba(237, 29, 36, 0.45);
+  --mf-glow-cyan: 0 0 28px rgba(0, 212, 255, 0.4);
+  --mf-glow-gold: 0 0 22px rgba(240, 193, 75, 0.35);
+  --mf-text: #f5f7ff;
+  --mf-muted: rgba(230, 236, 255, 0.75);
+
+  --font-display: "Bebas Neue", Impact, sans-serif;
+  --font-hud: "Orbitron", "Rajdhani", sans-serif;
+  --font-body: "Rajdhani", "Source Sans 3", system-ui, sans-serif;
+
+  --mf-radius: 0.9rem;
+  --mf-radius-sm: 0.55rem;
+  --mf-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --mf-duration: 0.35s;
+
+  /* Professional design-system aliases (shared Day 1 / Day 2) */
+  --color-bg: var(--mf-ink);
+  --color-surface: var(--mf-surface);
+  --color-surface-alt: var(--mf-ink-elevated);
+  --color-text: var(--mf-text);
+  --color-muted: var(--mf-muted);
+  --color-accent: var(--mf-gold);
+  --color-accent-school: #ed1d24;
+  --color-accent-college: var(--mf-cyan);
+  --color-border: rgba(255, 255, 255, 0.1);
+  --color-success: #3ecf8e;
+  --color-warning: #e8c84a;
+  --color-danger: var(--mf-red);
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-8: 3rem;
+  --space-10: 4rem;
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --touch-min: 44px;
+
+  /* Bridge existing theme vars */
+  --hero-red: var(--mf-red);
+  --electric-blue: var(--mf-cyan);
+  --gold-400: var(--mf-gold-light);
+  --gold-500: var(--mf-gold);
+  --navy-950: var(--mf-ink);
+  --font-display: var(--mf-font-display);
+  --font-hud: var(--mf-font-hud);
+  --font-body: var(--mf-font-body);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --mf-duration: 0.01s;
+  }
+}

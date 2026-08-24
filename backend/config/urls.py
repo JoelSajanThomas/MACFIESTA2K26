@@ -4,14 +4,13 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.views.static import serve
 
-from rest_framework_simplejwt.views import TokenRefreshView
-
 from config.auth_views import (
     ChangePasswordView,
     PasswordResetConfirmView,
     PasswordResetRequestView,
     SignupView,
     ThrottledTokenObtainPairView,
+    ThrottledTokenRefreshView,
 )
 
 
@@ -42,7 +41,7 @@ urlpatterns = [
     path('api/', include('api_urls')),
 
     path('api/auth/login/', ThrottledTokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/auth/refresh/', ThrottledTokenRefreshView.as_view(), name='token_refresh'),
     path('api/auth/register/', SignupView.as_view(), name='auth_register'),
     path('api/auth/password-reset/', PasswordResetRequestView.as_view(), name='password_reset'),
     path(

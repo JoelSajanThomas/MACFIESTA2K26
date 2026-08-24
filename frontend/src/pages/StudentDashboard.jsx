@@ -2,10 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import PageHeader from "../components/PageHeader";
+import StatusChip from "../components/theme/StatusChip";
 import LoadingState from "../components/ui/LoadingState";
 import ErrorState from "../components/ui/ErrorState";
 import EmptyState from "../components/ui/EmptyState";
-import { getCurrentUser, getMyRegistrations, getEvents, isLoggedIn, cancelRegistration } from "../services/api";
+import PaymentProofPanel from "../components/PaymentProofPanel";
+import { getCurrentUser, getMyRegistrations, getEvents, getPublicFestConfig, isLoggedIn, cancelRegistration } from "../services/api";
+import { applyPublicFestConfig, MACFIESTA_PAYMENT } from "../utils/registrationFees";
 import { isUnauthorized, logout } from "../utils/auth";
 import { formatScheduleTime } from "../utils/scheduleUtils";
 import { EASE_PREMIUM, MOTION } from "../utils/animations";
@@ -24,6 +27,18 @@ export default function StudentDashboard() {
   const [error, setError] = useState("");
 
   const [busyId, setBusyId] = useState(null);
+  const [payment, setPayment] = useState(() => ({ ...MACFIESTA_PAYMENT }));
+  const [expandedPayId, setExpandedPayId] = useState(null);
+
+
+  useEffect(() => {
+    getPublicFestConfig()
+      .then((res) => {
+        applyPublicFestConfig(res.data);
+        setPayment({ ...MACFIESTA_PAYMENT });
+      })
+      .catch(() => {});
+  }, []);
 
   async function handleCancel(regId) {
     if (!window.confirm("Cancel this registration? If you were confirmed, the next waitlisted participant may be promoted.")) {
@@ -83,13 +98,13 @@ export default function StudentDashboard() {
 
   if (authState === "guest") {
     return (
-      <div className="student-dashboard">
-        <PageHeader eyebrow="My Fest" title="Student Dashboard" subtitle="View your event registrations." />
+      <div className="student-dashboard student-command-cinematic">
+        <PageHeader eyebrow="Hero Command Center" title="My Dashboard" subtitle="Registrations, passes, payment and verification status." />
         <section className="section page-content">
           <div className="container narrow">
             <EmptyState
               icon="🔐"
-              title="Login required"
+              title="Your clearance level does not permit access."
               message="Sign in to see your registered events and payment status."
               action={<Link to="/login" className="btn btn-gold">Login</Link>}
             />
@@ -110,21 +125,21 @@ export default function StudentDashboard() {
   return (
     <>
       <PageHeader
-        eyebrow="My Fest"
-        title="Student Dashboard"
-        subtitle={`Welcome back, ${user?.username}`}
+        eyebrow="Participant"
+        title="My Dashboard"
+        subtitle={`Welcome, ${user?.full_name || user?.email || "participant"} — registrations, QR pass, and status.`}
       />
-      <section className="section page-content student-dashboard">
+      <section className="section page-content student-dashboard student-command-cinematic">
         <div className="container">
-          <div className="student-dash-summary">
-            <div className="student-stat-card">
-              <span className="student-stat-value">{registrations.length}</span>
-              <span className="student-stat-label">Events Registered</span>
+          <div className="student-dash-summary stats-hud">
+            <div className="student-stat-card stats-hud__item">
+              <span className="student-stat-value stats-hud__value">{registrations.length}</span>
+              <span className="student-stat-label stats-hud__label">Events Registered</span>
             </div>
             <div className="student-user-card detail-panel">
               <h3>Account</h3>
               <dl className="detail-facts">
-                <div><dt>Username</dt><dd>{user?.username}</dd></div>
+                <div><dt>Name</dt><dd>{user?.full_name || "—"}</dd></div>
                 <div><dt>Email</dt><dd>{user?.email || "—"}</dd></div>
               </dl>
             </div>
@@ -135,8 +150,8 @@ export default function StudentDashboard() {
           {registrations.length === 0 ? (
             <EmptyState
               icon="📋"
-              title="No registrations yet"
-              message="Browse competitions and register for events you're interested in."
+              title="Your mission list is empty."
+              message="Explore events and register to begin your MacFiesta journey."
               action={<Link to="/events" className="btn btn-gold">Browse Events</Link>}
             />
           ) : (
@@ -154,12 +169,10 @@ export default function StudentDashboard() {
                   >
                     <div className="student-reg-head">
                       <h3>{reg.event_title || ev?.title}</h3>
-                      <span className={`dash-badge payment-${reg.payment_status}`}>
-                        {reg.payment_status}
-                      </span>
-                      {reg.is_waiting_list && (
-                        <span className="dash-badge payment-pending">waiting list</span>
-                      )}
+                      <StatusChip status={reg.payment_status} />
+                      {reg.is_waiting_list && <StatusChip status="waitlisted" />}
+                      {reg.attendance_marked && <StatusChip status="verified" label="Verified" />}
+                      {reg.approval_status === "cancelled" && <StatusChip status="cancelled" />}
                     </div>
                     <p className="student-reg-number">Reg #{reg.registration_number}</p>
                     <ul className="student-reg-meta">
@@ -168,12 +181,21 @@ export default function StudentDashboard() {
                       <li><strong>Venue</strong>{ev?.venue || "—"}</li>
                       <li><strong>Participant</strong>{reg.participant_name}</li>
                       {reg.approval_status && (
-                        <li><strong>Status</strong>{reg.approval_status}</li>
+                        <li><strong>Status</strong><StatusChip status={reg.approval_status} /></li>
                       )}
                     </ul>
                     <div className="student-reg-actions">
                       <Link to={detailPath} className="btn btn-card">View Event</Link>
-                      <Link to={`/pass/${reg.id}`} className="btn btn-card">Digital Pass / QR</Link>
+                      <Link to={`/pass/${reg.id}`} className="btn btn-gold">View Pass</Link>
+                      {reg.payment_status !== "paid" && reg.payment_status !== "waived" && Number(reg.payment_amount) > 0 && (
+                        <button
+                          type="button"
+                          className="btn btn-outline btn-sm"
+                          onClick={() => setExpandedPayId(expandedPayId === reg.id ? null : reg.id)}
+                        >
+                          {expandedPayId === reg.id ? "Hide payment" : "Pay / Upload proof"}
+                        </button>
+                      )}
                       {!reg.attendance_marked && reg.approval_status !== "cancelled" && (
                         <button
                           type="button"
@@ -185,6 +207,17 @@ export default function StudentDashboard() {
                         </button>
                       )}
                     </div>
+                    {expandedPayId === reg.id ? (
+                      <PaymentProofPanel
+                        registration={reg}
+                        payment={payment}
+                        onUpdated={(data) =>
+                          setRegistrations((prev) =>
+                            prev.map((r) => (r.id === reg.id ? { ...r, ...data } : r))
+                          )
+                        }
+                      />
+                    ) : null}
                   </motion.article>
                 );
               })}

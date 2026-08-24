@@ -9,22 +9,31 @@ import AdminFormLayout, {
 } from "../../components/admin/AdminFormLayout";
 import LoadingState from "../../components/ui/LoadingState";
 import { createEvent, getEvent, updateEvent, mediaUrl } from "../../services/api";
-import { EVENT_CATEGORY_OPTIONS, EVENT_STATUS_OPTIONS, parseApiError, slugify } from "../../utils/adminUtils";
+import {
+  EVENT_AUDIENCE_OPTIONS,
+  EVENT_CATEGORY_OPTIONS,
+  EVENT_STATUS_OPTIONS,
+  parseApiError,
+  slugify,
+} from "../../utils/adminUtils";
 
 const EMPTY = {
   title: "",
   slug: "",
   category: "general",
+  audience: "",
   department: "",
   description: "",
   rules: "",
   venue: "",
   event_date: "",
   event_time: "",
+  event_end_time: "",
   max_participants: 100,
   min_team_size: "",
   max_team_size: "",
   registration_fee: "0",
+  prize_pool: "",
   registration_deadline: "",
   coordinator_name: "",
   coordinator_phone: "",
@@ -60,16 +69,19 @@ export default function AdminEventForm() {
           title: e.title,
           slug: e.slug,
           category: e.category,
+          audience: e.audience || "",
           department: e.department || "",
           description: e.description,
           rules: e.rules || "",
-          venue: e.venue,
+          venue: e.venue || "",
           event_date: e.event_date,
           event_time: e.event_time?.slice(0, 5) || "",
+          event_end_time: e.event_end_time?.slice(0, 5) || "",
           max_participants: e.max_participants,
           min_team_size: e.min_team_size ?? "",
           max_team_size: e.max_team_size ?? "",
-          registration_fee: String(e.registration_fee),
+          registration_fee: String(e.registration_fee ?? "0"),
+          prize_pool: e.prize_pool != null && e.prize_pool !== "" ? String(e.prize_pool) : "",
           registration_deadline: e.registration_deadline ? e.registration_deadline.slice(0, 16) : "",
           coordinator_name: e.coordinator_name || "",
           coordinator_phone: e.coordinator_phone || "",
@@ -124,9 +136,12 @@ export default function AdminEventForm() {
     setError("");
     try {
       const hasFiles = imageFile || bannerFile || posterFile;
-      const payload = hasFiles ? new FormData() : { ...form };
+      const payload = hasFiles ? new FormData() : {};
       const data = {
         ...form,
+        event_time: form.event_time || null,
+        event_end_time: form.event_end_time || null,
+        prize_pool: form.prize_pool === "" ? null : form.prize_pool,
         min_team_size: form.min_team_size === "" ? null : Number(form.min_team_size),
         max_team_size: form.max_team_size === "" ? null : Number(form.max_team_size),
         registration_deadline: form.registration_deadline || null,
@@ -169,20 +184,31 @@ export default function AdminEventForm() {
         <FormInput label="Slug *" name="slug" value={form.slug} onChange={handleSlugChange} required />
         <div className="admin-form-row">
           <FormSelect label="Category *" name="category" value={form.category} onChange={handleChange} options={EVENT_CATEGORY_OPTIONS} />
-          <FormSelect label="Status" name="status" value={form.status} onChange={handleChange} options={EVENT_STATUS_OPTIONS} />
+          <FormSelect label="Audience (Day)" name="audience" value={form.audience} onChange={handleChange} options={EVENT_AUDIENCE_OPTIONS} />
         </div>
-        <FormInput label="Department" name="department" value={form.department} onChange={handleChange} />
+        <div className="admin-form-row">
+          <FormSelect label="Status" name="status" value={form.status} onChange={handleChange} options={EVENT_STATUS_OPTIONS} />
+          <FormInput
+            label="Zone / Classification"
+            name="department"
+            value={form.department}
+            onChange={handleChange}
+            placeholder="e.g. Tech Zone or Major Attraction"
+          />
+        </div>
         <FormTextarea label="Description *" name="description" value={form.description} onChange={handleChange} rows={4} required />
         <FormTextarea label="Rules" name="rules" value={form.rules} onChange={handleChange} rows={3} />
-        <FormInput label="Venue *" name="venue" value={form.venue} onChange={handleChange} required />
+        <FormInput label="Venue" name="venue" value={form.venue} onChange={handleChange} placeholder="TBD if unknown" />
         <div className="admin-form-row">
           <FormInput label="Date *" type="date" name="event_date" value={form.event_date} onChange={handleChange} required />
-          <FormInput label="Time *" type="time" name="event_time" value={form.event_time} onChange={handleChange} required />
+          <FormInput label="Start time" type="time" name="event_time" value={form.event_time} onChange={handleChange} />
+          <FormInput label="End time" type="time" name="event_end_time" value={form.event_end_time} onChange={handleChange} />
         </div>
         <FormInput label="Registration deadline" type="datetime-local" name="registration_deadline" value={form.registration_deadline} onChange={handleChange} />
         <div className="admin-form-row">
           <FormInput label="Max participants *" type="number" name="max_participants" value={form.max_participants} onChange={handleChange} min={1} required />
           <FormInput label="Registration fee (₹) *" type="number" step="0.01" name="registration_fee" value={form.registration_fee} onChange={handleChange} required />
+          <FormInput label="Prize pool (₹)" type="number" step="0.01" name="prize_pool" value={form.prize_pool} onChange={handleChange} placeholder="Leave blank if TBD" />
         </div>
         <div className="admin-form-row">
           <FormInput label="Min team size" type="number" name="min_team_size" value={form.min_team_size} onChange={handleChange} min={1} />

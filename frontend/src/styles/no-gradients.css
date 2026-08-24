@@ -1,0 +1,245 @@
+/**
+ * Public site: solid colors only — no gradient fills / gradient text.
+ * Loaded after theme sheets; does not touch .admin-shell.
+ */
+
+.app:not(:has(.admin-shell)),
+.app:not(:has(.admin-shell)):has(.home-page--frame-bg) {
+  background: #070b14 !important;
+  background-image: none !important;
+}
+
+.app:not(:has(.admin-shell)) .main-content,
+.app:not(:has(.admin-shell)):has(.home-page--frame-bg) .main-content {
+  background: transparent !important;
+  background-image: none !important;
+}
+
+.app:not(:has(.admin-shell)) .main-content::before {
+  display: none !important;
+}
+
+/* —— Kill multi-color / clipped text fills —— */
+.app:not(:has(.admin-shell)) .mf1-hero__title,
+.app:not(:has(.admin-shell)) .mf1-hero__edition,
+.app:not(:has(.admin-shell)) .mf1-shimmer-text,
+.app:not(:has(.admin-shell)) .mf1-gradient-text-plasma,
+.app:not(:has(.admin-shell)) .ux-section-head__title,
+.app:not(:has(.admin-shell)) .ux-section-head__title span,
+.app:not(:has(.admin-shell)) .mf1-section-title,
+.app:not(:has(.admin-shell)) .home-section-title,
+.app:not(:has(.admin-shell)) .page-header h1,
+.app:not(:has(.admin-shell)) .mf1-page-header__title,
+.app:not(:has(.admin-shell)) h1,
+.app:not(:has(.admin-shell)) h2,
+.app:not(:has(.admin-shell)) .title-championship,
+.app:not(:has(.admin-shell)) .prize-amount,
+.app:not(:has(.admin-shell)) .home-video-band__copy .home-section-title,
+.app:not(:has(.admin-shell)) .mf1-loading-brand,
+.app:not(:has(.admin-shell)) .mf1-loading-title,
+.app:not(:has(.admin-shell)) .pro-display,
+.app:not(:has(.admin-shell)) .typo-hero,
+.app:not(:has(.admin-shell)) .typo-display,
+.app:not(:has(.admin-shell)) .gradient-text,
+.app:not(:has(.admin-shell)) [class*="gradient-text"],
+.app:not(:has(.admin-shell)) [class*="shimmer-text"] {
+  background: none !important;
+  background-image: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: unset !important;
+  color: #f5f7fb !important;
+  animation: none !important;
+  filter: none !important;
+  text-shadow: none !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-hero__edition,
+.app:not(:has(.admin-shell)) .mf1-gradient-text-plasma,
+.app:not(:has(.admin-shell)) .ux-section-head__title span {
+  color: #00d4ff !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-shimmer-text {
+  color: #f5f7fb !important;
+}
+
+.app:not(:has(.admin-shell)) .mf-theme-split__marvel {
+  color: #ed1d24 !important;
+  -webkit-text-fill-color: #ed1d24 !important;
+  text-shadow: none !important;
+  background: none !important;
+}
+
+.app:not(:has(.admin-shell)) .mf-theme-split__dc {
+  color: #00d4ff !important;
+  -webkit-text-fill-color: #00d4ff !important;
+  text-shadow: none !important;
+  background: none !important;
+}
+
+.app:not(:has(.admin-shell)) .mf-theme-split__x {
+  color: #f0c14b !important;
+  -webkit-text-fill-color: #f0c14b !important;
+  text-shadow: none !important;
+  background: none !important;
+}
+
+.app:not(:has(.admin-shell)) .mf-theme-split__tag {
+  color: rgba(245, 247, 255, 0.9) !important;
+  text-shadow: none !important;
+}
+
+/* —— Buttons / CTAs: solid only —— */
+.app:not(:has(.admin-shell)) .btn-gold,
+.app:not(:has(.admin-shell)) .btn.btn-gold,
+.app:not(:has(.admin-shell)) .mf1-btn--urgency,
+.app:not(:has(.admin-shell)) .pro-nav__btn--primary,
+.app:not(:has(.admin-shell)) .ux-btn-primary,
+.app:not(:has(.admin-shell)) .btn-primary,
+.app:not(:has(.admin-shell)) .mf1-btn--primary {
+  background: #ed1d24 !important;
+  background-image: none !important;
+  color: #fff !important;
+  box-shadow: none !important;
+  border-color: #ed1d24 !important;
+}
+
+.app:not(:has(.admin-shell)) .btn-gold:hover,
+.app:not(:has(.admin-shell)) .mf1-btn--urgency:hover,
+.app:not(:has(.admin-shell)) .pro-nav__btn--primary:hover,
+.app:not(:has(.admin-shell)) .btn-primary:hover {
+  background: #c41820 !important;
+  background-image: none !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-btn--outline,
+.app:not(:has(.admin-shell)) .btn-outline,
+.app:not(:has(.admin-shell)) .btn.btn-outline,
+.app:not(:has(.admin-shell)) .pro-nav__btn--outline {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+/* —— Section / card surfaces: no wash gradients —— */
+.app:not(:has(.admin-shell)) .home-page > .section,
+.app:not(:has(.admin-shell)) .home-page > section:not(.mf1-hero):not(.ref-hero),
+.app:not(:has(.admin-shell)) .home-page .home-universe-section,
+.app:not(:has(.admin-shell)) .home-page .section.home-welcome,
+.app:not(:has(.admin-shell)) .home-page--frame-bg .mf1-zip-section,
+.app:not(:has(.admin-shell)) .home-page--frame-bg .home-universe-section,
+.app:not(:has(.admin-shell)) .home-page--frame-bg .home-welcome,
+.app:not(:has(.admin-shell)) .home-page--frame-bg .section {
+  background: rgba(7, 11, 20, 0.28) !important;
+  background-image: none !important;
+  backdrop-filter: none !important;
+}
+
+.app:not(:has(.admin-shell)) .site-footer-pro,
+.app:not(:has(.admin-shell)) .site-footer-simple,
+.app:not(:has(.admin-shell)) footer.site-footer-pro {
+  background: #080a10 !important;
+  background-image: none !important;
+}
+
+.app:not(:has(.admin-shell)) .detail-panel,
+.app:not(:has(.admin-shell)) .auth-card,
+.app:not(:has(.admin-shell)) .login-form-premium,
+.app:not(:has(.admin-shell)) .mf1-auth-card,
+.app:not(:has(.admin-shell)) .home-type-tile,
+.app:not(:has(.admin-shell)) .home-type-tile__body,
+.app:not(:has(.admin-shell)) .ux-day-card,
+.app:not(:has(.admin-shell)) .mf1-stark-panel {
+  background-image: none !important;
+}
+
+.app:not(:has(.admin-shell)) .home-type-tile,
+.app:not(:has(.admin-shell)) .home-type-tile__body {
+  background: #0c101a !important;
+}
+
+/* —— Hero / frame overlays: no color washes —— */
+.app:not(:has(.admin-shell)) .mf1-frame-bg__orbs,
+.app:not(:has(.admin-shell)) .mf1-hero__glow,
+.app:not(:has(.admin-shell)) .mf1-hero__glow--red,
+.app:not(:has(.admin-shell)) .mf1-hero__glow--cyan {
+  display: none !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-frame-bg__veil,
+.app:not(:has(.admin-shell)) .home-page--frame-bg .mf1-hero__veil,
+.app:not(:has(.admin-shell)) .home-page--frame-bg .ref-hero__veil,
+.app:not(:has(.admin-shell)) .home-page--frame-bg .mf1-hero .mf-hero-layer--deep {
+  background: rgba(7, 11, 20, 0.22) !important;
+  background-image: none !important;
+  opacity: 1 !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-frame-bg {
+  background: #070b14 !important;
+  background-image: none !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-section-divider,
+.app:not(:has(.admin-shell)) .mf1-scroll-progress,
+.app:not(:has(.admin-shell)) .mf1-loading-bar,
+.app:not(:has(.admin-shell)) .mf1-loading-progress,
+.app:not(:has(.admin-shell)) [class*="progress-bar"],
+.app:not(:has(.admin-shell)) [class*="section-divider"] {
+  background: #ed1d24 !important;
+  background-image: none !important;
+  animation: none !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-section-badge,
+.app:not(:has(.admin-shell)) .ux-section-head__eyebrow,
+.app:not(:has(.admin-shell)) .mf1-hero__badge {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.app:not(:has(.admin-shell)) .pro-navbar,
+.app:not(:has(.admin-shell)) .site-navbar.pro-navbar,
+.app:not(:has(.admin-shell)) .site-navbar.pro-navbar.is-transparent,
+.app:not(:has(.admin-shell)) .site-navbar.pro-navbar.is-scrolled {
+  background: rgba(8, 10, 18, 0.92) !important;
+  background-image: none !important;
+  box-shadow: none !important;
+}
+
+.app:not(:has(.admin-shell)) .ux-day-card__veil,
+.app:not(:has(.admin-shell)) .home-video-band__veil,
+.app:not(:has(.admin-shell)) .mf1-zip-section__veil {
+  background: rgba(7, 11, 20, 0.35) !important;
+  background-image: none !important;
+}
+
+.app:not(:has(.admin-shell)) .home-type-tile__media::after,
+.app:not(:has(.admin-shell)) .ux-day-card__media::after,
+.app:not(:has(.admin-shell)) .home-video-band::before,
+.app:not(:has(.admin-shell)) .home-video-band::after {
+  background: rgba(12, 16, 26, 0.55) !important;
+  background-image: none !important;
+}
+
+/* Pass / auth / misc panels */
+.app:not(:has(.admin-shell)) .page-header,
+.app:not(:has(.admin-shell)) .mf1-page-header,
+.app:not(:has(.admin-shell)) .ref-hero,
+.app:not(:has(.admin-shell)) .mf1-hero {
+  background-image: none !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-mobile-dock__pass,
+.app:not(:has(.admin-shell)) .mf1-mobile-dock__pass-ring {
+  background: #ed1d24 !important;
+  background-image: none !important;
+}
+
+/* Loading screen accents */
+.app:not(:has(.admin-shell)) .mf1-loading-shine,
+.app:not(:has(.admin-shell)) .mf1-loading-glow {
+  display: none !important;
+}

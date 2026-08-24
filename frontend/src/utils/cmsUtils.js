@@ -9,10 +9,8 @@ import {
   REWIND_HIGHLIGHTS,
   TESTIMONIALS,
   FAQ_ITEMS,
-  SPONSORS,
-  SPONSOR_TIERS,
 } from "./constants";
-import { heroImage, aboutImage, themeImage } from "./assets";
+import { heroImage, themeImage } from "./assets";
 
 const CATEGORY_COLORS = [
   "#5b7cfa", "#e07a5f", "#2ec4b6", "#e879a9", "#9b8afb",
@@ -33,7 +31,7 @@ export function resolveSiteSettings(apiList = []) {
       college_name: BRAND.collegeName,
       hero_title: BRAND.festNameUpper,
       hero_subtitle: BRAND.subtitle,
-      hero_description: "Three days of national-level competitions, cultural showcases, and campus energy at MACFAST, Thiruvalla.",
+      hero_description: "Two days of national-level competitions, cultural showcases, and campus energy at MACFAST, Thiruvalla.",
       fest_date: FEST_DATE.toISOString().slice(0, 10),
       venue: BRAND.venue,
       location: BRAND.location,
@@ -44,9 +42,10 @@ export function resolveSiteSettings(apiList = []) {
       youtube_url: BRAND.socialLinks.youtube,
       facebook_url: BRAND.socialLinks.facebook,
       hero_image_url: heroImage,
-      about_image_url: aboutImage,
-      about_title: "Three days. One campus. Every arena.",
-      about_body: "Macfiesta brings together student teams from across India for tech battles, cultural nights, and main-stage performances — hosted at Mar Athanasios College for Advanced Studies, Thiruvalla.",
+      about_image_url: BRAND.logo.src,
+      about_title: "Two days. One campus. Every arena.",
+      about_body:
+        "MacFiesta 2026 brings together students from schools and colleges across India for two days of competitions, creativity, technology, culture, gaming, and entertainment at MACFAST, Thiruvalla.",
       logo_image_url: BRAND.logo.mark,
       terms_body: "",
       privacy_body: "",
@@ -55,7 +54,7 @@ export function resolveSiteSettings(apiList = []) {
   return {
     ...s,
     hero_image_url: mediaUrl(s.hero_image) || heroImage,
-    about_image_url: mediaUrl(s.about_image) || aboutImage,
+    about_image_url: mediaUrl(s.about_image) || BRAND.logo.src,
     logo_image_url: mediaUrl(s.logo_image) || BRAND.logo.mark,
     terms_body: s.terms_body || "",
     privacy_body: s.privacy_body || "",
@@ -119,7 +118,7 @@ export function resolveGuestProfiles(items = []) {
     bio: g.description,
     description: g.description,
     image: mediaUrl(g.image) || GUEST_PROFILES[0]?.image,
-    alt: g.name ? `${g.name} — Macfiesta guest` : GUEST_PROFILES[0]?.alt,
+    alt: g.name ? `${g.name} at MacFiesta 2026` : GUEST_PROFILES[0]?.alt,
   }));
 }
 
@@ -151,32 +150,45 @@ export function resolveFaqs(items = []) {
 
 export function resolveSponsors(items = []) {
   const active = items.filter((s) => s.is_active !== false);
-  if (!active.length) return SPONSORS.map((s) => ({ name: s.name, tier: s.tier, sponsor_type: s.tier, logo: s.logo, alt: s.alt }));
+  // Never invent public sponsors from frontend placeholders.
+  if (!active.length) return [];
   return active.map((s) => ({
     id: s.id,
     name: s.name,
     tier: s.sponsor_type,
     sponsor_type: s.sponsor_type,
     logo: mediaUrl(s.logo),
-    alt: s.name ? `${s.name} sponsor logo` : undefined,
+    alt: s.name ? `${s.name} logo` : undefined,
     website: s.website,
+    is_active: s.is_active !== false,
   }));
 }
 
 export function resolveSponsorTiers(items = []) {
-  const sponsors = resolveSponsors(items);
-  if (!items.length) return SPONSOR_TIERS;
+  const sponsors = resolveSponsors(items).filter((s) => {
+    const name = String(s.name || "").trim().toLowerCase();
+    if (!name) return false;
+    return ![
+      "campus partner",
+      "tech sponsor",
+      "cultural partner",
+      "media house",
+      "student council",
+      "event partner",
+    ].includes(name);
+  });
+  if (!sponsors.length) return [];
   const groups = {};
   sponsors.forEach((s) => {
     const key = s.sponsor_type || "Partner";
     if (!groups[key]) groups[key] = [];
-    groups[key].push({ name: s.name, tag: s.sponsor_type, logo: s.logo, alt: s.alt || `${s.name} sponsor logo` });
+    groups[key].push({ name: s.name, tag: s.sponsor_type, logo: s.logo, alt: s.alt || `${s.name} logo` });
   });
   const order = ["Host", "Title", "Gold", "Silver", "Partner", "Media"];
   return order
     .filter((k) => groups[k]?.length)
     .map((k) => ({
-      title: `${k} Sponsors`,
+      title: k === "Host" ? "Presented By" : `${k} Sponsors`,
       size: k === "Host" || k === "Title" ? "large" : "default",
       sponsors: groups[k],
     }));
@@ -210,6 +222,6 @@ export function resolveFestRewind(items = []) {
   return active.map((i) => ({
     title: i.title,
     image: mediaUrl(i.image) || REWIND_HIGHLIGHTS[0]?.image,
-    alt: i.title ? `${i.title} — Macfiesta rewind` : REWIND_HIGHLIGHTS[0]?.alt,
+    alt: i.title || REWIND_HIGHLIGHTS[0]?.alt,
   }));
 }

@@ -4,6 +4,7 @@ import ConfirmDialog from "../../components/admin/ConfirmDialog";
 import LoadingState from "../../components/ui/LoadingState";
 import ErrorState from "../../components/ui/ErrorState";
 import { deleteGalleryImage, getGallery, mediaUrl } from "../../services/api";
+import { getGalleryItems, deleteGalleryItem as deleteStoreGalleryItem } from "../../lib/galleryStore";
 
 export default function AdminGalleryList() {
   const [items, setItems] = useState([]);
@@ -13,19 +14,66 @@ export default function AdminGalleryList() {
 
   function load() {
     setLoading(true);
+    setError("");
+
     getGallery()
-      .then((res) => setItems(res.data))
-      .catch(() => setError("Could not load gallery."))
+      .then((res) => {
+        const backendItems = (res.data || []).map((b) => ({
+          id: b.id,
+          title: b.title,
+          image: mediaUrl(b.image) || "/logo.png",
+          type: "image",
+          category: "general",
+        }));
+
+        const storeItems = getGalleryItems().map((s) => ({
+          id: s.id,
+          title: s.title,
+          image: s.thumbnailUrl || s.url,
+          type: s.type || "image",
+          category: s.category || "general",
+        }));
+
+        // Merge without duplicates
+        const combined = [...backendItems];
+        storeItems.forEach((s) => {
+          if (!combined.some((c) => String(c.id) === String(s.id))) {
+            combined.push(s);
+          }
+        });
+
+        setItems(combined);
+      })
+      .catch(() => {
+        // Fallback to local gallery store items
+        const storeItems = getGalleryItems().map((s) => ({
+          id: s.id,
+          title: s.title,
+          image: s.thumbnailUrl || s.url,
+          type: s.type || "image",
+          category: s.category || "general",
+        }));
+        setItems(storeItems);
+      })
       .finally(() => setLoading(false));
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+  }, []);
 
   async function handleDelete() {
     if (!deleteId) return;
     try {
-      await deleteGalleryImage(deleteId);
-      setItems((prev) => prev.filter((i) => i.id !== deleteId));
+      if (!isNaN(Number(deleteId))) {
+        try {
+          await deleteGalleryImage(deleteId);
+        } catch (apiErr) {
+          console.warn("Backend delete API warning:", apiErr);
+        }
+      }
+      deleteStoreGalleryItem(String(deleteId));
+      setItems((prev) => prev.filter((i) => String(i.id) !== String(deleteId)));
       setDeleteId(null);
     } catch {
       setError("Could not delete image.");
@@ -35,8 +83,11 @@ export default function AdminGalleryList() {
   return (
     <div className="admin-list-page">
       <div className="admin-list-head">
-        <h2>Manage Gallery</h2>
-        <Link to="/admin/gallery/new" className="btn btn-gold btn-sm">Add Image</Link>
+        <div>
+          <h2>Manage Visual Archives &amp; Gallery</h2>
+          <p className="text-xs text-white/50">Upload images, highlights, and reels for the public gallery.</p>
+        </div>
+        <Link to="/admin/gallery/new" className="btn btn-gold btn-sm">+ Add Image / Video</Link>
       </div>
 
       {loading && <LoadingState message="Loading gallery…" />}
@@ -46,21 +97,43 @@ export default function AdminGalleryList() {
         <div className="admin-gallery-grid">
           {items.map((item) => (
             <article key={item.id} className="admin-gallery-card detail-panel">
-              <img src={mediaUrl(item.image)} alt={item.title} loading="lazy" />
-              <div className="admin-gallery-card-body">
-                <strong>{item.title}</strong>
-                <div className="admin-actions-cell">
-                  <Link to={`/admin/gallery/${item.id}/edit`} className="btn btn-card btn-sm">Edit</Link>
+              <div className="relative w-full h-40 bg-black/40 overflow-hidden flex items-center justify-center">
+                <img
+                  src={item.image}
+                  alt={item.title}
+                  loading="lazy"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.src = "/logo.png";
+                  }}
+                />
+                <span className="absolute top-2 right-2 px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-wider bg-black/70 border border-white/20 text-arc-cyan">
+                  {item.type}
+                </span>
+                <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider bg-black/70 text-white/80">
+                  {item.category}
+                </span>
+              </div>
+              <div className="admin-gallery-card-body p-3">
+                <strong className="text-sm truncate block">{item.title}</strong>
+                <div className="admin-actions-cell mt-2 flex gap-2">
+                  <Link to={`/admin/gallery/${item.id}/edit`} className="btn btn-card btn-sm flex-1 text-center">Edit</Link>
                   <button type="button" className="btn btn-danger-outline btn-sm" onClick={() => setDeleteId(item.id)}>Delete</button>
                 </div>
               </div>
             </article>
           ))}
-          {items.length === 0 && <p className="admin-empty">No gallery images yet.</p>}
+          {items.length === 0 && <p className="admin-empty">No gallery images or videos yet.</p>}
         </div>
       )}
 
-      <ConfirmDialog open={Boolean(deleteId)} title="Delete image?" message="This will remove the image from the public gallery." onConfirm={handleDelete} onCancel={() => setDeleteId(null)} />
+      <ConfirmDialog
+        open={Boolean(deleteId)}
+        title="Delete gallery media?"
+        message="This will remove the media item from the public archives."
+        onConfirm={handleDelete}
+        onCancel={() => setDeleteId(null)}
+      />
     </div>
   );
 }

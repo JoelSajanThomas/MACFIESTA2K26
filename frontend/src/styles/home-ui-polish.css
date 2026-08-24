@@ -1,0 +1,428 @@
+/**
+ * Home UI polish — overrides stacked glass/padding and tightens classic sections.
+ * Load after ref-ui-theme / complete-ui / cinematic-ui.
+ */
+
+/* ── Strip full-bleed section “card” chrome on home ───────── */
+.home-page.home-classic > .section,
+.home-page.home-classic > .home-universe-section,
+.home-page.home-classic .home-welcome,
+.home-page.home-classic .home-types,
+.home-page.home-classic .home-guest,
+.home-page.home-classic .home-gallery,
+.home-page.home-classic .home-sponsors,
+.home-page.home-classic .home-rewind,
+.home-page.home-classic .home-energy,
+.home-page.home-classic .home-countdown-band,
+.home-page.home-classic .home-theme,
+.home-page.home-classic .comic-story,
+.home-page.home-classic .choose-universe,
+.home-page.home-classic .ref-media-band {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  border-radius: 0 !important;
+}
+
+/* Arena roster keeps its own cinematic environment */
+.home-page.home-classic .mvc-section {
+  background: #05050a !important;
+  border-block: 1px solid rgba(0, 212, 255, 0.12) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  border-radius: 0 !important;
+}
+
+.home-page.home-classic .home-universe-section {
+  padding: clamp(3.25rem, 7vw, 5rem) 0 !important;
+}
+
+.home-page.home-classic .section {
+  padding: clamp(3rem, 6.5vw, 4.75rem) 0;
+}
+
+/* Theme keeps cinematic frame, but not full glass slab */
+.home-page.home-classic .home-theme-marvel-dc {
+  margin-inline: auto;
+  width: min(1160px, calc(100% - 2rem));
+  border-radius: 1.1rem !important;
+  border: 1px solid rgba(0, 212, 255, 0.18) !important;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45) !important;
+  overflow: hidden;
+}
+
+/* ── Centered section headers ─────────────────────────────── */
+.home-page .section-badge,
+.home-page .home-section-badge {
+  display: flex !important;
+  width: fit-content;
+  margin: 0 auto 0.85rem;
+  justify-content: center;
+}
+
+.home-page .home-section-title {
+  margin: 0 0 0.85rem;
+  text-align: center;
+  font-size: clamp(1.85rem, 4.2vw, 2.75rem);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.home-page .home-section-sub {
+  max-width: 40rem;
+  margin: 0 auto 2rem !important;
+  text-align: center;
+  line-height: 1.55;
+  font-size: 0.98rem;
+}
+
+.home-page .home-section-title + .home-section-sub {
+  margin-top: 0 !important;
+}
+
+.home-sponsors .home-section-title::after {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ── Welcome ──────────────────────────────────────────────── */
+.home-welcome-classic .home-welcome-grid {
+  gap: clamp(1.75rem, 4vw, 3rem);
+  align-items: center;
+  margin-top: 1.5rem;
+}
+
+.home-welcome-classic .home-welcome-stack span {
+  letter-spacing: 0.04em;
+  line-height: 0.92;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #fff 20%, rgba(255, 255, 255, 0.72));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.home-welcome-classic .home-welcome-text {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: rgba(244, 246, 251, 0.78);
+  margin: 0 0 1.25rem;
+}
+
+.home-welcome-classic .home-welcome-image {
+  border-radius: 0.9rem;
+  overflow: hidden;
+  border: 1px solid rgba(0, 212, 255, 0.16);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+}
+
+.home-welcome-classic .home-welcome-image img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  object-fit: cover;
+}
+
+.home-welcome-classic .home-welcome-image--logo,
+.app:not(:has(.admin-shell)) .home-welcome-image--logo {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+.home-welcome-classic .home-welcome-image--logo img {
+  aspect-ratio: 1 / 1;
+  max-width: min(22rem, 100%);
+  margin-inline: auto;
+  object-fit: contain;
+}
+
+/* ── Energy strip ─────────────────────────────────────────── */
+.home-energy {
+  padding: clamp(2rem, 5vw, 3rem) 0 !important;
+  text-align: center;
+  background:
+    linear-gradient(90deg, transparent, rgba(237, 29, 36, 0.08), rgba(0, 212, 255, 0.08), transparent) !important;
+}
+
+.home-energy-line {
+  font-family: var(--mf-font-display, var(--font-display));
+  letter-spacing: 0.04em;
+}
+
+/* ── Event type cards ─────────────────────────────────────── */
+.home-page .home-types-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+  gap: 1rem !important;
+}
+
+.home-page .home-type-tile {
+  display: flex !important;
+  flex-direction: column;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  gap: 0.7rem;
+  min-height: 12.5rem !important;
+  padding: 1.35rem 1.2rem !important;
+  border-radius: 0.95rem !important;
+  background:
+    linear-gradient(165deg, rgba(18, 20, 32, 0.96), rgba(8, 10, 16, 0.94)) !important;
+  border: 1px solid rgba(0, 212, 255, 0.16) !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38) !important;
+  clip-path: none !important;
+  transform: none !important;
+}
+
+.home-page .home-type-tile:hover {
+  transform: translateY(-4px) !important;
+  border-color: rgba(212, 175, 55, 0.45) !important;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.45),
+    0 0 22px rgba(0, 212, 255, 0.12) !important;
+}
+
+.home-page .home-type-tile h3 {
+  margin: 0;
+  width: 100%;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.home-page .home-type-tile p {
+  flex: 1;
+  margin: 0;
+}
+
+.home-page .home-type-cta {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.25rem;
+}
+
+/* ── Guest profile ────────────────────────────────────────── */
+.home-page .legends-guest-grid {
+  max-width: 920px;
+  margin: 1.75rem auto 0;
+}
+
+.home-page .legends-guest-grid:not(.multi) .home-guest-card,
+.home-page .legends-guest-grid:not(.multi) .legends-guest-card {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) 1fr;
+  gap: clamp(1.5rem, 4vw, 2.5rem);
+  align-items: center;
+  max-width: none;
+  margin: 0;
+  padding: 1.15rem;
+  background:
+    linear-gradient(145deg, rgba(16, 18, 28, 0.9), rgba(8, 10, 16, 0.88)) !important;
+  border: 1px solid rgba(212, 175, 55, 0.28) !important;
+  border-radius: 1rem !important;
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42) !important;
+  overflow: hidden;
+}
+
+.home-page .legends-guest-grid.multi .home-guest-card,
+.home-page .legends-guest-grid.multi .legends-guest-card {
+  display: flex;
+  flex-direction: column;
+  max-width: none;
+  margin: 0;
+  padding: 0.9rem;
+  text-align: left;
+}
+
+.home-page .legends-guest-card::before {
+  opacity: 0.45;
+}
+
+.home-page .home-guest-photo {
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.35);
+}
+
+.home-page .home-guest-photo img {
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  object-position: center top;
+  display: block;
+}
+
+.home-page .home-guest-info {
+  padding: 0.25rem 0.15rem;
+}
+
+.home-page .home-guest-info h3 {
+  font-size: clamp(1.6rem, 3vw, 2.1rem);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.home-page .home-guest-role {
+  font-family: var(--mf-font-hud, var(--font-hud));
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+}
+
+/* ── Rewind ───────────────────────────────────────────────── */
+.home-page .home-rewind-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+
+.home-page .home-rewind-tile {
+  min-height: clamp(190px, 26vw, 260px);
+  border-radius: 0.85rem !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+.home-page .home-rewind-tile h3 {
+  font-family: var(--mf-font-hud, var(--font-hud));
+  font-size: 0.78rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* ── Sponsors ─────────────────────────────────────────────── */
+.home-page .home-sponsors {
+  background:
+    linear-gradient(180deg, rgba(8, 10, 18, 0.35), rgba(8, 10, 18, 0.65)) !important;
+}
+
+.home-page .home-sponsors-block + .home-sponsors-block {
+  margin-top: 2.75rem;
+}
+
+.home-page .home-sponsor-item {
+  background: rgba(12, 14, 22, 0.55) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  border-radius: 0.75rem !important;
+  box-shadow: none !important;
+  padding: 1rem 1.25rem;
+  display: grid;
+  place-items: center;
+  min-height: 5.5rem;
+  transition: border-color 0.25s ease, transform 0.25s ease, background 0.25s ease;
+}
+
+.home-page .home-sponsor-item:hover {
+  border-color: rgba(212, 175, 55, 0.35) !important;
+  transform: translateY(-2px);
+  background: rgba(16, 18, 28, 0.8) !important;
+}
+
+.home-page .home-sponsor-logo {
+  display: grid;
+  place-items: center;
+  min-height: 3.25rem;
+}
+
+.home-page .home-sponsor-logo img {
+  max-height: 3rem;
+  width: auto;
+  max-width: 9.5rem;
+  object-fit: contain;
+  filter: grayscale(0.35) brightness(1.05);
+}
+
+.home-page .home-sponsor-item:hover .home-sponsor-logo img {
+  filter: grayscale(0) brightness(1.08);
+}
+
+/* ── Gallery ──────────────────────────────────────────────── */
+.home-page .home-gallery .gallery-item {
+  border-radius: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.home-page .home-gallery .gallery-item img {
+  transition: transform 0.45s ease;
+}
+
+.home-page .home-gallery .gallery-item:hover img {
+  transform: scale(1.05);
+}
+
+/* ── Bottom countdown ─────────────────────────────────────── */
+.home-page .home-countdown-band {
+  padding: clamp(3rem, 7vw, 4.5rem) 0 !important;
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(237, 29, 36, 0.18), transparent 50%),
+    radial-gradient(ellipse at 50% 100%, rgba(0, 212, 255, 0.12), transparent 48%),
+    linear-gradient(180deg, rgba(5, 5, 10, 0.15), rgba(5, 5, 10, 0.92)) !important;
+  border-block: 1px solid rgba(0, 212, 255, 0.14) !important;
+}
+
+.home-page .home-countdown-band .hero-classic-countdown {
+  max-width: 36rem;
+  margin: 0 auto;
+  padding: 0;
+}
+
+.home-page .home-countdown-band .countdown-unit {
+  background: rgba(0, 212, 255, 0.06);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 0.65rem;
+  min-width: 4.1rem;
+  padding: 0.65rem 0.4rem;
+}
+
+/* ── Mobile ───────────────────────────────────────────────── */
+@media (max-width: 900px) {
+  .home-page .legends-guest-grid:not(.multi) .home-guest-card,
+  .home-page .legends-guest-grid:not(.multi) .legends-guest-card {
+    grid-template-columns: 1fr;
+    text-align: center;
+    padding: 1rem;
+  }
+
+  .home-page .home-guest-photo {
+    max-width: 260px;
+    margin: 0 auto;
+  }
+
+  .home-page .home-rewind-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .home-welcome-classic .home-welcome-stack {
+    text-align: center;
+  }
+}
+
+@media (max-width: 600px) {
+  .home-page .home-section-title,
+  .home-page .home-section-sub {
+    text-align: center !important;
+  }
+
+  .home-page .home-types-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .home-page .home-type-tile {
+    min-height: 10.5rem !important;
+  }
+
+  .home-page .home-countdown-band .countdown-unit {
+    min-width: 3.2rem;
+    padding: 0.5rem 0.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-page .home-type-tile:hover,
+  .home-page .home-sponsor-item:hover,
+  .home-page .home-gallery .gallery-item:hover img {
+    transform: none !important;
+  }
+}

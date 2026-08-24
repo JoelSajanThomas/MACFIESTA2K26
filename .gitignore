@@ -22,6 +22,7 @@ env/
 ENV/
 backend/venv/
 backend/.venv/
+backend/.venv_audit/
 
 # Django local/runtime artifacts
 *.sqlite3
@@ -42,6 +43,14 @@ frontend/dist/
 dist-ssr/
 .vite/
 *.tsbuildinfo
+
+# Capacitor / Android local builds
+frontend/android/app/build/
+frontend/android/.gradle/
+frontend/android/local.properties
+frontend/android/**/build/
+*.apk
+*.aab
 
 # -----------------------------
 # Environment / secrets
@@ -90,9 +99,27 @@ Desktop.ini
 $RECYCLE.BIN/
 
 # -----------------------------
-# Archives / binary certificates
+# Archives / reference extracts (not for production deploy)
 # -----------------------------
 *.pem
 *.key
 *.crt
 *.p12
+*.rar
+*.zip
+*.7z
+backup.tar
+backup.tar.gz
+*.tar.gz
+MACFIESTA.rar
+FRAMES.rar
+_inspect_old_backend/
+_ref_macfiesta/
+_ref_extract/
+frontend/public/assets/frames/
+events final list.pdf
+*.pdf
+!docs/**/*.pdf
+_design_ref_macfiesta1/
+_design_ref*/
+MACFIESTA1*.zip

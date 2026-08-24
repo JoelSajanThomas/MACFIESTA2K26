@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import PageHeader from "../components/PageHeader";
 import { changePassword, getCurrentUser, isLoggedIn } from "../services/api";
 import { PAGE_IMAGES } from "../utils/assets";
-import { defaultAdminPath } from "../utils/committeeAccess";
+import { defaultAdminPath, volunteerHomePath } from "../utils/committeeAccess";
 import { EASE_PREMIUM, MOTION } from "../utils/animations";
 
 function parseApiError(err) {
@@ -34,7 +34,7 @@ export default function ChangePassword() {
     return (
       <div className="container narrow page-content">
         <p>Login required.</p>
-        <Link to="/login" className="btn btn-gold">Login</Link>
+        <Link to="/login" className="btn btn-gold">Sign In</Link>
       </div>
     );
   }
@@ -53,7 +53,12 @@ export default function ChangePassword() {
       const userRes = await getCurrentUser();
       const user = userRes.data;
       if (user.is_staff || user.is_superuser) {
-        navigate(defaultAdminPath(user.modules));
+        const committee = user.is_superuser ? "core" : user.committee;
+        if (committee && committee !== "core") {
+          navigate(volunteerHomePath(committee, user.modules || []));
+        } else {
+          navigate(defaultAdminPath(user.modules || [], committee));
+        }
       } else {
         navigate("/student-dashboard");
       }

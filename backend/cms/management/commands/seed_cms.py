@@ -17,7 +17,7 @@ from cms.models import (
 HOMEPAGE_SECTIONS = [
     ("hero", "Hero", "", 1),
     ("live_updates", "Live Updates", "", 2),
-    ("about", "About MacFiesta", "Three days. One campus. Every arena.", 3),
+    ("about", "About MacFiesta", "Two days. One campus. Every arena.", 3),
     ("formats", "Event Formats", "Solo, duo, trio, squad, or group.", 4),
     ("highlights", "Festival Highlights", "The experiences that make every edition unforgettable.", 5),
     ("categories", "Event Categories", "Pick your arena — tech, culture, music, dance, gaming, and more.", 6),
@@ -59,25 +59,25 @@ class Command(BaseCommand):
         SiteSetting.objects.create(
             fest_name="MacFiesta",
             fest_year=2026,
-            tagline="Where Legends Rise",
+            tagline="Heroes Rise. Legends Compete.",
             college_name="MACFAST",
             hero_title="MACFIESTA",
-            hero_subtitle="National Inter-College Fest",
-            hero_description="A national-level celebration of technology, culture, creativity, and campus energy.",
+            hero_subtitle="Marvel × DC — Superhero Universe",
+            hero_description="A modern cinematic Marvel & DC fest — two universes, one ultimate celebration at MACFAST.",
             fest_date="2026-09-24",
             venue="MACFAST Campus, Thiruvalla",
             location="Pathanamthitta, Kerala, India",
             contact_email="fest@macfast.ac.in",
-            contact_phone="+91 98765 43210",
+            contact_phone="",
             official_website="https://macfiesta.macfast.org/",
             instagram_url="https://instagram.com/macfiesta",
             youtube_url="https://youtube.com/@macfiesta",
             facebook_url="https://facebook.com/macfiesta",
-            about_title="Three days. One campus. Every arena.",
+            about_title="Two days. One campus. Every arena.",
             about_body=(
-                "Macfiesta brings together student teams from across the country for competitions "
-                "at the tech arena, cultural halls, and main stage — coordinated by fest volunteers "
-                "and event coordinators."
+                "MacFiesta 2026 brings together students from schools and colleges across India "
+                "for two days of competitions, creativity, technology, culture, gaming, and "
+                "entertainment at MACFAST, Thiruvalla."
             ),
         )
         self.stdout.write("Created site settings.")
@@ -125,10 +125,10 @@ class Command(BaseCommand):
             return
         ThemeSection.objects.create(
             eyebrow="This year's theme",
-            title="Campus Carnival",
+            title="Marvel × DC",
             description=(
-                "Three days of competitions across the tech arena, cultural halls, main stage, "
-                "and open-air venues — coordinated by student teams and event coordinators across MACFAST."
+                "Two days of competition, creativity, technology, culture, and entertainment "
+                "come together at MACFAST as students rise to take on the MacFiesta arena."
             ),
         )
         self.stdout.write("Created theme section.")
@@ -137,11 +137,11 @@ class Command(BaseCommand):
         if GuestProfile.objects.exists():
             return
         GuestProfile.objects.create(
-            name="Akhil Marar",
-            role="Director & Writer",
+            name="Sayip OP",
+            role="Kerala Gamer | Eagle Gaming",
             description=(
-                "Guest session with the Bigg Boss Malayalam Season 5 winner — "
-                "an open conversation on cinema, storytelling, and campus life."
+                "BGMI streamer and Kerala gaming creator — joining MacFiesta 2026 for an "
+                "Eagle Gaming guest session packed with gameplay energy and fan interaction."
             ),
             order=0,
         )
@@ -176,9 +176,9 @@ class Command(BaseCommand):
     def _seed_sponsors(self):
         if Sponsor.objects.exists():
             return
+        # Host institution only — do not seed placeholder partner names for public display.
         items = [
-            ("MACFAST", "Host"), ("Campus Partner", "Title"), ("Tech Sponsor", "Gold"),
-            ("Cultural Partner", "Gold"), ("Media House", "Silver"), ("Student Council", "Partner"),
+            ("MACFAST", "Host"),
         ]
         for i, (name, stype) in enumerate(items):
             Sponsor.objects.create(name=name, sponsor_type=stype, order=i)

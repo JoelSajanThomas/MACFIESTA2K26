@@ -1,0 +1,1695 @@
+/**
+ * MACFIESTA1 public redesign — PUBLIC SITE ONLY.
+ * Does not restyle .admin-shell (admin / committee desks).
+ * Loaded before admin-simple-ui.css so ops UI stays Inter + simple.
+ */
+
+@font-face {
+  font-family: "Excon";
+  src: url("/Fonts/WEB/fonts/Excon-Thin.woff2") format("woff2");
+  font-weight: 100;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Excon";
+  src: url("/Fonts/WEB/fonts/Excon-Light.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Excon";
+  src: url("/Fonts/WEB/fonts/Excon-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Excon";
+  src: url("/Fonts/WEB/fonts/Excon-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Excon";
+  src: url("/Fonts/WEB/fonts/Excon-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Excon";
+  src: url("/Fonts/WEB/fonts/Excon-Black.woff2") format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+@keyframes mf1-text-shimmer {
+  to {
+    background-position: 200% center;
+  }
+}
+@keyframes mf1-pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(1.35);
+    opacity: 0;
+  }
+}
+@keyframes mf1-ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-33.333%);
+  }
+}
+@keyframes mf1-border-flow {
+  to {
+    background-position: 200% 0;
+  }
+}
+
+/* —— Tokens —— */
+.app:not(:has(.admin-shell)) {
+  --marvel-red: #ed1d24;
+  --marvel-red-bright: #ff2a33;
+  --marvel-red-dark: #8f1018;
+  --arc-cyan: #f0c14b;
+  --metallic-gold: #f0c14b;
+  --festival-dark: #05050a;
+  --font-display: "Bebas Neue", "Anton", Impact, sans-serif;
+  --font-heading: "Bebas Neue", "Anton", Impact, sans-serif;
+  --font-body: "Rajdhani", "Source Sans 3", system-ui, sans-serif;
+  --font-ui: "Rajdhani", "Source Sans 3", system-ui, sans-serif;
+  background: #0a0a0f;
+  color: #e8ecf4;
+  font-family: var(--font-body);
+}
+
+.app:not(:has(.admin-shell)) h1,
+.app:not(:has(.admin-shell)) h2,
+.app:not(:has(.admin-shell)) h3,
+.app:not(:has(.admin-shell)) .home-section-title,
+.app:not(:has(.admin-shell)) .section-title,
+.app:not(:has(.admin-shell)) .page-header h1 {
+  font-family: var(--font-display) !important;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+/* —— Scroll progress —— */
+.mf1-scroll-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  z-index: 120;
+  transform-origin: left center;
+  transform: scaleX(0);
+  background: linear-gradient(90deg, #ed1d24, #ff6b35, #f0c14b, #ffe08a);
+  background-size: 200% 100%;
+  animation: mf1-border-flow 3s linear infinite;
+  pointer-events: none;
+}
+
+.app:has(.admin-shell) .mf1-scroll-progress {
+  display: none !important;
+}
+
+/* —— Navbar (glass command bar) —— */
+.app:not(:has(.admin-shell)) .site-navbar.command-navbar {
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.88), transparent) !important;
+  border-bottom: 1px solid transparent !important;
+  backdrop-filter: none !important;
+  box-shadow: none !important;
+}
+
+.app:not(:has(.admin-shell)) .site-navbar.command-navbar.scrolled,
+.app:not(:has(.admin-shell)) .site-navbar.command-navbar:not(.transparent) {
+  background: rgba(10, 10, 16, 0.92) !important;
+  backdrop-filter: blur(18px) saturate(1.2) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(1.2) !important;
+  border-bottom: 1px solid rgba(0, 212, 255, 0.22) !important;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.65) !important;
+}
+
+.app:not(:has(.admin-shell)) .site-navbar .nav-link {
+  position: relative !important;
+  font-family: var(--font-ui) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.1em !important;
+  text-transform: uppercase !important;
+  font-size: 0.72rem !important;
+  color: rgba(240, 240, 240, 0.78) !important;
+}
+
+.app:not(:has(.admin-shell)) .site-navbar .nav-link:hover {
+  color: #fff !important;
+  text-shadow: 0 0 18px rgba(0, 212, 255, 0.35);
+}
+
+.app:not(:has(.admin-shell)) .site-navbar .nav-link.active {
+  color: #fff !important;
+  text-shadow: 0 0 18px rgba(0, 212, 255, 0.35);
+  background: rgba(237, 29, 36, 0.22);
+  border: 1px solid rgba(237, 29, 36, 0.45);
+  border-radius: 999px;
+  box-shadow: 0 0 18px rgba(237, 29, 36, 0.25);
+  padding-inline: 0.85rem;
+}
+
+.app:not(:has(.admin-shell)) .site-navbar .nav-link.active .nav-link-label::after {
+  content: none;
+  display: none;
+}
+
+.app:not(:has(.admin-shell)) .site-navbar .nav-link-sub {
+  color: rgba(0, 212, 255, 0.7) !important;
+  font-size: 0.58rem !important;
+  letter-spacing: 0.12em !important;
+}
+
+.app:not(:has(.admin-shell)) .nav-link-login,
+.app:not(:has(.admin-shell)) .nav-link-login-pin {
+  border: 1px solid rgba(0, 212, 255, 0.45) !important;
+  border-radius: 999px !important;
+  background: rgba(0, 212, 255, 0.08) !important;
+  padding: 0.45rem 1.1rem !important;
+  color: #fff !important;
+}
+
+.app:not(:has(.admin-shell)) .nav-link-login:hover {
+  background: rgba(0, 212, 255, 0.18) !important;
+  box-shadow: 0 0 24px rgba(0, 212, 255, 0.35) !important;
+}
+
+.app:not(:has(.admin-shell)) .navbar-logo .brand-logo-img,
+.app:not(:has(.admin-shell)) .brand-logo-img {
+  filter: drop-shadow(0 0 10px rgba(237, 29, 36, 0.55)) drop-shadow(0 0 16px rgba(0, 212, 255, 0.25));
+}
+
+.app:not(:has(.admin-shell)) .navbar-menu.open {
+  background: rgba(8, 8, 14, 0.97) !important;
+  border-left: 1px solid rgba(0, 212, 255, 0.25) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+/* =========================================================
+   HERO — MACFIESTA1 layout (overrides old centered collage UI)
+   ========================================================= */
+.app:not(:has(.admin-shell)) .mf1-hero.ref-hero {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: flex-end !important;
+  min-height: 100dvh !important;
+  height: auto !important;
+  max-height: none !important;
+  padding-top: calc(var(--nav-h, 4.5rem) + 0.5rem) !important;
+  padding-bottom: 0 !important;
+}
+
+/* Dim old float characters so layout reads clean like design ref */
+.app:not(:has(.admin-shell)) .mf1-hero .mf-hero-champ,
+.app:not(:has(.admin-shell)) .mf1-hero .ref-hero__float {
+  opacity: 0.22 !important;
+  filter: saturate(0.85) brightness(0.7) !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-hero .mf-hero-layer--frames {
+  opacity: 0.18 !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-hero .mf-hero-layer--glow-red {
+  background: radial-gradient(circle at 18% 40%, rgba(237, 29, 36, 0.35), transparent 55%) !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-hero .mf-hero-layer--glow-cyan {
+  background: radial-gradient(circle at 82% 35%, rgba(0, 212, 255, 0.28), transparent 55%) !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-hero .ref-hero__body,
+.app:not(:has(.admin-shell)) .mf1-hero .mf-hero-body {
+  display: none !important; /* legacy body if present */
+}
+
+.mf1-hero__body {
+  position: relative;
+  z-index: 4;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.25rem 1.25rem 1.5rem;
+  box-sizing: border-box;
+}
+
+.mf1-hero__grid {
+  display: grid;
+  grid-template-columns: 1.35fr 0.85fr;
+  gap: 2rem 2.5rem;
+  align-items: center;
+  width: 100%;
+}
+
+.mf1-hero__copy {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.55rem;
+}
+
+.mf1-hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin: 0;
+  padding: 0.4rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid rgba(237, 29, 36, 0.45);
+  background: rgba(237, 29, 36, 0.12);
+  color: #ff5a5f;
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  box-shadow: 0 0 22px rgba(237, 29, 36, 0.28);
+}
+
+.mf1-hero__badge-icon {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: #ed1d24;
+  box-shadow: 0 0 12px #ed1d24;
+  animation: mf1-pulse-ring 1.8s ease-out infinite;
+}
+
+.mf1-hero__welcome {
+  margin: 0.35rem 0 0;
+  color: #00d4ff;
+  font-family: var(--font-ui);
+  font-size: clamp(0.75rem, 1.6vw, 1.15rem);
+  font-weight: 800;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.mf1-hero__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  margin: 0;
+}
+
+.mf1-hero__title {
+  margin: 0 !important;
+  font-family: "Anton", "Excon", sans-serif !important;
+  font-size: clamp(2.8rem, 10vw, 7.2rem) !important;
+  font-weight: 400 !important;
+  line-height: 0.85 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
+  background: linear-gradient(
+    100deg,
+    #ff6b73 0%,
+    #ed1d24 16%,
+    #ffd666 34%,
+    #ffffff 50%,
+    #7be7ff 66%,
+    #00d4ff 82%,
+    #0476f2 100%
+  ) !important;
+  background-size: 220% auto !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  animation: mf1-text-shimmer 4.5s linear infinite;
+  filter:
+    drop-shadow(0 0 18px rgba(237, 29, 36, 0.35))
+    drop-shadow(0 0 20px rgba(0, 212, 255, 0.25));
+}
+
+.mf1-hero__edition {
+  font-family: "Anton", "Excon", sans-serif;
+  font-size: clamp(1.8rem, 6.5vw, 5.2rem);
+  line-height: 0.85;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  background: linear-gradient(135deg, #e0f7ff 0%, #00d4ff 30%, #ffffff 55%, #5ce1ff 75%, #0476f2 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: mf1-text-shimmer 3.6s linear infinite;
+  filter: drop-shadow(0 0 14px rgba(0, 212, 255, 0.5));
+}
+
+.mf1-hero__verse {
+  margin: 0.15rem 0 0 !important;
+  font-family: "Anton", "Excon", sans-serif !important;
+  font-size: clamp(1.05rem, 2.8vw, 2.1rem) !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+  color: #ed1d24 !important;
+  -webkit-text-fill-color: #ed1d24 !important;
+  background: none !important;
+}
+
+.mf1-hero__tagline {
+  margin: 0.35rem 0 0;
+  max-width: 34rem;
+  color: rgba(255, 255, 255, 0.88);
+  font-family: var(--font-ui);
+  font-size: clamp(0.9rem, 1.5vw, 1.15rem);
+  font-weight: 500;
+  line-height: 1.45;
+}
+
+.mf1-hero__meta {
+  margin: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.55rem;
+  color: rgba(192, 208, 220, 0.9);
+  font-family: var(--font-ui);
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.mf1-hero__meta-sep {
+  color: rgba(0, 212, 255, 0.55);
+}
+
+.mf1-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 0.85rem;
+  width: 100%;
+  max-width: 34rem;
+}
+
+.mf1-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 auto;
+  min-width: 8.5rem;
+  padding: 0.85rem 1.35rem;
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+}
+
+.mf1-btn--urgency {
+  position: relative;
+  overflow: visible;
+  color: #fff !important;
+  background: linear-gradient(135deg, #ed1d24, #ff6b35) !important;
+  border: 1px solid rgba(255, 107, 53, 0.45) !important;
+  box-shadow: 0 0 28px rgba(237, 29, 36, 0.5), 0 0 55px rgba(237, 29, 36, 0.2);
+}
+
+.mf1-btn--urgency::before,
+.mf1-btn--urgency::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
+  border-radius: 999px;
+  border: 2px solid rgba(237, 29, 36, 0.5);
+  animation: mf1-pulse-ring 1.8s ease-out infinite;
+  pointer-events: none;
+}
+
+.mf1-btn--urgency::after {
+  animation-delay: 0.55s;
+}
+
+.mf1-btn--urgency:hover {
+  transform: translateY(-3px) scale(1.03);
+  box-shadow: 0 0 42px rgba(237, 29, 36, 0.75), 0 0 80px rgba(237, 29, 36, 0.28);
+}
+
+.mf1-btn--outline {
+  color: #fff !important;
+  background: rgba(12, 16, 28, 0.72) !important;
+  border: 2px solid rgba(0, 212, 255, 0.45) !important;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+}
+
+.mf1-btn--outline:hover {
+  background: rgba(0, 212, 255, 0.14) !important;
+  border-color: #00d4ff !important;
+  box-shadow: 0 0 32px rgba(0, 212, 255, 0.4);
+  transform: translateY(-2px);
+}
+
+.mf1-btn--ghost {
+  color: rgba(255, 255, 255, 0.9) !important;
+  background: transparent !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+}
+
+.mf1-btn--ghost:hover {
+  border-color: rgba(212, 175, 55, 0.65) !important;
+  color: #e8c84a !important;
+  transform: translateY(-2px);
+}
+
+/* Stark HUD countdown */
+.mf1-hero__hud {
+  display: flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.mf1-stark-panel {
+  position: relative;
+  width: 100%;
+  max-width: 360px;
+  margin-left: auto;
+  padding: 1.15rem 1.2rem 1.25rem;
+  border-radius: 1.1rem;
+  background: rgba(8, 12, 22, 0.82);
+  border: 1px solid rgba(0, 212, 255, 0.28);
+  backdrop-filter: blur(14px);
+  box-shadow:
+    0 0 40px rgba(0, 0, 0, 0.75),
+    0 0 28px rgba(0, 212, 255, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+}
+
+.mf1-stark-corner {
+  position: absolute;
+  width: 0.85rem;
+  height: 0.85rem;
+  pointer-events: none;
+}
+.mf1-stark-corner--tl {
+  top: -1px;
+  left: -1px;
+  border-top: 2px solid rgba(0, 212, 255, 0.75);
+  border-left: 2px solid rgba(0, 212, 255, 0.75);
+  border-radius: 3px 0 0 0;
+}
+.mf1-stark-corner--tr {
+  top: -1px;
+  right: -1px;
+  border-top: 2px solid rgba(0, 212, 255, 0.75);
+  border-right: 2px solid rgba(0, 212, 255, 0.75);
+  border-radius: 0 3px 0 0;
+}
+.mf1-stark-corner--bl {
+  bottom: -1px;
+  left: -1px;
+  border-bottom: 2px solid rgba(237, 29, 36, 0.75);
+  border-left: 2px solid rgba(237, 29, 36, 0.75);
+  border-radius: 0 0 0 3px;
+}
+.mf1-stark-corner--br {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 2px solid rgba(237, 29, 36, 0.75);
+  border-right: 2px solid rgba(237, 29, 36, 0.75);
+  border-radius: 0 0 3px 0;
+}
+
+.mf1-stark-label {
+  margin: 0;
+  text-align: center;
+  color: #00d4ff;
+  font-family: "Orbitron", var(--font-ui), sans-serif;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+}
+
+.mf1-stark-motto {
+  margin: 0.35rem 0 0.85rem;
+  text-align: center;
+  color: #d4af37;
+  font-family: var(--font-ui);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.mf1-stark-countdown .countdown-eyebrow {
+  display: none !important;
+}
+
+.mf1-stark-countdown .countdown,
+.mf1-stark-countdown .countdown-wrap {
+  justify-content: center !important;
+  gap: 0.35rem !important;
+}
+
+.mf1-stark-countdown .countdown-value,
+.mf1-stark-countdown .countdown-value-digit {
+  font-family: "Anton", sans-serif !important;
+  color: #fff !important;
+  text-shadow: 0 0 16px rgba(0, 212, 255, 0.4);
+}
+
+.mf1-stark-countdown .countdown-label {
+  color: rgba(0, 212, 255, 0.8) !important;
+  letter-spacing: 0.14em !important;
+  text-transform: uppercase;
+  font-size: 0.58rem !important;
+}
+
+/* Ticker */
+.mf1-hero__ticker {
+  position: relative;
+  z-index: 5;
+  overflow: hidden;
+  border-top: 1px solid rgba(0, 212, 255, 0.22);
+  border-bottom: 1px solid rgba(237, 29, 36, 0.2);
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(10px);
+  padding: 0.55rem 0;
+}
+
+.mf1-hero__ticker-track {
+  display: flex;
+  width: max-content;
+  animation: mf1-ticker 32s linear infinite;
+}
+
+.mf1-hero__ticker-group {
+  display: flex;
+  gap: 2.25rem;
+  padding-right: 2.25rem;
+  white-space: nowrap;
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.mf1-ticker-star {
+  display: inline-block;
+  width: 0.4rem;
+  height: 0.4rem;
+  margin-right: 0.45rem;
+  border-radius: 1px;
+  background: #ed1d24;
+  box-shadow: 0 0 8px #ed1d24;
+  transform: rotate(45deg);
+  vertical-align: middle;
+}
+
+/* Hide legacy ticker if any */
+.app:not(:has(.admin-shell)) .mf1-hero .ref-hero__ticker {
+  display: none !important;
+}
+
+@media (max-width: 960px) {
+  .mf1-hero__grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .mf1-hero__copy {
+    align-items: center;
+    text-align: center;
+  }
+
+  .mf1-hero__title-row {
+    justify-content: center;
+  }
+
+  .mf1-hero__actions {
+    justify-content: center;
+  }
+
+  .mf1-hero__hud {
+    justify-content: center;
+  }
+
+  .mf1-stark-panel {
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 640px) {
+  .mf1-hero__actions {
+    flex-direction: column;
+  }
+
+  .mf1-btn {
+    width: 100%;
+  }
+
+  .mf1-hero__title {
+    font-size: clamp(2.4rem, 15vw, 3.6rem) !important;
+  }
+}
+
+/* —— Hero first-viewport MacFiesta 2K25 background video —— */
+.mf1-hero__bg-video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+  z-index: 1;
+  opacity: 0.88;
+  filter: brightness(0.92) contrast(1.05) saturate(1.04);
+}
+
+.mf1-hero__poster {
+  z-index: 0 !important;
+  opacity: 0.55 !important;
+  filter: brightness(0.7) saturate(0.95) !important;
+}
+
+.mf1-hero--video-bg .mf1-hero__veil,
+.mf1-hero--video-bg .ref-hero__veil {
+  z-index: 2;
+  background:
+    linear-gradient(90deg, rgba(5, 5, 12, 0.48) 0%, rgba(5, 5, 12, 0.18) 42%, rgba(5, 5, 12, 0.32) 100%),
+    linear-gradient(180deg, rgba(5, 5, 12, 0.28) 0%, rgba(5, 5, 12, 0.1) 40%, rgba(5, 5, 12, 0.55) 100%) !important;
+}
+
+.mf1-hero--video-bg .mf-hero-layer--glow-red,
+.mf1-hero--video-bg .mf-hero-layer--glow-cyan {
+  z-index: 2;
+  opacity: 0.55;
+}
+
+.mf1-hero--video-bg .mf1-hero__body {
+  z-index: 4;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mf1-hero__bg-video {
+    display: none !important;
+  }
+
+  .mf1-hero__poster {
+    opacity: 0.9 !important;
+  }
+}
+
+/* —— Sections / cards —— */
+.app:not(:has(.admin-shell)) .home-section-title,
+.app:not(:has(.admin-shell)) .section-title,
+.app:not(:has(.admin-shell)) .page-header h1,
+.app:not(:has(.admin-shell)) .cinematic-page-header h1 {
+  background: linear-gradient(180deg, #ffffff 0%, #e8c84a 45%, #ed1d24 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+.app:not(:has(.admin-shell)) .home-universe-section,
+.app:not(:has(.admin-shell)) .section.home-welcome,
+.app:not(:has(.admin-shell)) .page-content {
+  position: relative;
+}
+
+.app:not(:has(.admin-shell)) .category-card,
+.app:not(:has(.admin-shell)) .event-card,
+.app:not(:has(.admin-shell)) .detail-panel,
+.app:not(:has(.admin-shell)) .auth-card,
+.app:not(:has(.admin-shell)) .sponsor-card,
+.app:not(:has(.admin-shell)) .guest-card,
+.app:not(:has(.admin-shell)) .announcement-card,
+.app:not(:has(.admin-shell)) .schedule-event-card,
+.app:not(:has(.admin-shell)) .podium-card,
+.app:not(:has(.admin-shell)) .home-welcome-image {
+  background: rgba(12, 14, 24, 0.9) !important;
+  border: 1px solid rgba(0, 212, 255, 0.16) !important;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.45) !important;
+}
+
+.app:not(:has(.admin-shell)) .category-card:hover,
+.app:not(:has(.admin-shell)) .event-card:hover,
+.app:not(:has(.admin-shell)) .sponsor-card:hover,
+.app:not(:has(.admin-shell)) .guest-card:hover {
+  border-color: rgba(237, 29, 36, 0.5) !important;
+  box-shadow:
+    0 0 28px rgba(237, 29, 36, 0.18),
+    0 0 48px rgba(0, 212, 255, 0.1),
+    0 18px 40px rgba(0, 0, 0, 0.55) !important;
+  transform: translateY(-4px);
+}
+
+.app:not(:has(.admin-shell)) .page-header,
+.app:not(:has(.admin-shell)) .cinematic-page-header {
+  border-bottom: 1px solid rgba(0, 212, 255, 0.18);
+  background:
+    radial-gradient(ellipse at 18% 0%, rgba(237, 29, 36, 0.22), transparent 50%),
+    radial-gradient(ellipse at 82% 8%, rgba(0, 212, 255, 0.14), transparent 45%),
+    linear-gradient(180deg, rgba(10, 10, 15, 0.15), rgba(10, 10, 15, 0.9)) !important;
+}
+
+.app:not(:has(.admin-shell)) .btn-gold,
+.app:not(:has(.admin-shell)) a.btn.btn-gold {
+  background: linear-gradient(135deg, #ed1d24, #b01018) !important;
+  color: #fff !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(0, 212, 255, 0.2) !important;
+  font-family: var(--font-ui) !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+  box-shadow: 0 0 22px rgba(237, 29, 36, 0.35) !important;
+}
+
+.app:not(:has(.admin-shell)) .btn-outline,
+.app:not(:has(.admin-shell)) a.btn.btn-outline {
+  border-radius: 999px !important;
+  border: 2px solid rgba(0, 212, 255, 0.4) !important;
+  font-family: var(--font-ui) !important;
+  letter-spacing: 0.12em !important;
+  text-transform: uppercase !important;
+}
+
+/* Footer */
+.app:not(:has(.admin-shell)) .site-footer-universe,
+.app:not(:has(.admin-shell)) .site-footer-pro,
+.app:not(:has(.admin-shell)) footer.site-footer-universe {
+  background:
+    radial-gradient(ellipse at 50% 0%, rgba(237, 29, 36, 0.14), transparent 45%),
+    linear-gradient(180deg, #0c0c12 0%, #07070c 100%) !important;
+  border-top: 1px solid rgba(0, 212, 255, 0.2) !important;
+}
+
+.app:not(:has(.admin-shell)) .footer-universe-nav a:hover {
+  color: var(--arc-cyan) !important;
+}
+
+/* Auth */
+.app:not(:has(.admin-shell)) .auth-page input,
+.app:not(:has(.admin-shell)) .login-form-premium input,
+.app:not(:has(.admin-shell)) .auth-card input {
+  background: rgba(17, 17, 24, 0.92) !important;
+  border: 1px solid rgba(0, 212, 255, 0.22) !important;
+  color: #f0f0f0 !important;
+  border-radius: 10px !important;
+}
+
+.app:not(:has(.admin-shell)) .auth-page input:focus,
+.app:not(:has(.admin-shell)) .login-form-premium input:focus {
+  border-color: #00d4ff !important;
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.16) !important;
+  outline: none;
+}
+
+/* —— MACFIESTA1 scroll frame backdrop —— */
+.mf1-frame-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background: #05050a;
+  opacity: 0.55;
+  transition: opacity 0.6s ease;
+}
+
+.mf1-frame-bg.is-ready {
+  opacity: 1;
+}
+
+.mf1-frame-bg__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: brightness(0.78) contrast(1.08) saturate(1.15);
+}
+
+.mf1-frame-bg__orbs {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse 45% 40% at 12% 30%, rgba(237, 29, 36, 0.36), transparent 60%),
+    radial-gradient(ellipse 40% 35% at 88% 25%, rgba(0, 212, 255, 0.32), transparent 55%);
+}
+
+.mf1-frame-bg__veil {
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(10, 16, 32, 0.22) 0%, rgba(10, 16, 32, 0.4) 45%, rgba(10, 16, 32, 0.7) 100%),
+    linear-gradient(90deg, rgba(237, 29, 36, 0.1), transparent 40%, transparent 60%, rgba(0, 212, 255, 0.1));
+}
+
+.app:has(.home-page--frame-bg) .mf-particle-atmosphere {
+  display: none !important;
+}
+
+.app:has(.admin-shell) .mf1-frame-bg,
+.app:not(:has(.home-page)) .mf1-frame-bg {
+  display: none;
+}
+
+.home-page {
+  position: relative;
+  z-index: 1;
+  background: transparent !important;
+}
+
+.home-page > .section,
+.home-page > section:not(.mf1-hero):not(.ref-hero),
+.home-page .home-universe-section,
+.home-page .section.home-welcome {
+  position: relative;
+  z-index: 1;
+  background: rgba(8, 9, 16, 0.45) !important;
+  backdrop-filter: blur(5px);
+  border-top: 1px solid rgba(0, 212, 255, 0.1);
+}
+
+.home-page .mf1-hero.ref-hero {
+  background: transparent !important;
+}
+
+.home-page .mf1-hero .mf1-hero__poster,
+.home-page .mf1-hero .ref-hero__wallpaper,
+.home-page .mf1-hero .mf1-hero__bg-video {
+  display: none !important;
+}
+
+/* —— Mission event cards —— */
+.app:not(:has(.admin-shell)) .marvel-mission-card {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  border-radius: 1rem !important;
+  overflow: hidden;
+  background: rgba(10, 12, 20, 0.88) !important;
+  border: 1px solid rgba(0, 212, 255, 0.22) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45) !important;
+  transition: transform 0.28s ease, border-color 0.28s ease, box-shadow 0.28s ease;
+}
+
+.app:not(:has(.admin-shell)) .marvel-mission-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(237, 29, 36, 0.55) !important;
+  box-shadow:
+    0 0 28px rgba(237, 29, 36, 0.2),
+    0 0 40px rgba(0, 212, 255, 0.12),
+    0 22px 48px rgba(0, 0, 0, 0.55) !important;
+}
+
+.app:not(:has(.admin-shell)) .marvel-mission-card.is-selected {
+  border-color: rgba(212, 175, 55, 0.7) !important;
+  box-shadow: 0 0 0 1px rgba(212, 175, 55, 0.35), 0 18px 40px rgba(0, 0, 0, 0.5) !important;
+}
+
+.marvel-mission-card__media {
+  position: relative;
+  display: block;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: #0a0a10;
+}
+
+.marvel-mission-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.45s ease;
+}
+
+.marvel-mission-card:hover .marvel-mission-card__media img {
+  transform: scale(1.06);
+}
+
+.marvel-mission-card__badge {
+  position: absolute;
+  top: 0.7rem;
+  left: 0.7rem;
+  z-index: 1;
+  padding: 0.28rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(237, 29, 36, 0.92);
+  color: #fff;
+  font-family: var(--font-ui);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.marvel-mission-card__select {
+  top: 0.7rem !important;
+  left: auto !important;
+  right: 0.7rem !important;
+  z-index: 3 !important;
+}
+
+.marvel-mission-card__scope {
+  position: absolute;
+  bottom: 0.7rem;
+  right: 0.7rem;
+  z-index: 1;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  font-family: var(--font-ui);
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.marvel-mission-card__scope.is-college {
+  background: rgba(212, 175, 55, 0.92);
+  color: #1a1200;
+}
+
+.marvel-mission-card__scope.is-school {
+  background: rgba(16, 185, 129, 0.92);
+  color: #04140f;
+}
+
+.marvel-mission-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 1rem 1.05rem 1.1rem;
+  flex: 1;
+}
+
+.marvel-mission-card__body h3 {
+  margin: 0;
+  font-family: var(--font-display) !important;
+  font-size: 1.15rem !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.15;
+}
+
+.marvel-mission-card__body h3 a {
+  color: #fff !important;
+  text-decoration: none !important;
+}
+
+.marvel-mission-card__desc {
+  margin: 0;
+  color: rgba(220, 228, 240, 0.72);
+  font-size: 0.84rem;
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.marvel-mission-card__meta {
+  list-style: none;
+  margin: 0.15rem 0 0;
+  padding: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.marvel-mission-card__meta li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+}
+
+.marvel-mission-card__meta span {
+  color: rgba(0, 212, 255, 0.78);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 0.64rem;
+  font-weight: 700;
+}
+
+.marvel-mission-card__meta strong {
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 700;
+  text-align: right;
+}
+
+.marvel-mission-card__meta strong.is-gold {
+  color: #d4af37 !important;
+}
+
+.marvel-mission-card__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.55rem;
+  margin-top: auto;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(0, 212, 255, 0.14);
+}
+
+.marvel-mission-card__brief {
+  color: #00d4ff !important;
+  font-family: var(--font-ui);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none !important;
+}
+
+.marvel-mission-card__brief:hover {
+  color: #7ae8ff !important;
+}
+
+.marvel-mission-card__join {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.55rem 1rem;
+  border-radius: 999px;
+  border: none;
+  background: linear-gradient(135deg, #ed1d24, #ff2d35);
+  color: #fff !important;
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  text-decoration: none !important;
+  cursor: pointer;
+  box-shadow: 0 0 18px rgba(237, 29, 36, 0.4);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.marvel-mission-card__join:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 28px rgba(237, 29, 36, 0.55);
+}
+
+/* Events page chrome */
+.app:not(:has(.admin-shell)) .mf1-events-toolbar {
+  padding: 0.9rem 1rem;
+  border-radius: 1rem;
+  background: rgba(10, 12, 20, 0.78);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  backdrop-filter: blur(14px);
+  margin-bottom: 1rem;
+}
+
+.app:not(:has(.admin-shell)) .mf1-chip.active,
+.app:not(:has(.admin-shell)) .events-page--mf1 .chip.active {
+  background: rgba(212, 175, 55, 0.2) !important;
+  border-color: rgba(212, 175, 55, 0.65) !important;
+  color: #f5e6a8 !important;
+  box-shadow: 0 0 18px rgba(212, 175, 55, 0.2);
+}
+
+.app:not(:has(.admin-shell)) .mf1-events-search {
+  background: rgba(8, 10, 16, 0.85) !important;
+  border: 1px solid rgba(0, 212, 255, 0.28) !important;
+  color: #fff !important;
+  border-radius: 999px !important;
+}
+
+.app:not(:has(.admin-shell)) .events-page--mf1 .events-grid--simple {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.25rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mf1-frame-bg__canvas {
+    filter: brightness(0.5);
+  }
+  .marvel-mission-card,
+  .marvel-mission-card__media img,
+  .marvel-mission-card__join {
+    transition: none !important;
+  }
+}
+
+/* =========================================================
+   COMPLETE MF1 UI — section chrome, shell, dock, auth
+   ========================================================= */
+
+.mf1-shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #fff5c0 0%,
+    #ffd700 18%,
+    #ffffff 42%,
+    #ffa726 62%,
+    #ed1d24 82%,
+    #fff5c0 100%
+  ) !important;
+  background-size: 200% auto !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  animation: mf1-text-shimmer 3.2s linear infinite;
+}
+
+.mf1-gradient-text-plasma {
+  background: linear-gradient(135deg, #fff4d6 0%, #f0c14b 30%, #ffffff 55%, #ffe08a 75%, #c9a227 100%) !important;
+  background-size: 200% auto !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  animation: mf1-text-shimmer 3.2s linear infinite;
+}
+
+.mf1-section-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.65rem;
+  margin-bottom: 1.75rem;
+}
+
+.mf1-section-header--left {
+  align-items: flex-start;
+  text-align: left;
+}
+
+.mf1-section-badge {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0.4rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 212, 255, 0.35);
+  background: rgba(0, 212, 255, 0.1);
+  color: #7ae8ff;
+  font-family: var(--font-ui);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.22);
+}
+
+.mf1-section-badge__flavor {
+  opacity: 0.55;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+}
+
+.mf1-section-title {
+  margin: 0 !important;
+  font-family: "Anton", "Excon", sans-serif !important;
+  font-size: clamp(1.9rem, 5vw, 3.4rem) !important;
+  font-weight: 400 !important;
+  line-height: 0.95 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
+  background: none !important;
+  -webkit-text-fill-color: unset !important;
+  color: #fff !important;
+}
+
+.mf1-section-divider {
+  width: 8rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #00d4ff, #d4af37, transparent);
+}
+
+.mf1-section-sub {
+  margin: 0;
+  max-width: 36rem;
+  color: rgba(210, 220, 235, 0.78);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.mf1-section-cta {
+  display: flex;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+.mf1-welcome-stats {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.mf1-stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: rgba(10, 14, 24, 0.82);
+  border: 1px solid rgba(0, 212, 255, 0.22);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+.mf1-stat-card strong {
+  font-family: "Anton", sans-serif;
+  font-size: 1.45rem;
+  color: #fff;
+  letter-spacing: 0.04em;
+}
+
+.mf1-stat-card span {
+  color: rgba(0, 212, 255, 0.85);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Navbar HUD cluster + solid active */
+.app:not(:has(.admin-shell)) .mf1-navbar__cluster {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.28rem;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  backdrop-filter: blur(12px);
+}
+
+.app:not(:has(.admin-shell)) .mf1-navbar .nav-link.active {
+  background: #ed1d24 !important;
+  border-color: transparent !important;
+  box-shadow: 0 0 18px #ed1d24 !important;
+  position: relative;
+}
+
+.app:not(:has(.admin-shell)) .mf1-navbar .nav-link.active .nav-link-label::after {
+  display: none;
+}
+
+.app:not(:has(.admin-shell)) .mf1-navbar .nav-link.active::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0.15rem;
+  width: 1.1rem;
+  height: 0.18rem;
+  border-radius: 999px;
+  background: #00d4ff;
+  box-shadow: 0 0 10px #00d4ff;
+  transform: translateX(-50%);
+}
+
+.app:not(:has(.admin-shell)) .mf1-nav-login {
+  background: linear-gradient(135deg, #d4af37, #b8922d) !important;
+  border: none !important;
+  color: #1a1200 !important;
+  font-weight: 800 !important;
+  box-shadow: 0 0 18px rgba(212, 175, 55, 0.45) !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-nav-login:hover {
+  background: linear-gradient(135deg, #e8c84a, #d4af37) !important;
+  box-shadow: 0 0 26px rgba(212, 175, 55, 0.6) !important;
+}
+
+.mf1-navbar__drawer-banner {
+  display: none;
+}
+
+@media (max-width: 960px) {
+  .app:not(:has(.admin-shell)) .mf1-navbar__cluster {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    border-radius: 1rem;
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+
+  .mf1-navbar__drawer-banner {
+    display: block;
+    margin: 0 0 1rem;
+    padding: 0.55rem 0.85rem;
+    border-radius: 0.65rem;
+    border: 1px solid rgba(0, 212, 255, 0.3);
+    background: rgba(0, 212, 255, 0.08);
+    color: #7ae8ff;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+  }
+}
+
+/* Page header */
+.app:not(:has(.admin-shell)) .mf1-page-header__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.75rem;
+}
+
+.app:not(:has(.admin-shell)) .mf1-page-header__title {
+  margin: 0 !important;
+  font-family: "Anton", "Excon", sans-serif !important;
+  font-size: clamp(2.2rem, 7vw, 4.5rem) !important;
+  line-height: 0.92 !important;
+  text-transform: uppercase !important;
+  background: none !important;
+  -webkit-text-fill-color: unset !important;
+  color: #fff !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-page-header__sub {
+  max-width: 38rem;
+  color: rgba(220, 228, 240, 0.82) !important;
+}
+
+.mf1-page-header__orbs {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 35% 50% at 12% 40%, rgba(237, 29, 36, 0.2), transparent 70%),
+    radial-gradient(ellipse 30% 45% at 88% 30%, rgba(0, 212, 255, 0.16), transparent 70%);
+}
+
+/* Footer */
+.app:not(:has(.admin-shell)) .mf1-footer {
+  position: relative;
+}
+
+.mf1-footer__hairline {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ed1d24, #00d4ff, #d4af37, transparent);
+}
+
+.mf1-footer__col-label {
+  color: #00d4ff !important;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase !important;
+  margin-bottom: 0.75rem !important;
+}
+
+.mf1-footer__social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.85rem;
+}
+
+.mf1-footer__social a {
+  padding: 0.4rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  background: rgba(255, 255, 255, 0.04);
+  color: #fff !important;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-decoration: none !important;
+}
+
+.mf1-footer__social a:hover {
+  box-shadow: 0 0 12px #00d4ff;
+  border-color: rgba(0, 212, 255, 0.55);
+}
+
+.mf1-footer__secure {
+  display: inline-flex;
+  margin-top: 0.9rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(237, 29, 36, 0.35);
+  background: rgba(237, 29, 36, 0.12);
+  color: #ff8a8e;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.mf1-footer__glass {
+  padding: 1rem;
+  border-radius: 1rem;
+  background: rgba(12, 16, 28, 0.75);
+  border: 1px solid rgba(0, 212, 255, 0.22);
+  backdrop-filter: blur(12px);
+}
+
+.mf1-footer__glass p {
+  margin: 0.35rem 0;
+}
+
+.mf1-footer__top {
+  background: transparent;
+  border: 1px solid rgba(0, 212, 255, 0.4);
+  color: #00d4ff;
+  border-radius: 999px;
+  padding: 0.3rem 0.75rem;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+/* Registration CTA */
+.mf1-reg-cta__panel {
+  position: relative;
+  padding: clamp(1.5rem, 4vw, 2.75rem);
+  border-radius: 1.35rem;
+  background: rgba(10, 12, 22, 0.88);
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  box-shadow: 0 0 40px rgba(237, 29, 36, 0.12), 0 20px 50px rgba(0, 0, 0, 0.45);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mf1-reg-cta__badge {
+  margin: 0;
+  padding: 0.35rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(212, 175, 55, 0.15);
+  border: 1px solid rgba(212, 175, 55, 0.45);
+  color: #e8c84a;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+.mf1-reg-cta__copy {
+  margin: 0;
+  max-width: 34rem;
+  color: rgba(220, 228, 240, 0.8);
+}
+
+.mf1-reg-cta__note {
+  margin: 0.65rem 0 0;
+  max-width: 34rem;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: rgba(200, 210, 225, 0.72);
+}
+
+.mf1-reg-cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 0.5rem;
+  width: 100%;
+  max-width: 28rem;
+}
+
+/* Mobile dock */
+.mf1-mobile-dock {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0.75rem;
+  z-index: 95;
+  padding: 0 0.75rem calc(0.25rem + env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+.mf1-mobile-dock__nav {
+  pointer-events: auto;
+  max-width: 24rem;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: 999px;
+  background: rgba(8, 10, 16, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(16px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.45), 0 0 20px rgba(0, 212, 255, 0.08);
+}
+
+.mf1-mobile-dock__side {
+  display: flex;
+  flex: 1;
+  justify-content: space-around;
+}
+
+.mf1-mobile-dock__tab {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.45rem 0.55rem;
+  text-decoration: none !important;
+  color: rgba(255, 255, 255, 0.55) !important;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mf1-mobile-dock__tab.is-active {
+  color: #ffe08a !important;
+}
+
+.mf1-mobile-dock__pip {
+  position: absolute;
+  top: 0;
+  width: 1rem;
+  height: 0.18rem;
+  border-radius: 999px;
+  background: transparent;
+}
+
+.mf1-mobile-dock__tab.is-active .mf1-mobile-dock__pip {
+  background: #f0c14b;
+  box-shadow: 0 0 10px #f0c14b;
+}
+
+.mf1-mobile-dock__pass {
+  position: relative;
+  margin-top: -1.35rem;
+  width: 3.35rem;
+  height: 3.35rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  text-decoration: none !important;
+  background: linear-gradient(135deg, #ed1d24, #f0c14b);
+  box-shadow: 0 0 24px rgba(237, 29, 36, 0.55);
+}
+
+.mf1-mobile-dock__pass-ring {
+  position: absolute;
+  inset: 0.2rem;
+  border-radius: 50%;
+  border: 1px solid rgba(237, 29, 36, 0.55);
+  animation: mf1-spin-slow 8s linear infinite;
+}
+
+.mf1-mobile-dock__pass-core {
+  position: relative;
+  z-index: 1;
+  width: 2.55rem;
+  height: 2.55rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.72);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+@keyframes mf1-spin-slow {
+  to { transform: rotate(360deg); }
+}
+
+.app:not(:has(.admin-shell)) .main-content {
+  padding-bottom: 5.5rem;
+}
+
+@media (min-width: 1200px) {
+  .mf1-mobile-dock { display: none; }
+  .app:not(:has(.admin-shell)) .main-content { padding-bottom: 0; }
+}
+
+.app:has(.admin-shell) .mf1-mobile-dock,
+.app:has(.admin-shell) .mf1-scroll-progress {
+  display: none !important;
+}
+
+/* Auth */
+.app:not(:has(.admin-shell)) .mf1-auth-card {
+  border-radius: 1.25rem !important;
+  border: 1px solid rgba(0, 212, 255, 0.25) !important;
+  background: rgba(10, 12, 20, 0.9) !important;
+  box-shadow: 0 0 40px rgba(0, 212, 255, 0.08), 0 20px 50px rgba(0, 0, 0, 0.45) !important;
+}
+
+/* Re-assert hero shimmer against any earlier sheets */
+.app:not(:has(.admin-shell)) .mf1-hero__title {
+  background: linear-gradient(90deg, #fff5c0 0%, #ffd700 18%, #ffffff 42%, #ffa726 62%, #ed1d24 82%, #fff5c0 100%) !important;
+  background-size: 200% auto !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+  animation: mf1-text-shimmer 3.2s linear infinite !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-hero__edition {
+  background: linear-gradient(135deg, #fff4d6 0%, #f0c14b 30%, #ffffff 55%, #ffe08a 75%, #c9a227 100%) !important;
+  background-size: 200% auto !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  animation: mf1-text-shimmer 3.2s linear infinite !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-hero__verse {
+  color: #ed1d24 !important;
+  -webkit-text-fill-color: #ed1d24 !important;
+  background: none !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mf1-shimmer-text,
+  .mf1-gradient-text-plasma,
+  .mf1-mobile-dock__pass-ring,
+  .app:not(:has(.admin-shell)) .mf1-hero__title,
+  .app:not(:has(.admin-shell)) .mf1-hero__edition {
+    animation: none !important;
+  }
+}

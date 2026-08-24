@@ -1,67 +1,459 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
 import LoadingState from "../../components/ui/LoadingState";
+
 import ErrorState from "../../components/ui/ErrorState";
-import { getAdminRegistrations } from "../../services/api";
+
+import { verifyCheckIn, verifyRegistrationLookup } from "../../services/api";
+
+
+
+function statusBannerClass(vStatus) {
+
+  if (vStatus === "VALID") return "is-valid";
+
+  if (vStatus === "ALREADY CHECKED IN") return "is-valid";
+
+  if (vStatus === "PENDING") return "is-pending";
+
+  return "is-bad";
+
+}
+
+
+
+function statusTitle(vStatus, paymentStatus) {
+
+  if (vStatus === "VALID") return "VALID";
+
+  if (vStatus === "ALREADY CHECKED IN") return "ALREADY CHECKED IN";
+
+  if (vStatus === "CANCELLED") return "CANCELLED";
+
+  if (vStatus === "INVALID") return "INVALID QR";
+
+  if (vStatus === "PENDING" || paymentStatus === "pending" || paymentStatus === "rejected") {
+
+    return "PAYMENT PENDING";
+
+  }
+
+  return vStatus || "PENDING";
+
+}
+
+
+
+/**
+
+ * Simplest ops screen: Scan QR → status → Check in.
+
+ */
 
 export default function AdminVerification() {
-  const [regs, setRegs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+
   const [query, setQuery] = useState("");
 
-  useEffect(() => {
-    getAdminRegistrations()
-      .then((res) => setRegs(res.data))
-      .catch(() => setError("Could not load registrations."))
+  const [match, setMatch] = useState(null);
+
+  const [loading, setLoading] = useState(false);
+
+  const [error, setError] = useState("");
+
+  const [empty, setEmpty] = useState(false);
+
+  const [scanning, setScanning] = useState(false);
+
+  const [scanError, setScanError] = useState("");
+
+  const [busy, setBusy] = useState(false);
+
+  const scannerRef = useRef(null);
+
+  const html5Ref = useRef(null);
+
+
+
+  const lookup = useCallback((raw) => {
+
+    const q = String(raw || "").trim();
+
+    if (q.length < 3) {
+
+      setMatch(null);
+
+      setEmpty(false);
+
+      setError("");
+
+      return;
+
+    }
+
+    setLoading(true);
+
+    setError("");
+
+    setEmpty(false);
+
+    verifyRegistrationLookup(q)
+
+      .then((res) => {
+
+        setMatch(res.data);
+
+        setEmpty(false);
+
+      })
+
+      .catch((err) => {
+
+        setMatch(null);
+
+        if (err?.response?.status === 404) setEmpty(true);
+
+        else setError("Unable to connect to server. Try again.");
+
+      })
+
       .finally(() => setLoading(false));
+
   }, []);
 
-  const match = useMemo(() => {
-    const q = query.trim().toUpperCase();
-    if (!q) return null;
-    return regs.find((r) => String(r.registration_number || "").toUpperCase() === q)
-      || regs.find((r) => String(r.registration_number || "").toUpperCase().includes(q));
-  }, [regs, query]);
+
+
+  async function stopScanner() {
+
+    try {
+
+      if (html5Ref.current) {
+
+        await html5Ref.current.stop();
+
+        await html5Ref.current.clear();
+
+        html5Ref.current = null;
+
+      }
+
+    } catch {
+
+      /* ignore */
+
+    }
+
+    setScanning(false);
+
+  }
+
+
+
+  async function startScanner() {
+
+    setScanError("");
+
+    setScanning(true);
+
+    try {
+
+      const { Html5Qrcode } = await import("html5-qrcode");
+
+      await stopScanner();
+
+      setScanning(true);
+
+      const scanner = new Html5Qrcode("mf-qr-reader");
+
+      html5Ref.current = scanner;
+
+      await scanner.start(
+
+        { facingMode: "environment" },
+
+        { fps: 8, qrbox: { width: 240, height: 240 } },
+
+        (decoded) => {
+
+          const text = String(decoded || "").trim();
+
+          if (!text) return;
+
+          setQuery(text);
+
+          lookup(text);
+
+          stopScanner();
+
+        },
+
+        () => {}
+
+      );
+
+    } catch (err) {
+
+      setScanning(false);
+
+      setScanError(
+
+        err?.message?.includes("Permission") || err?.name === "NotAllowedError"
+
+          ? "Camera permission denied. Allow camera, or search by registration number."
+
+          : "Camera unavailable. Search by registration number instead."
+
+      );
+
+    }
+
+  }
+
+
+
+  useEffect(() => () => {
+
+    stopScanner();
+
+  }, []);
+
+
+
+  async function handleCheckIn() {
+
+    if (!match?.id) return;
+
+    setBusy(true);
+
+    setError("");
+
+    try {
+
+      const res = await verifyCheckIn({
+
+        id: match.id,
+
+        registration_number: match.registration_number,
+
+      });
+
+      setMatch(res.data);
+
+    } catch (err) {
+
+      setError(
+
+        err?.response?.data?.detail || "Payment must be verified before check-in."
+
+      );
+
+    } finally {
+
+      setBusy(false);
+
+    }
+
+  }
+
+
+
+  const vStatus = match?.verification_status;
+
+  const title = statusTitle(vStatus, match?.payment_status);
+
+  const paymentLabel =
+
+    match?.payment_status === "paid" || match?.payment_status === "waived"
+
+      ? "Verified"
+
+      : match?.payment_status === "rejected"
+
+        ? "Rejected"
+
+        : "Pending";
+
+
 
   return (
-    <div className="admin-page">
-      <header className="admin-page-head">
-        <h1>Verification</h1>
-        <p>Search by registration number at entry desks.</p>
+
+    <div className="admin-page admin-verification admin-ops-page">
+
+      <header className="admin-ops-header">
+
+        <p className="section-eyebrow">Verification</p>
+
+        <h1>Student Verification</h1>
+
+        <p>Scan the registration QR or search the registration number.</p>
+
       </header>
 
-      <div className="verification-search detail-panel">
-        <label htmlFor="reg-search">Registration number</label>
+
+
+      <div className="detail-panel verify-panel">
+
+        <div className="verify-hero-scan">
+
+          {!scanning ? (
+
+            <button type="button" className="btn btn-gold" onClick={startScanner}>
+
+              SCAN QR
+
+            </button>
+
+          ) : (
+
+            <button type="button" className="btn btn-outline" onClick={stopScanner}>
+
+              Stop scanner
+
+            </button>
+
+          )}
+
+        </div>
+
+
+
+        <label htmlFor="reg-search">Search registration number</label>
+
         <input
+
           id="reg-search"
+
           type="search"
-          placeholder="e.g. MF1A2B3C4D5E"
+
+          placeholder="MCF26-…"
+
           value={query}
+
           onChange={(e) => setQuery(e.target.value)}
+
           autoComplete="off"
+
         />
+
+        <div className="admin-ops-actions" style={{ marginTop: "0.75rem" }}>
+
+          <button
+
+            type="button"
+
+            className="btn btn-outline"
+
+            onClick={() => lookup(query)}
+
+            disabled={query.trim().length < 3}
+
+          >
+
+            Search
+
+          </button>
+
+        </div>
+
+
+
+        {scanError ? <p className="form-error" role="alert">{scanError}</p> : null}
+
+        <div
+
+          id="mf-qr-reader"
+
+          ref={scannerRef}
+
+          className={`mf-qr-reader${scanning ? " is-active" : ""}`}
+
+          hidden={!scanning}
+
+        />
+
       </div>
 
-      {loading && <LoadingState message="Loading…" />}
+
+
+      {loading && <LoadingState message="Looking up registration…" />}
+
       {error && <ErrorState message={error} />}
 
-      {!loading && query && !match && (
-        <p className="verification-empty">No registration found for &quot;{query}&quot;.</p>
+      {!loading && empty && (
+
+        <p className="verification-empty" role="status">
+
+          No registration found.
+
+        </p>
+
       )}
 
+
+
       {match && (
-        <div className="verification-result detail-panel">
-          <h2>{match.participant_name}</h2>
+
+        <div className="verification-result detail-panel verify-panel">
+
+          <p className={`verify-status-banner ${statusBannerClass(vStatus)}`}>{title}</p>
+
+          <h2 style={{ fontSize: "22px", margin: "0 0 0.75rem" }}>{match.participant_name}</h2>
+
           <dl className="verification-dl">
-            <dt>Reg #</dt><dd>{match.registration_number}</dd>
-            <dt>Event</dt><dd>{match.event_title}</dd>
-            <dt>College</dt><dd>{match.college_name}</dd>
-            <dt>Payment</dt><dd>{match.payment_status}</dd>
-            <dt>Approval</dt><dd>{match.approval_status}</dd>
-            <dt>Attendance</dt><dd>{match.attendance_marked ? "Marked" : "Not marked"}</dd>
+
+            <dt>Registration #</dt>
+
+            <dd style={{ fontSize: "1.15rem", fontWeight: 700 }}>{match.registration_number}</dd>
+
+            <dt>Institution</dt>
+
+            <dd>{match.college_name}</dd>
+
+            <dt>Event</dt>
+
+            <dd>{match.event_title}</dd>
+
+            <dt>Payment</dt>
+
+            <dd>{paymentLabel}</dd>
+
           </dl>
+
+
+
+          {vStatus === "PENDING" ? (
+
+            <p className="form-error" role="alert">
+
+              Payment must be verified before check-in.
+
+            </p>
+
+          ) : null}
+
+
+
+          <div className="admin-ops-actions" style={{ marginTop: "1rem" }}>
+
+            {!match.attendance_marked && vStatus === "VALID" ? (
+
+              <button type="button" className="btn btn-gold" disabled={busy} onClick={handleCheckIn}>
+
+                {busy ? "Saving…" : "CHECK IN"}
+
+              </button>
+
+            ) : null}
+
+          </div>
+
         </div>
+
       )}
+
     </div>
+
   );
+
 }
+
+

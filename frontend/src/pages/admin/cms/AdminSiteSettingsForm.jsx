@@ -1,8 +1,17 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import AdminFormLayout, { FormInput, FormTextarea, ImageUploadPreview } from "../../../components/admin/AdminFormLayout";
+import AdminFormLayout, {
+  FormInput,
+  FormTextarea,
+  ImageUploadPreview,
+} from "../../../components/admin/AdminFormLayout";
 import LoadingState from "../../../components/ui/LoadingState";
-import { createSiteSettings, getSiteSettings, mediaUrl, updateSiteSettings } from "../../../services/api";
+import {
+  createSiteSettings,
+  getSiteSettings,
+  mediaUrl,
+  updateSiteSettings,
+} from "../../../services/api";
 import { invalidateSiteSettingsCache } from "../../../hooks/useSiteSettings";
 import { parseApiError } from "../../../utils/adminUtils";
 
@@ -31,6 +40,18 @@ const EMPTY = {
   terms_body: "",
   privacy_body: "",
 };
+
+function SettingsSection({ title, description, children }) {
+  return (
+    <section className="settings-section">
+      <header className="settings-section__head">
+        <h3>{title}</h3>
+        {description ? <p>{description}</p> : null}
+      </header>
+      <div className="settings-section__grid">{children}</div>
+    </section>
+  );
+}
 
 export default function AdminSiteSettingsForm() {
   const [form, setForm] = useState(EMPTY);
@@ -125,48 +146,129 @@ export default function AdminSiteSettingsForm() {
   if (loading) return <LoadingState message="Loading site settings…" />;
 
   return (
-    <>
-      <Link to="/admin/content" className="back-link">← Website content</Link>
-      <AdminFormLayout title="Site Settings & Branding" subtitle="Hero, about section, contact, and social links" onSubmit={handleSubmit} submitting={submitting} error={error} success={success}>
-        <FormInput label="Fest Name *" name="fest_name" value={form.fest_name} onChange={handleChange} required />
-        <FormInput label="Fest Year *" name="fest_year" type="number" value={form.fest_year} onChange={handleChange} required />
-        <FormInput label="Tagline" name="tagline" value={form.tagline} onChange={handleChange} />
-        <FormInput label="College Name" name="college_name" value={form.college_name} onChange={handleChange} />
-        <FormInput label="Hero Title" name="hero_title" value={form.hero_title} onChange={handleChange} />
-        <FormInput label="Hero Subtitle" name="hero_subtitle" value={form.hero_subtitle} onChange={handleChange} />
-        <FormTextarea label="Hero Description" name="hero_description" value={form.hero_description} onChange={handleChange} rows={3} />
-        <FormInput label="Fest Date" name="fest_date" type="date" value={form.fest_date} onChange={handleChange} />
-        <FormInput label="Countdown target" name="countdown_datetime" type="datetime-local" value={form.countdown_datetime} onChange={handleChange} />
-        <FormInput label="Venue" name="venue" value={form.venue} onChange={handleChange} />
-        <FormInput label="Location" name="location" value={form.location} onChange={handleChange} />
-        <FormInput label="Contact Email" name="contact_email" type="email" value={form.contact_email} onChange={handleChange} />
-        <FormInput label="Contact Phone" name="contact_phone" value={form.contact_phone} onChange={handleChange} />
-        <FormInput label="Official Website" name="official_website" value={form.official_website} onChange={handleChange} />
-        <FormInput label="Instagram URL" name="instagram_url" value={form.instagram_url} onChange={handleChange} />
-        <FormInput label="YouTube URL" name="youtube_url" value={form.youtube_url} onChange={handleChange} />
-        <FormInput label="Facebook URL" name="facebook_url" value={form.facebook_url} onChange={handleChange} />
-        <FormInput label="About Title" name="about_title" value={form.about_title} onChange={handleChange} />
-        <FormTextarea label="About Body" name="about_body" value={form.about_body} onChange={handleChange} rows={4} />
-        <FormInput label="Footer copyright line" name="footer_copyright" value={form.footer_copyright} onChange={handleChange} />
-        <FormInput label="Footer tagline" name="footer_tagline" value={form.footer_tagline} onChange={handleChange} />
-        <FormTextarea
-          label="Terms & Conditions body"
-          name="terms_body"
-          value={form.terms_body}
-          onChange={handleChange}
-          rows={10}
-        />
-        <FormTextarea
-          label="Privacy Policy body"
-          name="privacy_body"
-          value={form.privacy_body}
-          onChange={handleChange}
-          rows={10}
-        />
-        <ImageUploadPreview label="Logo" preview={logoPreview} onChange={(e) => { const f = e.target.files?.[0]; setLogoFile(f || null); if (f) setLogoPreview(URL.createObjectURL(f)); }} />
-        <ImageUploadPreview label="Hero Image" preview={heroPreview} onChange={(e) => { const f = e.target.files?.[0]; setHeroFile(f || null); if (f) setHeroPreview(URL.createObjectURL(f)); }} />
-        <ImageUploadPreview label="About Image" preview={aboutPreview} onChange={(e) => { const f = e.target.files?.[0]; setAboutFile(f || null); if (f) setAboutPreview(URL.createObjectURL(f)); }} />
+    <div className="settings-page">
+      <Link to="/admin/content" className="back-link">
+        ← Website content
+      </Link>
+      <AdminFormLayout
+        title="Site Settings"
+        subtitle="Manage branding, festival details, contact info, and legal pages."
+        onSubmit={handleSubmit}
+        submitting={submitting}
+        error={error}
+        success={success}
+      >
+        <SettingsSection title="Brand" description="Core festival identity shown across the site.">
+          <FormInput label="Fest name *" name="fest_name" value={form.fest_name} onChange={handleChange} required />
+          <FormInput label="Fest year *" name="fest_year" type="number" value={form.fest_year} onChange={handleChange} required />
+          <FormInput label="Tagline" name="tagline" value={form.tagline} onChange={handleChange} />
+          <FormInput label="College name" name="college_name" value={form.college_name} onChange={handleChange} />
+        </SettingsSection>
+
+        <SettingsSection title="Hero" description="Homepage hero title and supporting copy.">
+          <FormInput label="Hero title" name="hero_title" value={form.hero_title} onChange={handleChange} />
+          <FormInput label="Hero subtitle" name="hero_subtitle" value={form.hero_subtitle} onChange={handleChange} />
+          <FormTextarea
+            label="Hero description"
+            name="hero_description"
+            value={form.hero_description}
+            onChange={handleChange}
+            rows={3}
+          />
+          <FormInput
+            label="Countdown target"
+            name="countdown_datetime"
+            type="datetime-local"
+            value={form.countdown_datetime}
+            onChange={handleChange}
+          />
+        </SettingsSection>
+
+        <SettingsSection title="Venue & dates" description="When and where the fest takes place.">
+          <FormInput label="Fest date" name="fest_date" type="date" value={form.fest_date} onChange={handleChange} />
+          <FormInput label="Venue" name="venue" value={form.venue} onChange={handleChange} />
+          <FormInput label="Location" name="location" value={form.location} onChange={handleChange} />
+        </SettingsSection>
+
+        <SettingsSection title="Contact & social" description="Public contact channels and social links.">
+          <FormInput
+            label="Contact email"
+            name="contact_email"
+            type="email"
+            value={form.contact_email}
+            onChange={handleChange}
+          />
+          <FormInput label="Contact phone" name="contact_phone" value={form.contact_phone} onChange={handleChange} />
+          <FormInput
+            label="Official website"
+            name="official_website"
+            value={form.official_website}
+            onChange={handleChange}
+          />
+          <FormInput label="Instagram URL" name="instagram_url" value={form.instagram_url} onChange={handleChange} />
+          <FormInput label="YouTube URL" name="youtube_url" value={form.youtube_url} onChange={handleChange} />
+          <FormInput label="Facebook URL" name="facebook_url" value={form.facebook_url} onChange={handleChange} />
+        </SettingsSection>
+
+        <SettingsSection title="About" description="Introduction content for the About / briefing section.">
+          <FormInput label="About title" name="about_title" value={form.about_title} onChange={handleChange} />
+          <FormTextarea label="About body" name="about_body" value={form.about_body} onChange={handleChange} rows={4} />
+          <FormInput
+            label="Footer copyright"
+            name="footer_copyright"
+            value={form.footer_copyright}
+            onChange={handleChange}
+          />
+          <FormInput label="Footer tagline" name="footer_tagline" value={form.footer_tagline} onChange={handleChange} />
+        </SettingsSection>
+
+        <SettingsSection title="Legal" description="Terms and privacy content shown on public pages.">
+          <FormTextarea
+            label="Terms & Conditions"
+            name="terms_body"
+            value={form.terms_body}
+            onChange={handleChange}
+            rows={8}
+          />
+          <FormTextarea
+            label="Privacy Policy"
+            name="privacy_body"
+            value={form.privacy_body}
+            onChange={handleChange}
+            rows={8}
+          />
+        </SettingsSection>
+
+        <SettingsSection title="Media" description="Upload logo and key homepage images.">
+          <ImageUploadPreview
+            label="Logo"
+            preview={logoPreview}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              setLogoFile(f || null);
+              if (f) setLogoPreview(URL.createObjectURL(f));
+            }}
+          />
+          <ImageUploadPreview
+            label="Hero image"
+            preview={heroPreview}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              setHeroFile(f || null);
+              if (f) setHeroPreview(URL.createObjectURL(f));
+            }}
+          />
+          <ImageUploadPreview
+            label="About image"
+            preview={aboutPreview}
+            onChange={(e) => {
+              const f = e.target.files?.[0];
+              setAboutFile(f || null);
+              if (f) setAboutPreview(URL.createObjectURL(f));
+            }}
+          />
+        </SettingsSection>
       </AdminFormLayout>
-    </>
+    </div>
   );
 }

@@ -5,7 +5,7 @@ import { resolveSiteSettings } from "../utils/cmsUtils";
 let cachedSettings = null;
 let loadPromise = null;
 
-function loadSiteSettings() {
+export function loadSiteSettings() {
   if (cachedSettings) return Promise.resolve(cachedSettings);
   if (!loadPromise) {
     loadPromise = getSiteSettings()

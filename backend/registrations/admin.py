@@ -1,10 +1,16 @@
 from django.contrib import admin
-from .models import Registration, TeamMember
+from .models import Registration, TeamMember, Institution
 
 
 class TeamMemberInline(admin.TabularInline):
     model = TeamMember
     extra = 0
+
+
+@admin.register(Institution)
+class InstitutionAdmin(admin.ModelAdmin):
+    list_display = ("name", "created_at")
+    search_fields = ("name",)
 
 
 @admin.register(Registration)

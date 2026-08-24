@@ -1,0 +1,170 @@
+/* UI FX adapted from MACFIESTA.rar + FRAMES.rar */
+
+@keyframes mf-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-18px) rotate(2deg);
+  }
+}
+
+@keyframes mf-hex-drift {
+  0% {
+    background-position: 0 0;
+  }
+  100% {
+    background-position: 60px 34px;
+  }
+}
+
+@keyframes mf-scan {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+.mf-particle-atmosphere {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.mf-hex-grid {
+  position: absolute;
+  inset: 0;
+  opacity: 0.035;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='34'%3E%3Cpath d='M30 0L60 17L30 34L0 17Z' fill='none' stroke='%2300D4FF' stroke-width='0.5'/%3E%3C/svg%3E");
+  background-size: 60px 34px;
+  animation: mf-hex-drift 20s linear infinite;
+}
+
+.mf-particle {
+  position: absolute;
+  border-radius: 50%;
+  animation-name: mf-float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  opacity: 0.65;
+  will-change: transform;
+}
+
+.mf-hex-shape {
+  position: absolute;
+  border: 1px solid rgba(0, 212, 255, 0.12);
+  clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+  animation-name: mf-float;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+/* FRAMES.rar cinematic reels in hero */
+.mf-frame-reel {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.mf-frame-reel__video,
+.mf-frame-reel__still {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+.mf-frame-reel__video--a {
+  opacity: 0.42;
+  filter: saturate(1.05) contrast(1.08) brightness(0.72);
+  mix-blend-mode: screen;
+  transform: scale(1.06) translate3d(calc(var(--px, 0px) * -0.2), calc(var(--py, 0px) * -0.15), 0);
+}
+
+.mf-frame-reel__video--b {
+  opacity: 0.28;
+  filter: saturate(0.95) contrast(1.12) brightness(0.65);
+  mix-blend-mode: lighten;
+  animation: mf-frame-crossfade 8s ease-in-out infinite;
+  transform: scale(1.1) translate3d(calc(var(--px, 0px) * 0.25), calc(var(--py, 0px) * 0.2), 0);
+}
+
+@keyframes mf-frame-crossfade {
+  0%,
+  100% {
+    opacity: 0.18;
+  }
+  50% {
+    opacity: 0.38;
+  }
+}
+
+.mf-frame-reel__still {
+  opacity: 0.35;
+  filter: brightness(0.7) contrast(1.1);
+}
+
+.mf-frame-reel__scan {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(0, 212, 255, 0.08) 48%,
+    transparent 52%,
+    transparent 100%
+  );
+  animation: mf-scan 4.5s linear infinite;
+  opacity: 0.45;
+  mix-blend-mode: screen;
+}
+
+.mf-frame-reel__vignette {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at center, transparent 35%, rgba(5, 6, 12, 0.72) 100%),
+    linear-gradient(180deg, rgba(5, 6, 12, 0.35), transparent 30%, transparent 60%, rgba(5, 6, 12, 0.85));
+}
+
+.app:has(.admin-shell) .mf-particle-atmosphere {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mf-particle-atmosphere .mf-hex-shape,
+  .mf-frame-reel__scan {
+    display: none;
+  }
+
+  .mf-frame-reel__video--a {
+    opacity: 0.32;
+  }
+
+  .mf-frame-reel__video--b {
+    opacity: 0.18;
+    animation: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mf-particle-atmosphere,
+  .mf-frame-reel__scan {
+    display: none;
+  }
+
+  .mf-frame-reel__video--a,
+  .mf-frame-reel__video--b {
+    animation: none;
+    transform: none;
+  }
+}

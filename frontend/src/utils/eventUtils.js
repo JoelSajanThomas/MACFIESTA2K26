@@ -1,3 +1,5 @@
+import { SUPERHERO_THEME } from "../theme/superheroTheme";
+
 export function getSeatsRemaining(event) {
   const max = event?.max_participants ?? 0;
   const count = event?.participant_count ?? 0;
@@ -11,7 +13,9 @@ export function getSeatsFillPercent(event) {
 }
 
 export function formatCategoryLabel(category) {
-  if (!category) return "General";
+  if (!category) return SUPERHERO_THEME.categoryDisplay.general || "General";
+  const key = String(category).toLowerCase();
+  if (SUPERHERO_THEME.categoryDisplay[key]) return SUPERHERO_THEME.categoryDisplay[key];
   return category.charAt(0).toUpperCase() + category.slice(1);
 }
 

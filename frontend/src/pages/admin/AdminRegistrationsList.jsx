@@ -15,6 +15,7 @@ export default function AdminRegistrationsList() {
   const [search, setSearch] = useState("");
   const [payment, setPayment] = useState("all");
   const [eventFilter, setEventFilter] = useState("all");
+  const [audience, setAudience] = useState("all");
   const [updatingId, setUpdatingId] = useState(null);
 
   function load() {
@@ -37,6 +38,7 @@ export default function AdminRegistrationsList() {
     return regs.filter((r) => {
       if (payment !== "all" && r.payment_status !== payment) return false;
       if (eventFilter !== "all" && r.event_title !== eventFilter) return false;
+      if (audience !== "all" && r.event_audience !== audience) return false;
       if (!q) return true;
       return [
         r.participant_name,
@@ -45,12 +47,30 @@ export default function AdminRegistrationsList() {
         r.phone,
         r.event_title,
         r.registration_number,
+        r.team_name,
       ].some((v) => String(v || "").toLowerCase().includes(q));
     });
-  }, [regs, search, payment, eventFilter]);
+  }, [regs, search, payment, eventFilter, audience]);
 
   const exportRows = [
-    ["ID", "Reg #", "Event", "Type", "Participant", "College", "Email", "Phone", "Payment", "Approval", "Attendance", "Waiting", "Registered At"],
+    [
+      "ID",
+      "Reg #",
+      "Event",
+      "Type",
+      "Participant",
+      "College",
+      "Email",
+      "Phone",
+      "Amount",
+      "Payment",
+      "Approval",
+      "Attendance",
+      "Waiting",
+      "Food",
+      "Stay",
+      "Registered At",
+    ],
     ...filtered.map((r) => [
       r.id,
       r.registration_number,
@@ -60,10 +80,13 @@ export default function AdminRegistrationsList() {
       r.college_name,
       r.email,
       r.phone,
+      r.payment_amount ?? "",
       r.payment_status,
       r.approval_status,
       r.attendance_marked ? "yes" : "no",
       r.is_waiting_list ? "yes" : "no",
+      r.food_preference || "",
+      r.needs_accommodation ? `yes (${r.accommodation_count || 1})` : "no",
       r.registered_at,
     ]),
   ];
@@ -108,6 +131,11 @@ export default function AdminRegistrationsList() {
           <option value="all">All payments</option>
           {PAYMENT_OPTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
         </select>
+        <select value={audience} onChange={(e) => setAudience(e.target.value)} className="admin-select" aria-label="Filter by day">
+          <option value="all">School + College</option>
+          <option value="school">School Day</option>
+          <option value="college">College Day</option>
+        </select>
         <select value={eventFilter} onChange={(e) => setEventFilter(e.target.value)} className="admin-select" aria-label="Filter by event">
           <option value="all">All events</option>
           {eventOptions.map((title) => (
@@ -139,8 +167,15 @@ export default function AdminRegistrationsList() {
                 <tr key={r.id}>
                   <td data-label="Event">{r.event_title}</td>
                   <td data-label="Participant">
-                    {r.participant_name}
-                    {r.registration_type === "team" && r.team_name ? ` (${r.team_name})` : ""}
+                    <strong>{r.participant_name}</strong>
+                    {r.registration_type === "team" ? (
+                      <div className="muted-line">
+                        Captain{r.team_name ? ` · ${r.team_name}` : ""}
+                        {(r.team_members || []).length > 0
+                          ? ` · teammates: ${(r.team_members || []).map((m) => m.name).join(", ")}`
+                          : ""}
+                      </div>
+                    ) : null}
                   </td>
                   <td data-label="Reg #">{r.registration_number}</td>
                   <td data-label="College">{r.college_name}</td>

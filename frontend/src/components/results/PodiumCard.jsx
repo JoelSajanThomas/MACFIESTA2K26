@@ -9,8 +9,10 @@ export default function PodiumCard({ result, index = 0, compact = false }) {
 
   return (
     <motion.article
-      className={`podium-card-premium ${meta.cls}${compact ? " compact" : ""}${
-        result.position === "first" ? " podium-first" : ""
+      className={`podium-card-premium hall-frame ${meta.cls}${compact ? " compact" : ""}${
+        result.position === "first" ? " podium-first hall-frame--gold" : ""
+      }${result.position === "second" ? " hall-frame--silver" : ""}${
+        result.position === "third" ? " hall-frame--bronze" : ""
       }`}
       initial={{ opacity: 0, y: 28 }}
       whileInView={{ opacity: 1, y: 0 }}

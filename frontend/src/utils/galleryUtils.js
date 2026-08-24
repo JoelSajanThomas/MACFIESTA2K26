@@ -1,5 +1,8 @@
 import { mediaUrl } from "../services/api";
-import { galleryPlaceholders } from "./assets";
+
+function isDebugGalleryTitle(title = "") {
+  return /audit img|e2e gallery|test gallery|sample gallery|debug|placeholder/i.test(String(title));
+}
 
 export const GALLERY_FILTERS = [
   { value: "all", label: "All" },
@@ -21,24 +24,17 @@ export function inferGalleryCategory(title = "") {
 }
 
 export function normalizeGalleryItems(items = [], usePlaceholders = false) {
-  if (items.length === 0 && usePlaceholders) {
-    return galleryPlaceholders.map((p) => ({
-      id: p.id,
-      title: p.title,
-      src: p.src,
-      alt: p.alt || p.title,
-      category: p.category,
-      uploaded_at: p.uploaded_at,
-      isPlaceholder: true,
-      raw: p,
-    }));
+  // Production: never invent gallery rows. Empty API → empty UI.
+  if (!items?.length) {
+    return [];
   }
+  void usePlaceholders;
 
   return items.map((item) => ({
     id: item.id,
-    title: item.title,
+    title: isDebugGalleryTitle(item.title) ? "MacFiesta Highlight" : item.title,
     src: mediaUrl(item.image),
-    alt: item.title,
+    alt: isDebugGalleryTitle(item.title) ? "MacFiesta highlight image" : item.title,
     category: inferGalleryCategory(item.title),
     uploaded_at: item.uploaded_at,
     isPlaceholder: false,

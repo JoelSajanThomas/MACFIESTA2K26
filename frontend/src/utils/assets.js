@@ -1,11 +1,51 @@
-/** Official MacFiesta media — all paths under /assets/official/ */
+/**
+ * Consolidated public media — single tree under /assets/image all/
+ * (no flat root duplicates; use official/ | ref-ui/ | original/)
+ */
 
-const O = (path) => `/assets/official/${path}`;
+const IA = (path) => `/assets/image all/${path}`;
+const O = (path) => IA(`official/${path}`);
+const R = (path) => IA(`ref-ui/${path}`);
+const OR = (path) => IA(`original/${path}`);
 
 export const heroImage = O("hero/hero-poster.webp");
-export const heroVideo = O("hero/hero-720p.mp4");
-export const heroVideoMobile = O("hero/hero-480p.mp4");
-export const aboutImage = O("about/about.webp");
+
+/** Marvel x DC cinematic pack */
+export const REF_UI = {
+  logo: "/logo.png",
+  wallpaper: R("hero-wallpaper.webp"),
+  atmosphere: R("hero-atmosphere.webp"),
+  cityNight: R("city-night.webp"),
+  promoVideo: R("fiesta-promo.webm"),
+  promoVideoMp4: R("fiesta-promo.mp4"),
+  /** @macfiestaofficial Instagram reel — homepage hero background */
+  heroBgReel: R("macfiesta-official-reel.webm"),
+  heroBgReelMp4: R("macfiesta-official-reel.mp4"),
+  cinematicLoop: R("cinematic-loop.webm"),
+  cinematicLoopMp4: R("cinematic-loop.mp4"),
+  floatLeft: R("hero-scarlet.webp"),
+  floatRight: R("hero-mystic.webp"),
+  panelA: R("panel-a.webp"),
+  panelB: R("panel-b.webp"),
+  panelC: R("panel-c.webp"),
+  panelD: R("panel-d.webp"),
+  webDetail: R("hero-web.webp"),
+  marvelDcVersus: R("marvel-dc-versus.png"),
+  marvelDcVersusStatic: R("marvel-dc-versus.png"),
+  emblemRed: OR("emblem-red-universe.webp"),
+  emblemBlue: OR("emblem-blue-universe.webp"),
+  heroScarletOrbit: OR("hero-scarlet-orbit.webp"),
+  heroCobaltVigil: OR("hero-cobalt-vigil.webp"),
+};
+
+/** Marvel stills used on the public home sections */
+export const MF1_MARVEL = {
+  cityNeverSleeps: encodeURI("/MARVEL/In a city that never sleeps, I find my..png"),
+  infinityBg: encodeURI("/MARVEL/4081455907815375.png"),
+  spider: encodeURI("/MARVEL/The Spider..jpg"),
+};
+
+export const aboutImage = "/logo.png";
 export const ctaImage = O("pages/sponsors-bg.webp");
 export const sponsorsBackgroundImage = O("pages/sponsors-bg.webp");
 export const defaultEventImage = O("events/event-01.webp");
@@ -48,7 +88,7 @@ export const galleryPlaceholders = GALLERY_META.map((item, i) => ({
   category: item.category,
   uploaded_at: `2025-09-${String(20 + (i % 5)).padStart(2, "0")}T18:00:00Z`,
   src: O(`gallery/gallery-${String(i + 1).padStart(2, "0")}.webp`),
-  alt: `${item.title} at Macfiesta`,
+  alt: `${item.title} at MacFiesta`,
 }));
 
 export const sponsorPlaceholders = [
@@ -80,8 +120,8 @@ export const PAGE_IMAGES = {
   stage: categoryImages.stage,
 };
 
-export const guestPlaceholder = O("guests/guest-akhil-marar.webp");
-export const themeImage = O("theme/retro-01.webp");
+export const guestPlaceholder = O("guests/guest-sayip-op.webp");
+export const themeImage = O("pages/sponsors-bg.webp");
 export const officialLogo = O("macfiesta-logo.png");
 export const HERO_IMAGE = heroImage;
 export const CATEGORY_IMAGES = categoryImages;
@@ -97,3 +137,6 @@ export const rewindImages = {
 export function getCategoryImage(category) {
   return getEventFallbackImage(category);
 }
+
+export const IMAGE_ALL_ROOT = "/assets/image all";
+export { IA, O, R, OR };

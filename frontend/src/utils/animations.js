@@ -55,6 +55,18 @@ export function buildFadeUp(prefs) {
   };
 }
 
+export function buildSlideX(prefs, dir = 1) {
+  const x = prefs?.reduced ? 0 : 36 * dir;
+  return {
+    hidden: { opacity: 0, x },
+    visible: (i = 0) => ({
+      opacity: 1,
+      x: 0,
+      transition: getRevealTransition(prefs, i),
+    }),
+  };
+}
+
 export function buildScaleIn(prefs) {
   const scaleFrom = prefs?.reduced ? 1 : 1.03;
   return {

@@ -1,0 +1,318 @@
+/**
+ * Complete Marvel vs DC public theme.
+ * Scoped away from .admin-shell — desks stay simple Inter UI.
+ */
+
+@keyframes mvd-vs-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 0 12px rgba(255, 214, 102, 0.55));
+  }
+  50% {
+    transform: scale(1.06);
+    filter: drop-shadow(0 0 22px rgba(255, 214, 102, 0.9));
+  }
+}
+
+@keyframes mvd-clash {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 100% 50%;
+  }
+}
+
+.app:not(:has(.admin-shell)) {
+  --mvd-marvel: #ed1d24;
+  --mvd-marvel-deep: #8b0a12;
+  --mvd-dc: #0476f2;
+  --mvd-dc-bright: #00d4ff;
+  --mvd-gold: #ffd666;
+  --mvd-ink: #05060c;
+}
+
+/* Dual-universe page wash */
+.app:not(:has(.admin-shell)) {
+  background:
+    linear-gradient(105deg, rgba(237, 29, 36, 0.18) 0%, transparent 40%, transparent 60%, rgba(0, 212, 255, 0.16) 100%),
+    radial-gradient(ellipse 70% 45% at 12% 0%, rgba(237, 29, 36, 0.24), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 88% 0%, rgba(0, 212, 255, 0.2), transparent 55%),
+    #0c1424 !important;
+}
+
+.app:not(:has(.admin-shell)) .main-content {
+  position: relative;
+}
+
+.app:not(:has(.admin-shell)) .main-content::before {
+  content: "";
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    linear-gradient(90deg, rgba(237, 29, 36, 0.05), transparent 20%, transparent 80%, rgba(4, 118, 242, 0.06)),
+    repeating-linear-gradient(
+      -12deg,
+      transparent 0 18px,
+      rgba(255, 255, 255, 0.012) 18px 19px
+    );
+  opacity: 0.9;
+}
+
+/* —— Versus rail in navbar —— */
+.app:not(:has(.admin-shell)) .site-navbar .navbar-container {
+  position: relative;
+}
+
+.app:not(:has(.admin-shell)) .site-navbar.command-navbar.scrolled,
+.app:not(:has(.admin-shell)) .site-navbar.command-navbar:not(.transparent) {
+  border-image: linear-gradient(90deg, #ed1d24, #ffd666, #0476f2) 1 !important;
+  border-bottom-width: 1px !important;
+  border-bottom-style: solid !important;
+}
+
+/* —— Hero Marvel | VS | DC —— */
+.mvd-versus-strip {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  margin: 0.35rem 0 0.15rem;
+  flex-wrap: wrap;
+}
+
+.mvd-versus-side {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: "Anton", "Excon", sans-serif;
+  font-size: clamp(0.95rem, 2.2vw, 1.35rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mvd-versus-side--marvel {
+  color: #ff4d5a;
+  text-shadow: 0 0 18px rgba(237, 29, 36, 0.55);
+}
+
+.mvd-versus-side--dc {
+  color: #4db8ff;
+  text-shadow: 0 0 18px rgba(0, 212, 255, 0.45);
+}
+
+.mvd-versus-side img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.25));
+}
+
+.mvd-versus-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.6rem;
+  height: 2.6rem;
+  padding: 0 0.55rem;
+  border-radius: 999px;
+  font-family: "Anton", sans-serif;
+  font-size: 1.05rem;
+  letter-spacing: 0.08em;
+  color: #0a0a0f;
+  background: linear-gradient(135deg, #ffe27a, #ffd666 40%, #f0a020);
+  border: 2px solid rgba(255, 255, 255, 0.55);
+  box-shadow:
+    0 0 0 3px rgba(237, 29, 36, 0.35),
+    0 0 0 6px rgba(4, 118, 242, 0.28),
+    0 0 28px rgba(255, 214, 102, 0.45);
+  animation: mvd-vs-pulse 2.4s ease-in-out infinite;
+}
+
+.mvd-versus-art {
+  position: absolute;
+  right: 4%;
+  bottom: 18%;
+  z-index: 3;
+  width: min(280px, 28vw);
+  pointer-events: none;
+  opacity: 0.88;
+  filter: drop-shadow(0 12px 40px rgba(0, 0, 0, 0.65));
+  mix-blend-mode: screen;
+}
+
+.mvd-versus-art img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 214, 102, 0.35);
+}
+
+/* Left red / right blue vignette on hero */
+.app:not(:has(.admin-shell)) .mf1-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(139, 10, 18, 0.42) 0%, transparent 34%, transparent 66%, rgba(4, 70, 160, 0.4) 100%),
+    linear-gradient(180deg, transparent 55%, rgba(5, 6, 12, 0.88) 100%);
+}
+
+.app:not(:has(.admin-shell)) .mf1-hero .mf-hero-champ--scarlet {
+  opacity: 0.55 !important;
+  filter: saturate(1.25) brightness(0.95) drop-shadow(0 0 24px rgba(237, 29, 36, 0.55)) !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-hero .mf-hero-champ--cobalt {
+  opacity: 0.55 !important;
+  filter: saturate(1.2) brightness(0.95) hue-rotate(-8deg) drop-shadow(0 0 24px rgba(0, 212, 255, 0.5)) !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-hero__verse {
+  background: linear-gradient(90deg, #ed1d24, #ffd666, #0476f2) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  color: transparent !important;
+}
+
+/* Stark panel dual border */
+.app:not(:has(.admin-shell)) .mf1-stark-panel {
+  background:
+    linear-gradient(160deg, rgba(60, 8, 12, 0.55), rgba(8, 12, 28, 0.88) 45%, rgba(4, 40, 90, 0.55)) !important;
+  border-color: rgba(255, 214, 102, 0.35) !important;
+}
+
+/* —— Theme section clash —— */
+.app:not(:has(.admin-shell)) .home-theme-marvel-dc {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  border-block: 1px solid transparent;
+  border-image: linear-gradient(90deg, #ed1d24, #ffd666, #0476f2) 1;
+  min-height: 420px;
+}
+
+.app:not(:has(.admin-shell)) .home-theme-marvel-dc .home-theme-bg-gif {
+  opacity: 0.55 !important;
+  filter: contrast(1.15) saturate(1.2);
+}
+
+.app:not(:has(.admin-shell)) .home-theme-marvel-dc .home-theme-overlay {
+  background:
+    linear-gradient(90deg, rgba(90, 0, 10, 0.72), rgba(5, 6, 12, 0.55) 45%, rgba(0, 40, 110, 0.72)),
+    linear-gradient(180deg, rgba(5, 6, 12, 0.2), rgba(5, 6, 12, 0.85)) !important;
+}
+
+.app:not(:has(.admin-shell)) .home-theme-title {
+  background: linear-gradient(90deg, #ff6b6b, #ffd666 45%, #4db8ff) !important;
+  background-size: 200% auto !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  animation: mvd-clash 6s linear infinite;
+}
+
+.app:not(:has(.admin-shell)) .home-theme-kicker {
+  color: #ffd666 !important;
+  letter-spacing: 0.22em !important;
+  text-transform: uppercase;
+  font-weight: 800 !important;
+}
+
+/* Dual chips / badges */
+.app:not(:has(.admin-shell)) .section-badge,
+.app:not(:has(.admin-shell)) .mf-section-badge,
+.app:not(:has(.admin-shell)) [class*="SectionBadge"] {
+  border-image: linear-gradient(90deg, #ed1d24, #0476f2) 1;
+}
+
+.app:not(:has(.admin-shell)) .home-section-title,
+.app:not(:has(.admin-shell)) .section-title,
+.app:not(:has(.admin-shell)) .page-header h1 {
+  background: linear-gradient(92deg, #ff5a5f 0%, #ffd666 50%, #4db8ff 100%) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* Cards alternate universe edge */
+.app:not(:has(.admin-shell)) .event-card,
+.app:not(:has(.admin-shell)) .category-card {
+  position: relative;
+  overflow: hidden;
+}
+
+.app:not(:has(.admin-shell)) .event-card::before,
+.app:not(:has(.admin-shell)) .category-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: linear-gradient(180deg, #ed1d24, #ffd666, #0476f2);
+  opacity: 0.9;
+}
+
+.app:not(:has(.admin-shell)) .event-card:nth-child(even)::before,
+.app:not(:has(.admin-shell)) .category-card:nth-child(even)::before {
+  left: auto;
+  right: 0;
+}
+
+/* Footer clash bar */
+.app:not(:has(.admin-shell)) .site-footer-universe::before,
+.app:not(:has(.admin-shell)) .site-footer-pro::before {
+  content: "";
+  display: block;
+  height: 3px;
+  width: 100%;
+  background: linear-gradient(90deg, #ed1d24 0%, #ffd666 50%, #0476f2 100%);
+  box-shadow: 0 0 24px rgba(255, 214, 102, 0.35);
+}
+
+/* Page headers — split wash */
+.app:not(:has(.admin-shell)) .page-header,
+.app:not(:has(.admin-shell)) .cinematic-page-header {
+  background:
+    linear-gradient(105deg, rgba(237, 29, 36, 0.28), transparent 42%, transparent 58%, rgba(4, 118, 242, 0.26)),
+    linear-gradient(180deg, rgba(5, 6, 12, 0.2), rgba(5, 6, 12, 0.92)) !important;
+}
+
+/* Buttons dual energy */
+.app:not(:has(.admin-shell)) .mf1-btn--urgency {
+  background: linear-gradient(135deg, #ed1d24, #b01018 55%, #7a0810) !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-btn--outline {
+  border-color: rgba(4, 118, 242, 0.65) !important;
+  box-shadow: 0 0 22px rgba(4, 118, 242, 0.28) !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-btn--outline:hover {
+  border-color: #00d4ff !important;
+  background: rgba(4, 118, 242, 0.18) !important;
+}
+
+/* Ticker clash colors */
+.app:not(:has(.admin-shell)) .mf1-hero__ticker-group span:nth-child(3n + 1) {
+  color: #ff6b6b;
+}
+.app:not(:has(.admin-shell)) .mf1-hero__ticker-group span:nth-child(3n + 2) {
+  color: #ffd666;
+}
+.app:not(:has(.admin-shell)) .mf1-hero__ticker-group span:nth-child(3n) {
+  color: #4db8ff;
+}
+
+.app:not(:has(.admin-shell)) .home-theme-versus {
+  justify-content: center;
+  margin-bottom: 1rem;
+}

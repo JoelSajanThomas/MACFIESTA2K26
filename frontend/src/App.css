@@ -3,28 +3,28 @@
    ═══════════════════════════════════════════════════════════ */
 
 :root {
-  --navy-950: #04040f;
-  --navy-900: #08081a;
-  --navy-800: #0f0f24;
-  --navy-700: #161632;
-  --purple-600: #6c3fcf;
-  --purple-glow: rgba(108, 63, 207, 0.35);
-  --gold-400: #e8c547;
-  --gold-500: #d4af37;
-  --gold-600: #c9a227;
-  --white: #f8f7fc;
-  --muted: #9490a8;
-  --muted-dark: #5c5870;
-  --glass: rgba(255, 255, 255, 0.05);
+  --navy-950: #05060c;
+  --navy-900: #0a0e1a;
+  --navy-800: #12161f;
+  --navy-700: #1c2436;
+  --purple-600: #7b3ff2;
+  --purple-glow: rgba(123, 63, 242, 0.35);
+  --gold-400: #ffd666;
+  --gold-500: #f0c14b;
+  --gold-600: #d4a017;
+  --white: #f4f6fb;
+  --muted: #9aa3b5;
+  --muted-dark: #6b7385;
+  --glass: rgba(12, 16, 28, 0.72);
   --glass-border: rgba(255, 255, 255, 0.1);
-  --radius: 16px;
-  --radius-lg: 24px;
+  --radius: 4px;
+  --radius-lg: 8px;
   --shadow: 0 20px 60px rgba(0, 0, 0, 0.45);
-  --shadow-gold: 0 8px 32px rgba(212, 175, 55, 0.2);
-  --font-body: "DM Sans", system-ui, sans-serif;
-  --font-display: "Playfair Display", Georgia, serif;
-  --container: 1200px;
-  --nav-h: 72px;
+  --shadow-gold: 0 8px 32px rgba(240, 193, 75, 0.2);
+  --font-body: "Source Sans 3", "Segoe UI", system-ui, sans-serif;
+  --font-display: "Oswald", "Arial Narrow", sans-serif;
+  --container: 1180px;
+  --nav-h: 64px;
 }
 
 /* ── Base ───────────────────────────────────────────────── */
@@ -33,9 +33,15 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background: var(--navy-950);
+  background: transparent;
   color: var(--white);
   font-family: var(--font-body);
+  position: relative;
+  isolation: isolate;
+}
+
+body {
+  background: var(--navy-950);
 }
 
 .main-content {
@@ -1886,6 +1892,16 @@
   margin: 0 0 0.75rem;
   font-size: 1.2rem;
   color: var(--gold-400);
+}
+
+.registration-account-note {
+  margin: -0.35rem 0 0.85rem;
+}
+
+.registration-form input[readonly] {
+  opacity: 0.85;
+  cursor: default;
+  background: color-mix(in srgb, var(--navy-900, #0b1220) 70%, transparent);
 }
 
 .registration-fee-note {
@@ -5080,4 +5096,55 @@
 
 .admin-launch-reminder-links a:hover {
   text-decoration: underline;
+}
+
+/* Payment proof + dual QR */
+.payment-proof-panel {
+  margin: 1.25rem 0;
+  text-align: left;
+}
+.payment-proof-panel h4 {
+  margin: 0 0 0.5rem;
+  font-family: var(--font-display);
+  color: var(--gold-400);
+}
+.payment-amount-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  margin: 0.75rem 0 1rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--gold-400) 35%, transparent);
+  border-radius: 8px;
+}
+.payment-amount-box strong {
+  font-size: 1.35rem;
+  color: var(--gold-400);
+}
+.payment-qr-block {
+  margin-bottom: 1rem;
+}
+.payment-qr-image {
+  display: block;
+  width: 220px;
+  max-width: 100%;
+  height: auto;
+  margin: 0.5rem 0 0.75rem;
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+.payment-status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+.payment-proof-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.85rem;
 }

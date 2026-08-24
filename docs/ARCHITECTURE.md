@@ -26,4 +26,4 @@
 3. **Desk** — staff PATCH payment / attendance; Verification looks up reg #.
 4. **Publish** — staff results + event “result published” → public Results + certificates.
 
-See [PRODUCT_OVERVIEW.md](../PRODUCT_OVERVIEW.md) and [API_DOCUMENTATION.md](../API_DOCUMENTATION.md).
+See [API_DOCUMENTATION.md](../API_DOCUMENTATION.md).

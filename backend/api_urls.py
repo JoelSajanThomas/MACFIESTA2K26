@@ -10,11 +10,21 @@ from registrations.views import (
     my_pass,
     certificate_data,
     attendance_report,
+    export_registrations_csv,
+    verify_lookup,
+    verify_check_in,
+    public_institutions,
 )
 from results.views import ResultViewSet
 from gallery.views import GalleryImageViewSet
 from announcements.views import AnnouncementViewSet
-from dashboard.views import dashboard_stats, current_user, public_fest_stats
+from dashboard.views import (
+    dashboard_stats,
+    current_user,
+    public_fest_stats,
+    public_fest_config,
+)
+from accounts.staff_views import staff_directory, staff_detail
 from cms.views import (
     SiteSettingViewSet,
     FestivalHighlightViewSet,
@@ -28,6 +38,11 @@ from cms.views import (
     HomepageSectionViewSet,
     FestRewindItemViewSet,
 )
+from accommodation.views import (
+    HostelViewSet,
+    AccommodationBookingViewSet,
+    admin_hospitality_stats,
+)
 
 router = DefaultRouter()
 router.register('events', EventViewSet)
@@ -35,6 +50,8 @@ router.register('registrations', RegistrationViewSet, basename='registrations')
 router.register('results', ResultViewSet)
 router.register('gallery', GalleryImageViewSet)
 router.register('announcements', AnnouncementViewSet)
+router.register('hostels', HostelViewSet, basename='hostels')
+router.register('accommodation/bookings', AccommodationBookingViewSet, basename='accommodation-bookings')
 
 cms_router = DefaultRouter()
 cms_router.register('site-settings', SiteSettingViewSet, basename='cms-site-settings')
@@ -53,12 +70,20 @@ urlpatterns = [
     path('', include(router.urls)),
     path('cms/', include(cms_router.urls)),
     path('public/stats/', public_fest_stats),
+    path('public/config/', public_fest_config),
+    path('public/institutions/', public_institutions),
     path('dashboard/stats/', dashboard_stats),
     path('auth/me/', current_user),
+    path('admin/staff/', staff_directory),
+    path('admin/staff/<int:pk>/', staff_detail),
     path('admin/registrations/', AdminRegistrationListView.as_view()),
     path('admin/registrations/<int:pk>/', AdminRegistrationDetailView.as_view()),
     path('admin/events/<int:event_id>/promote-waitlist/', admin_promote_waitlist),
     path('admin/reports/attendance/', attendance_report),
+    path('admin/reports/registrations.csv', export_registrations_csv),
+    path('admin/hospitality/stats/', admin_hospitality_stats),
+    path('admin/verification/lookup/', verify_lookup),
+    path('admin/verification/check-in/', verify_check_in),
     path('registrations/<int:pk>/pass/', my_pass),
     path('certificates/<int:result_id>/', certificate_data),
 ]

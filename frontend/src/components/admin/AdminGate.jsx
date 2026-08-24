@@ -19,6 +19,10 @@ export default function AdminGate({ children }) {
           setState("denied");
           return;
         }
+        if (res.data.is_active === false) {
+          setState("denied");
+          return;
+        }
         if (res.data.must_change_password) {
           setState("password");
           return;
@@ -48,9 +52,11 @@ export default function AdminGate({ children }) {
     return (
       <div className="admin-gate container">
         <div className="dash-gate-card">
-          <h1>Login Required</h1>
-          <p>Sign in with a coordinator account to manage fest content.</p>
-          <Link to="/login" className="btn btn-gold">Login</Link>
+          <h1>Staff login required</h1>
+          <p>Sign in with your staff or volunteer account. Students use the same Sign In page.</p>
+          <div className="admin-ops-actions">
+            <Link to="/login" className="btn btn-gold">Sign In</Link>
+          </div>
         </div>
       </div>
     );
@@ -60,8 +66,8 @@ export default function AdminGate({ children }) {
     return (
       <div className="admin-gate container">
         <div className="dash-gate-card denied">
-          <h1>Access Denied</h1>
-          <p>Your account does not have staff permissions.</p>
+          <h1>Access denied</h1>
+          <p>This area is only for MacFiesta staff and committee desks.</p>
           <Link to="/" className="btn btn-outline">Back to Home</Link>
         </div>
       </div>

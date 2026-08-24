@@ -18,6 +18,7 @@
     background var(--dur-hover) var(--ease-out),
     border-color var(--dur-hover) var(--ease-out),
     color var(--dur-hover) var(--ease-out);
+  transform: translateZ(0);
 }
 
 .btn:hover {
@@ -149,6 +150,31 @@
 
 .gallery-item.clickable:hover .gallery-item-hover {
   opacity: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .nav-link,
+  .event-card-premium,
+  .home-type-tile,
+  .home-theme-marvel-dc,
+  .home-guest-card,
+  .home-rewind-tile,
+  .gallery-item,
+  .countdown-unit {
+    transition: none !important;
+  }
+
+  .btn:hover,
+  .btn:active:not(:disabled),
+  .nav-link:hover,
+  .event-card-premium:hover,
+  .home-type-tile:hover,
+  .home-theme:hover .home-theme-bg img,
+  .home-rewind-tile:hover img,
+  .gallery-item.clickable:hover .gallery-item-image img {
+    transform: none !important;
+  }
 }
 
 /* ── Forms ─────────────────────────────────────────────── */

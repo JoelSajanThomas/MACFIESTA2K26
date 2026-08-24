@@ -1,0 +1,384 @@
+/**
+ * MacFiesta public theme — brighter Marvel × DC color flow.
+ * Red (Marvel) ↔ Gold ↔ Cyan/Blue (DC). Not void-black heavy.
+ * Does not restyle .admin-shell.
+ */
+
+@keyframes mf-mvd-flow {
+  0% {
+    background-position: 0% 50%;
+  }
+  100% {
+    background-position: 200% 50%;
+  }
+}
+
+.app:not(:has(.admin-shell)) {
+  --mf-red: #ed1d24;
+  --mf-red-bright: #ff3b44;
+  --mf-red-dark: #b01018;
+  --mf-cyan: #00d4ff;
+  --mf-cyan-dim: #0496ff;
+  --mf-gold: #f0c14b;
+  --mf-gold-light: #ffe08a;
+  --mf-ink: #0a1020;
+  --mf-ink-elevated: #121a2e;
+  --mf-surface: #161f35;
+  --mf-glass: rgba(16, 24, 42, 0.72);
+  --mf-glass-strong: rgba(12, 18, 32, 0.88);
+  --mf-border: rgba(0, 212, 255, 0.28);
+  --mf-border-red: rgba(237, 29, 36, 0.45);
+  --mf-border-gold: rgba(240, 193, 75, 0.45);
+  --mf-glow-red: 0 0 28px rgba(237, 29, 36, 0.45);
+  --mf-glow-cyan: 0 0 28px rgba(0, 212, 255, 0.4);
+  --mf-glow-gold: 0 0 22px rgba(240, 193, 75, 0.35);
+  --mf-text: #f5f7ff;
+  --mf-muted: rgba(230, 236, 255, 0.78);
+
+  --marvel-red: #ed1d24;
+  --marvel-red-bright: #ff3b44;
+  --marvel-red-dark: #b01018;
+  --arc-cyan: #00d4ff;
+  --metallic-gold: #f0c14b;
+  --festival-dark: #0a1020;
+
+  --hero-red: #ed1d24;
+  --hero-red-soft: #ff4d5a;
+  --electric-blue: #00d4ff;
+  --electric-blue-soft: #5ce1ff;
+  --gold-400: #ffe08a;
+  --gold-500: #f0c14b;
+  --gold-600: #d4a017;
+  --border-glow: rgba(0, 212, 255, 0.4);
+  --glow-red: 0 0 28px rgba(237, 29, 36, 0.45);
+  --glow-blue: 0 0 28px rgba(0, 212, 255, 0.4);
+  --glow-gold: 0 0 22px rgba(240, 193, 75, 0.35);
+
+  --mvd-marvel: #ed1d24;
+  --mvd-marvel-deep: #8f1018;
+  --mvd-dc: #0476f2;
+  --mvd-dc-bright: #00d4ff;
+  --mvd-gold: #ffd666;
+  --mvd-ink: #0a1020;
+
+  --ux-cyan: #00d4ff;
+  --ux-red: #ed1d24;
+  --ux-gold: #f0c14b;
+
+  --color-accent: var(--mf-gold);
+  --color-accent-school: #ed1d24;
+  --color-accent-college: #00d4ff;
+  --color-danger: var(--mf-red);
+
+  background: #070b14 !important;
+  background-image: none !important;
+  color: #f5f7ff;
+}
+
+.app:not(:has(.admin-shell)):has(.home-page--frame-bg) .main-content {
+  background: transparent !important;
+}
+
+.app:not(:has(.admin-shell)) .main-content::before {
+  display: none !important;
+}
+
+/* —— Hero title: flowing Marvel → Gold → DC —— */
+.app:not(:has(.admin-shell)) .mf1-hero__title {
+  background: none !important;
+  background-image: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: #f5f7fb !important;
+  color: #f5f7fb !important;
+  animation: none !important;
+  filter: none !important;
+  letter-spacing: 0.02em !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-hero__edition {
+  background: none !important;
+  background-image: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: #00d4ff !important;
+  color: #00d4ff !important;
+  animation: none !important;
+  filter: none !important;
+}
+
+.app:not(:has(.admin-shell)) .mf-theme-split__marvel {
+  color: #ff3b44 !important;
+  -webkit-text-fill-color: #ff3b44 !important;
+  text-shadow:
+    0 0 18px rgba(237, 29, 36, 0.7),
+    0 2px 0 rgba(0, 0, 0, 0.35) !important;
+}
+
+.app:not(:has(.admin-shell)) .mf-theme-split__dc {
+  color: #5ce1ff !important;
+  -webkit-text-fill-color: #5ce1ff !important;
+  text-shadow:
+    0 0 18px rgba(0, 212, 255, 0.65),
+    0 2px 0 rgba(0, 0, 0, 0.35) !important;
+}
+
+.app:not(:has(.admin-shell)) .mf-theme-split__x {
+  color: #ffd666 !important;
+  -webkit-text-fill-color: #ffd666 !important;
+  text-shadow: 0 0 14px rgba(240, 193, 75, 0.55) !important;
+}
+
+.app:not(:has(.admin-shell)) .mf-theme-split__tag {
+  color: rgba(245, 247, 255, 0.92) !important;
+  letter-spacing: 0.18em !important;
+}
+
+/* —— Accents / chrome —— */
+.app:not(:has(.admin-shell)) .mf1-gradient-text-plasma,
+.app:not(:has(.admin-shell)) .mf1-section-badge,
+.app:not(:has(.admin-shell)) .ux-section-head__eyebrow,
+.app:not(:has(.admin-shell)) .ux-intro__eyebrow,
+.app:not(:has(.admin-shell)) .ux-intro__fact-label,
+.app:not(:has(.admin-shell)) .ux-hero-meta__item em {
+  color: #7be7ff !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-section-badge {
+  border-color: rgba(0, 212, 255, 0.4) !important;
+  background: transparent !important;
+  background-image: none !important;
+  color: #ffe08a !important;
+  box-shadow: none !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-shimmer-text {
+  background: none !important;
+  background-image: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: #f5f7fb !important;
+  color: #f5f7fb !important;
+  animation: none !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-gradient-text-plasma {
+  background: none !important;
+  background-image: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: #00d4ff !important;
+  color: #00d4ff !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-section-divider {
+  background: #ed1d24 !important;
+  background-image: none !important;
+  height: 2px !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-btn--outline,
+.app:not(:has(.admin-shell)) .btn-outline,
+.app:not(:has(.admin-shell)) .btn.btn-outline {
+  border-color: rgba(0, 212, 255, 0.65) !important;
+  color: #7be7ff !important;
+  background: rgba(8, 18, 36, 0.45) !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-btn--outline:hover,
+.app:not(:has(.admin-shell)) .btn-outline:hover {
+  background: rgba(0, 212, 255, 0.14) !important;
+  border-color: #00d4ff !important;
+  color: #fff !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-btn--urgency,
+.app:not(:has(.admin-shell)) .btn-gold,
+.app:not(:has(.admin-shell)) .pro-nav__btn--primary {
+  background: #ed1d24 !important;
+  background-image: none !important;
+  color: #fff !important;
+  box-shadow: none !important;
+}
+
+.app:not(:has(.admin-shell)) .pro-nav__btn--outline {
+  border-color: rgba(0, 212, 255, 0.55) !important;
+  color: #7be7ff !important;
+  background: rgba(10, 18, 34, 0.55) !important;
+}
+
+.app:not(:has(.admin-shell)) .pro-nav__link.is-active {
+  background: rgba(237, 29, 36, 0.2) !important;
+  box-shadow: inset 0 0 0 1px rgba(237, 29, 36, 0.45) !important;
+}
+
+.app:not(:has(.admin-shell)) .pro-nav__link:focus-visible,
+.app:not(:has(.admin-shell)) .pro-nav__btn:focus-visible,
+.app:not(:has(.admin-shell)) *:focus-visible {
+  outline-color: #00d4ff !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-scroll-progress {
+  background: #ed1d24 !important;
+  background-image: none !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-mobile-dock__tab.is-active {
+  color: #7be7ff !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-mobile-dock__tab.is-active .mf1-mobile-dock__pip {
+  background: #00d4ff !important;
+  box-shadow: 0 0 10px #00d4ff !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-mobile-dock__pass,
+.app:not(:has(.admin-shell)) .mf1-mobile-dock__pass-ring {
+  background: #ed1d24 !important;
+  background-image: none !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-mobile-dock__pass {
+  box-shadow:
+    0 0 0 2px rgba(237, 29, 36, 0.4),
+    0 0 22px rgba(0, 212, 255, 0.35) !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-stark-label,
+.app:not(:has(.admin-shell)) .mf1-stark-motto {
+  color: #7be7ff !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-stark-panel {
+  border-color: rgba(0, 212, 255, 0.4) !important;
+  box-shadow:
+    0 0 24px rgba(237, 29, 36, 0.12),
+    0 0 28px rgba(0, 212, 255, 0.16) !important;
+  background: rgba(12, 20, 36, 0.55) !important;
+}
+
+.app:not(:has(.admin-shell)) .title-blue-universe .title-universe-chip {
+  color: #7be7ff !important;
+}
+
+.app:not(:has(.admin-shell)) .title-universe-chip {
+  color: #ffd666 !important;
+}
+
+.app:not(:has(.admin-shell)) a:not(.btn):not(.mf1-btn):not(.pro-nav__link):not(.pro-nav__btn) {
+  color: #7be7ff;
+}
+
+.app:not(:has(.admin-shell)) .site-footer-pro {
+  border-top: 1px solid rgba(0, 212, 255, 0.18);
+  background: #080a10;
+  background-image: none;
+}
+
+/* —— Frame backdrop: keep Marvel frames visible —— */
+.app:not(:has(.admin-shell)) .mf1-frame-bg {
+  background: #070b14 !important;
+  background-image: none !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-frame-bg__canvas {
+  filter: brightness(1.02) contrast(1.04) saturate(1.12) !important;
+  opacity: 1 !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-frame-bg__orbs,
+.app:not(:has(.admin-shell)) .mf1-hero__glow--red,
+.app:not(:has(.admin-shell)) .mf1-hero__glow--cyan {
+  display: none !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-frame-bg__veil {
+  background: rgba(7, 11, 20, 0.22) !important;
+  background-image: none !important;
+}
+
+.app:not(:has(.admin-shell)) .home-page > .section,
+.app:not(:has(.admin-shell)) .home-page > section:not(.mf1-hero):not(.ref-hero),
+.app:not(:has(.admin-shell)) .home-page .home-universe-section,
+.app:not(:has(.admin-shell)) .home-page .section.home-welcome {
+  background: rgba(8, 12, 22, 0.22) !important;
+  border-top-color: rgba(0, 212, 255, 0.1) !important;
+  backdrop-filter: none !important;
+}
+
+/* Event format cards: image stays in top band; text never under image */
+.app:not(:has(.admin-shell)) .home-page .home-types .home-type-tile--media {
+  display: grid !important;
+  grid-template-rows: 7rem minmax(0, 1fr) !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  align-items: stretch !important;
+  overflow: hidden !important;
+  padding: 0 !important;
+  min-height: 19.5rem !important;
+  background: #0c101a !important;
+}
+
+.app:not(:has(.admin-shell)) .home-page .home-types .home-type-tile__media {
+  position: relative !important;
+  z-index: 0 !important;
+  height: 7rem !important;
+  max-height: 7rem !important;
+  min-height: 0 !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+}
+
+.app:not(:has(.admin-shell)) .home-page .home-types .home-type-tile__media img {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 7rem !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  transform: none !important;
+  animation: none !important;
+  filter: brightness(0.92) saturate(1.05) !important;
+}
+
+.app:not(:has(.admin-shell)) .home-page .home-types .home-type-tile__media::after {
+  content: "" !important;
+  position: absolute !important;
+  inset: auto 0 0 0 !important;
+  height: 40% !important;
+  background: rgba(12, 16, 26, 0.65) !important;
+  background-image: none !important;
+  pointer-events: none !important;
+}
+
+.app:not(:has(.admin-shell)) .home-page .home-types .home-type-tile__body {
+  position: relative !important;
+  z-index: 2 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 0.4rem !important;
+  padding: 0.95rem 1rem 1.1rem !important;
+  margin: 0 !important;
+  background: #0c101a !important;
+  min-height: 0 !important;
+}
+
+.app:not(:has(.admin-shell)) .home-page .home-types .home-type-tile__label,
+.app:not(:has(.admin-shell)) .home-page .home-types .home-type-tile__count,
+.app:not(:has(.admin-shell)) .home-page .home-types .home-type-tile__desc,
+.app:not(:has(.admin-shell)) .home-page .home-types .home-type-cta {
+  position: relative !important;
+  z-index: 2 !important;
+}
+
+.app:not(:has(.admin-shell)) .home-page .home-types .home-type-tile__desc {
+  color: rgba(235, 240, 248, 0.88) !important;
+  min-height: 3.4rem !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app:not(:has(.admin-shell)) .mf1-hero__title,
+  .app:not(:has(.admin-shell)) .mf1-hero__edition,
+  .app:not(:has(.admin-shell)) .mf1-shimmer-text {
+    animation: none !important;
+    background-position: 40% center !important;
+  }
+}

@@ -1,0 +1,402 @@
+/**
+ * Complete Multiverse Championship UI skin — site-wide.
+ * Visual only: no route, copy, or API changes.
+ */
+
+/* ========== Shared championship surfaces ========== */
+.page-header-content h1,
+.page-header h1 {
+  font-family: var(--font-display) !important;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: linear-gradient(180deg, #fff 10%, #d7dde8 50%, #ed1d24 125%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.page-content {
+  padding-top: 2rem;
+  padding-bottom: 3.5rem;
+}
+
+.events-guidelines-list li,
+.detail-facts li {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0.45rem 0;
+}
+
+.section-eyebrow,
+.page-header .section-eyebrow {
+  font-family: var(--font-hud) !important;
+  letter-spacing: 0.18em !important;
+  text-transform: uppercase;
+  color: var(--electric-blue) !important;
+  font-weight: 700;
+}
+
+.chip,
+.gallery-filters .chip,
+.schedule-toolbar .chip,
+.results-toolbar .chip {
+  font-family: var(--font-hud) !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-size: 0.72rem !important;
+  font-weight: 700 !important;
+  border: 1px solid rgba(0, 212, 255, 0.28) !important;
+  background: rgba(0, 212, 255, 0.06) !important;
+  color: rgba(255, 255, 255, 0.88) !important;
+  border-radius: 999px !important;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+}
+
+.chip.active,
+.chip[aria-pressed="true"],
+.gallery-filters .chip.active,
+.schedule-toolbar .chip.active {
+  background: linear-gradient(135deg, rgba(237, 29, 36, 0.25), rgba(237, 29, 36, 0.12)) !important;
+  border-color: rgba(237, 29, 36, 0.55) !important;
+  color: #fff !important;
+  box-shadow: 0 0 16px rgba(237, 29, 36, 0.25);
+}
+
+/* ========== Event cards ========== */
+.event-card-premium,
+.event-card-mission {
+  background: linear-gradient(165deg, rgba(18, 20, 32, 0.95), rgba(8, 10, 16, 0.96)) !important;
+  border: 1px solid rgba(0, 212, 255, 0.16) !important;
+  border-radius: 0.95rem !important;
+  overflow: hidden;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.42) !important;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease !important;
+}
+
+.event-card-premium:hover,
+.event-card-mission:hover {
+  transform: translateY(-5px) !important;
+  border-color: rgba(237, 29, 36, 0.45) !important;
+  box-shadow:
+    0 18px 44px rgba(0, 0, 0, 0.5),
+    0 0 28px rgba(237, 29, 36, 0.18) !important;
+}
+
+.event-card-category,
+.event-card-fee {
+  font-family: var(--font-hud) !important;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.events-grid-premium,
+.home-types-grid {
+  gap: 1.15rem !important;
+}
+
+.prize-pool-card,
+.detail-cta-panel,
+.detail-panel,
+.contact-card,
+.sponsor-card,
+.committee-card,
+.campus-life-card,
+.value-card,
+.student-reg-card,
+.announcement-card,
+.home-guest-card,
+.legends-guest-card,
+.home-type-tile,
+.home-rewind-tile,
+.home-sponsor-item,
+.gallery-video-card,
+.pass-card,
+.certificate-sheet,
+.hud-glass,
+.stats-hud {
+  background: linear-gradient(160deg, rgba(18, 20, 32, 0.92), rgba(10, 12, 20, 0.9)) !important;
+  border: 1px solid rgba(0, 212, 255, 0.14) !important;
+  border-radius: 0.9rem !important;
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.4) !important;
+}
+
+.detail-info-chip {
+  font-family: var(--font-hud) !important;
+  letter-spacing: 0.08em;
+  border: 1px solid rgba(0, 212, 255, 0.25) !important;
+  background: rgba(0, 212, 255, 0.08) !important;
+}
+
+/* ========== Home story / universe panels ========== */
+.comic-story,
+.choose-universe,
+.home-welcome,
+.home-types,
+.home-theme,
+.home-guest,
+.home-gallery,
+.home-sponsors,
+.home-rewind {
+  position: relative;
+}
+
+.comic-story-panel,
+.choose-universe-panel {
+  background: linear-gradient(165deg, rgba(16, 18, 28, 0.94), rgba(8, 10, 16, 0.92)) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  border-radius: 0.95rem !important;
+  box-shadow: 0 14px 36px rgba(0, 0, 0, 0.42) !important;
+  overflow: hidden;
+  transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.comic-story-panel:hover,
+.choose-universe-panel:hover {
+  transform: translateY(-4px);
+}
+
+.choose-universe-panel--red:hover,
+.comic-story-panel--1:hover {
+  border-color: rgba(237, 29, 36, 0.45) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 24px rgba(237, 29, 36, 0.18) !important;
+}
+
+.choose-universe-panel--blue:hover,
+.comic-story-panel--3:hover {
+  border-color: rgba(0, 212, 255, 0.45) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5), 0 0 24px rgba(0, 212, 255, 0.16) !important;
+}
+
+.home-theme-marvel-dc {
+  border-radius: 1rem;
+  overflow: hidden;
+  border: 1px solid rgba(0, 212, 255, 0.16);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.45);
+}
+
+.home-theme-title,
+.home-welcome .home-section-title {
+  letter-spacing: 0.05em;
+}
+
+.home-text-link {
+  font-family: var(--font-hud) !important;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--electric-blue) !important;
+  font-weight: 700;
+}
+
+.home-text-link:hover {
+  color: #fff !important;
+  text-shadow: 0 0 14px rgba(0, 212, 255, 0.45);
+}
+
+.home-sponsor-logo,
+.sponsor-card img {
+  filter: grayscale(0.15) contrast(1.05);
+  transition: filter 0.25s ease, transform 0.25s ease;
+}
+
+.home-sponsor-item:hover .home-sponsor-logo,
+.sponsor-card:hover img {
+  filter: none;
+  transform: scale(1.04);
+}
+
+/* ========== Schedule / Results / Gallery ========== */
+.schedule-toolbar,
+.results-toolbar,
+.gallery-filters,
+.events-intro,
+.schedule-search,
+.results-search {
+  background: rgba(10, 12, 20, 0.55) !important;
+  border: 1px solid rgba(0, 212, 255, 0.12) !important;
+  border-radius: 0.85rem;
+  backdrop-filter: blur(10px);
+}
+
+.schedule-days article,
+.hall-of-heroes,
+.energy-podium,
+.history-timeline-item {
+  background: linear-gradient(160deg, rgba(18, 20, 32, 0.9), rgba(10, 12, 20, 0.92)) !important;
+  border: 1px solid rgba(0, 212, 255, 0.12) !important;
+  border-radius: 0.9rem !important;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.38) !important;
+}
+
+.history-year {
+  font-family: var(--font-display) !important;
+  color: var(--gold-400) !important;
+  letter-spacing: 0.08em;
+}
+
+/* ========== Forms / Auth ========== */
+.auth-page,
+.login-page {
+  min-height: calc(100svh - var(--nav-h, 4rem));
+}
+
+.auth-card,
+.login-form-premium {
+  border-radius: 1rem !important;
+  border: 1px solid rgba(0, 212, 255, 0.2) !important;
+  box-shadow:
+    0 20px 50px rgba(0, 0, 0, 0.5),
+    0 0 0 1px rgba(237, 29, 36, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+.login-form-premium input,
+.contact-form input,
+.contact-form textarea,
+.registration-form input,
+.registration-form textarea,
+.schedule-search input,
+.results-search input,
+.password-field input {
+  background: rgba(5, 5, 10, 0.65) !important;
+  border: 1px solid rgba(0, 212, 255, 0.2) !important;
+  border-radius: 0.65rem !important;
+  color: #fff !important;
+  font-family: var(--font-body) !important;
+}
+
+.login-form-premium input:focus,
+.contact-form input:focus,
+.contact-form textarea:focus,
+.registration-form input:focus,
+.schedule-search input:focus,
+.results-search input:focus {
+  outline: none !important;
+  border-color: rgba(0, 212, 255, 0.55) !important;
+  box-shadow: 0 0 0 3px rgba(0, 212, 255, 0.15) !important;
+}
+
+.login-form-premium label,
+.contact-form label,
+.auth-switch-text,
+.auth-forgot-row {
+  font-family: var(--font-hud) !important;
+  letter-spacing: 0.06em;
+}
+
+.form-error {
+  border-color: rgba(237, 29, 36, 0.45) !important;
+  background: rgba(237, 29, 36, 0.1) !important;
+}
+
+.form-success {
+  border-color: rgba(0, 212, 255, 0.35) !important;
+  background: rgba(0, 212, 255, 0.08) !important;
+}
+
+/* ========== Footer ========== */
+.site-footer-universe {
+  position: relative;
+  overflow: hidden;
+}
+
+.site-footer-universe::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #ed1d24, #f0c14b, #00d4ff, transparent);
+}
+
+.site-footer-universe h2,
+.site-footer-universe h3 {
+  font-family: var(--font-display) !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.site-footer-universe h2 {
+  background: linear-gradient(180deg, #fff, #ed1d24);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.site-footer-universe-grid,
+.footer-universe-nav a,
+.footer-simple-links a,
+.footer-legal-links a {
+  font-family: var(--font-hud) !important;
+  letter-spacing: 0.08em;
+}
+
+.footer-universe-nav a:hover,
+.footer-simple-links a:hover,
+.footer-legal-links a:hover {
+  color: var(--electric-blue) !important;
+}
+
+.footer-universe-brand p,
+.footer-universe-bottom {
+  color: rgba(255, 255, 255, 0.62);
+}
+
+/* ========== Loading / misc ========== */
+.page-loader-wrap,
+.loading-state {
+  font-family: var(--font-hud);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.page-loader-wrap {
+  min-height: 40vh;
+  display: grid;
+  place-items: center;
+}
+
+.status-chip,
+.StatusChip {
+  font-family: var(--font-hud) !important;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.admin-layout,
+.admin-shell {
+  /* Keep admin usable; light championship tint only */
+  --admin-accent: #ed1d24;
+}
+
+.admin-sidebar,
+.admin-topbar {
+  border-color: rgba(0, 212, 255, 0.12) !important;
+}
+
+/* ========== Empty / error states ========== */
+.empty-state,
+.error-state {
+  background: rgba(12, 14, 22, 0.75) !important;
+  border: 1px dashed rgba(0, 212, 255, 0.25) !important;
+  border-radius: 0.9rem;
+}
+
+/* ========== Pass / certificate ========== */
+.hero-pass,
+.pass-card,
+.certificate-sheet {
+  border: 1px solid rgba(212, 175, 55, 0.35) !important;
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.45),
+    0 0 24px rgba(212, 175, 55, 0.12) !important;
+}
+
+/* ========== Responsive polish ========== */
+@media (max-width: 700px) {
+  .event-card-premium,
+  .detail-panel,
+  .contact-card,
+  .sponsor-card,
+  .comic-story-panel,
+  .choose-universe-panel {
+    border-radius: 0.8rem !important;
+  }
+}

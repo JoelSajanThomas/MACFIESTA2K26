@@ -1,5 +1,6 @@
 from django.db.models import Count, Q
-from rest_framework import viewsets
+from rest_framework import status, viewsets
+from rest_framework.response import Response
 
 from config.permissions import IsAdminOrReadOnly
 from .models import Event
@@ -20,3 +21,18 @@ class EventViewSet(viewsets.ModelViewSet):
     serializer_class = EventSerializer
     permission_classes = [IsAdminOrReadOnly]
     required_module = "events"
+
+    def destroy(self, request, *args, **kwargs):
+        event = self.get_object()
+        active_regs = event.registrations.filter(cancelled_at__isnull=True).count()
+        if active_regs > 0:
+            return Response(
+                {
+                    "detail": (
+                        f"Cannot delete this event: {active_regs} registration(s) still exist. "
+                        "Cancel or archive registrations first, or close the event instead."
+                    )
+                },
+                status=status.HTTP_409_CONFLICT,
+            )
+        return super().destroy(request, *args, **kwargs)

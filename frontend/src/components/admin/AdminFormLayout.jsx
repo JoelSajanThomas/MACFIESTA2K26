@@ -59,16 +59,81 @@ export function FormCheckbox({ label, ...props }) {
   );
 }
 
+import { useState } from "react";
+import ImageCropAdjustModal from "./ImageCropAdjustModal";
+import { RiCropLine } from "react-icons/ri";
+
 export function ImageUploadPreview({ label, preview, onChange, accept = "image/*" }) {
+  const [cropModalOpen, setCropModalOpen] = useState(false);
+  const [currentPreview, setCurrentPreview] = useState(preview || "");
+  const [originalFileName, setOriginalFileName] = useState("image.png");
+
+  // Keep internal preview in sync with external preview prop
+  const activePreview = currentPreview || preview;
+
+  function handleFileChange(e) {
+    const file = e.target.files?.[0];
+    if (file) {
+      setOriginalFileName(file.name);
+      const objUrl = URL.createObjectURL(file);
+      setCurrentPreview(objUrl);
+    }
+    if (onChange) onChange(e);
+  }
+
+  function handleCropApply(croppedFile, croppedPreviewUrl) {
+    setCurrentPreview(croppedPreviewUrl);
+    if (onChange) {
+      onChange({
+        target: {
+          files: [croppedFile],
+        },
+      });
+    }
+  }
+
   return (
-    <label className="admin-form-field">
-      {label}
-      <input type="file" accept={accept} onChange={onChange} />
-      {preview && (
-        <div className="admin-image-preview">
-          <img src={preview} alt="Preview" />
+    <div className="admin-form-field space-y-2">
+      <div className="flex items-center justify-between">
+        <span>{label}</span>
+        {activePreview && (
+          <button
+            type="button"
+            onClick={() => setCropModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-black uppercase tracking-wider rounded-lg bg-metallic-gold/20 hover:bg-metallic-gold text-metallic-gold hover:text-black border border-metallic-gold/40 transition-all cursor-pointer shadow-sm"
+          >
+            <RiCropLine className="text-sm" />
+            <span>Crop &amp; Adjust Image</span>
+          </button>
+        )}
+      </div>
+
+      <input type="file" accept={accept} onChange={handleFileChange} />
+
+      {activePreview && (
+        <div className="admin-image-preview relative group rounded-xl overflow-hidden border border-white/20 bg-black/40 mt-2">
+          <img src={activePreview} alt="Preview" className="max-h-48 object-contain rounded-lg mx-auto" />
+          <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+            <button
+              type="button"
+              onClick={() => setCropModalOpen(true)}
+              className="px-4 py-2 text-xs font-black uppercase tracking-wider rounded-xl bg-metallic-gold text-black shadow-lg hover:scale-105 transition-transform"
+            >
+              ✂️ Open Crop &amp; Adjust Tool
+            </button>
+          </div>
         </div>
       )}
-    </label>
+
+      {cropModalOpen && (
+        <ImageCropAdjustModal
+          isOpen={cropModalOpen}
+          imageSrc={activePreview}
+          fileName={originalFileName}
+          onClose={() => setCropModalOpen(false)}
+          onApply={handleCropApply}
+        />
+      )}
+    </div>
   );
 }

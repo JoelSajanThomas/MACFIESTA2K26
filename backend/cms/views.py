@@ -101,3 +101,4 @@ class HomepageSectionViewSet(viewsets.ModelViewSet):
     queryset = HomepageSection.objects.all()
     serializer_class = HomepageSectionSerializer
     permission_classes = [IsAdminOrReadOnly]
+    required_module = "content"

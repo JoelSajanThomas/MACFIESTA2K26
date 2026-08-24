@@ -1,15 +1,13 @@
 # MacFiesta Pro
 
-Official production platform replacing the legacy MacFiesta website for MACFAST.
+Official festival platform for MACFAST — registrations, events, QR verification, results, and admin operations. Registration fees are collected as **manual desk payment**.
 
-Digitizes registrations, events, QR verification, results, reporting, and admin operations. Registration fees remain **manual desk payment** by design.
-
-## Quick start (local)
+## Quick start
 
 ```powershell
 # Backend
 cd backend
-.\venv\Scripts\Activate.ps1
+.\.venv\Scripts\Activate.ps1
 python manage.py migrate
 python manage.py runserver
 
@@ -22,26 +20,22 @@ npm run dev
 - Website: http://127.0.0.1:5173/
 - API / Django Admin: http://127.0.0.1:8000/admin/
 
-## Documentation map
+## Documentation
 
-```
-MacFiestaPro/
-├── README.md                         ← You are here
-├── PRODUCT_OVERVIEW.md               ← Product purpose & architecture summary
-├── PRODUCTION_STATUS.md              ← Main operational doc (status + launch)
-├── DEPLOYMENT.md                     ← Hosting, env, media, APK
-├── OFFICIAL_LAUNCH_CHECKLIST.md      ← Brand / assets cutover (optional companion)
-├── FUTURE_ENHANCEMENTS_STATUS.md     ← Shipped lightweight vs deferred ERP
-├── API_DOCUMENTATION.md              ← REST API surface
-├── TESTING_SUMMARY.md                ← Smoke / test notes
-├── CHANGELOG.md
-├── LICENSE
-└── docs/
-    ├── ARCHITECTURE.md
-    ├── DATABASE_SCHEMA.md
-    ├── USER_GUIDE.md                 ← Participants & public site
-    ├── ADMIN_GUIDE.md                ← Staff, desks, committees
-    └── archive/                      ← MCA / viva materials (not primary)
-```
+| Doc | Purpose |
+|-----|---------|
+| [DEPLOYMENT.md](./DEPLOYMENT.md) | Hosting, env, media, APK |
+| [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) | REST API |
+| [docs/ADMIN_GUIDE.md](./docs/ADMIN_GUIDE.md) | Staff, desks, committees |
+| [docs/USER_GUIDE.md](./docs/USER_GUIDE.md) | Participants & public site |
+| [docs/ARCHITECTURE.md](./docs/ARCHITECTURE.md) | System overview |
+| [docs/DATABASE_SCHEMA.md](./docs/DATABASE_SCHEMA.md) | Data model |
+| [MOBILE_APK.md](./MOBILE_APK.md) | Capacitor / Android build |
+| [SECRET_ROTATION.md](./SECRET_ROTATION.md) | Credential rotation |
+| [CHANGELOG.md](./CHANGELOG.md) | Release notes |
 
-Start with **[PRODUCTION_STATUS.md](./PRODUCTION_STATUS.md)** for go-live readiness.
+## Stack
+
+- **Backend:** Django + Django REST Framework
+- **Frontend:** React (Vite)
+- **Mobile:** Capacitor (Android)

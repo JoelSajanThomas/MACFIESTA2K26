@@ -1,0 +1,1086 @@
+/* Multiverse Champions — cinematic arena roster (not card grid) */
+
+.mvc-section {
+  --mvc-red: #ed1d24;
+  --mvc-cyan: #00d4ff;
+  --mvc-gold: #d4af37;
+  --mvc-ink: #05050a;
+  position: relative;
+  padding: clamp(3.5rem, 8vw, 6rem) 0;
+  overflow: hidden;
+  border-block: 1px solid rgba(0, 212, 255, 0.12);
+  background: var(--mvc-ink) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  border-radius: 0 !important;
+}
+
+.mvc-section__inner {
+  position: relative;
+  z-index: 2;
+}
+
+/* ========== Environment ========== */
+.mvc-env {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.mvc-env__arena {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(255, 255, 255, 0.05), transparent 42%),
+    linear-gradient(180deg, #07080f 0%, #05050a 55%, #030308 100%);
+}
+
+.mvc-env__city {
+  position: absolute;
+  top: 8%;
+  bottom: 0;
+  width: 48%;
+  background-size: cover;
+  background-position: center bottom;
+  opacity: 0.18;
+  filter: saturate(1.2) contrast(1.1);
+  mask-image: linear-gradient(180deg, transparent, #000 35%, #000 70%, transparent);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 35%, #000 70%, transparent);
+  transform: scale(1.05);
+  opacity: 0;
+  transition: opacity 0.9s ease;
+}
+
+.mvc-env__city--red {
+  left: 0;
+  background-color: #1a0508;
+}
+
+.mvc-env__city--blue {
+  right: 0;
+  background-color: #041018;
+}
+
+.mvc-section.is-inview .mvc-env__city {
+  opacity: 0.22;
+}
+
+.mvc-env__portal {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: min(28vw, 320px);
+  aspect-ratio: 1;
+  transform: translate(-50%, -50%) scale(0.75);
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.22), rgba(0, 212, 255, 0.12) 35%, rgba(237, 29, 36, 0.12) 55%, transparent 70%);
+  box-shadow: 0 0 80px rgba(237, 29, 36, 0.2), 0 0 100px rgba(0, 212, 255, 0.18);
+  opacity: 0;
+  transition: opacity 0.8s ease 0.15s, transform 0.9s ease 0.15s;
+}
+
+.mvc-section.is-inview .mvc-env__portal {
+  opacity: 0.85;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.mvc-env__haze {
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(ellipse at 18% 50%, rgba(237, 29, 36, 0.22), transparent 42%),
+    radial-gradient(ellipse at 82% 48%, rgba(0, 212, 255, 0.18), transparent 40%);
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.mvc-section.is-inview .mvc-env__haze {
+  opacity: 1;
+}
+
+.mvc-env__dust {
+  position: absolute;
+  inset: 0;
+  opacity: 0.35;
+  background-image:
+    radial-gradient(circle at 12% 30%, rgba(255, 255, 255, 0.5) 0 1px, transparent 2px),
+    radial-gradient(circle at 70% 22%, rgba(0, 212, 255, 0.55) 0 1px, transparent 2px),
+    radial-gradient(circle at 40% 70%, rgba(237, 29, 36, 0.45) 0 1px, transparent 2px),
+    radial-gradient(circle at 88% 65%, rgba(255, 255, 255, 0.35) 0 1px, transparent 2px);
+  animation: mvc-dust 22s linear infinite;
+}
+
+/* ========== Header ========== */
+.mvc-header {
+  text-align: center;
+  max-width: 40rem;
+  margin: 0 auto 2.75rem;
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.55s ease, transform 0.55s ease;
+}
+
+.mvc-section.is-inview .mvc-header {
+  opacity: 1;
+  transform: none;
+}
+
+.mvc-header__eyebrow {
+  margin: 0 0 0.65rem;
+  font-family: var(--font-hud, Orbitron, sans-serif);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--mvc-gold);
+}
+
+.mvc-header__title {
+  margin: 0;
+  display: grid;
+  gap: 0.05em;
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: clamp(2.6rem, 7vw, 4.6rem);
+  line-height: 0.88;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mvc-header__title span:first-child {
+  background: linear-gradient(180deg, #fff, #cfd6e2 55%, #ed1d24);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.mvc-header__title span:last-child {
+  background: linear-gradient(180deg, #fff, #b8e9ff 50%, #00d4ff);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.mvc-header__sub {
+  margin: 0.85rem 0 0;
+  font-family: var(--font-hud, Orbitron, sans-serif);
+  font-size: 0.78rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.mvc-header__line {
+  display: block;
+  width: 0;
+  height: 2px;
+  margin: 1.1rem auto 0;
+  background: linear-gradient(90deg, var(--mvc-red), var(--mvc-gold), var(--mvc-cyan));
+  transition: width 0.7s ease 0.35s;
+}
+
+.mvc-section.is-inview .mvc-header__line {
+  width: min(16rem, 70%);
+}
+
+/* ========== Arena ========== */
+.mvc-arena {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  gap: clamp(0.75rem, 2vw, 1.5rem);
+  align-items: start;
+  min-height: 42rem;
+}
+
+.mvc-side {
+  position: relative;
+  padding: 1rem 0.35rem 0.5rem;
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.65s ease, transform 0.65s ease;
+}
+
+.mvc-section.is-inview .mvc-side--red {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.2s;
+}
+
+.mvc-section.is-inview .mvc-side--blue {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.32s;
+}
+
+.mvc-side--red {
+  background:
+    linear-gradient(105deg, rgba(237, 29, 36, 0.12), transparent 55%),
+    linear-gradient(180deg, rgba(40, 6, 10, 0.25), transparent 70%);
+  clip-path: polygon(0 0, 100% 0, 96% 100%, 0 100%);
+}
+
+.mvc-side--blue {
+  background:
+    linear-gradient(255deg, rgba(0, 212, 255, 0.12), transparent 55%),
+    linear-gradient(180deg, rgba(4, 24, 40, 0.25), transparent 70%);
+  clip-path: polygon(4% 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.mvc-side__watermark {
+  position: absolute;
+  top: 3.5rem;
+  left: 0;
+  right: 0;
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: clamp(3.5rem, 8vw, 6.5rem);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  line-height: 0.9;
+  opacity: 0.05;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.mvc-side--red .mvc-side__watermark {
+  color: #ff4d55;
+  transform: rotate(-4deg);
+}
+
+.mvc-side--blue .mvc-side__watermark {
+  color: #4de8ff;
+  transform: rotate(4deg);
+}
+
+.mvc-side__head {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.mvc-side__eyebrow {
+  margin: 0;
+  font-family: var(--font-hud, Orbitron, sans-serif);
+  font-size: 0.58rem;
+  letter-spacing: 0.22em;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.mvc-side__title {
+  margin: 0.25rem 0 0.2rem;
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: clamp(1.6rem, 3vw, 2.2rem);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mvc-side--red .mvc-side__title {
+  color: #ff7a80;
+  text-shadow: 0 0 24px rgba(237, 29, 36, 0.45);
+}
+
+.mvc-side--blue .mvc-side__title {
+  color: #6ae6ff;
+  text-shadow: 0 0 24px rgba(0, 212, 255, 0.4);
+}
+
+.mvc-side__micro {
+  margin: 0;
+  font-family: var(--font-hud, Orbitron, sans-serif);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.48);
+}
+
+.mvc-side__captain-wrap {
+  position: relative;
+  z-index: 2;
+  margin: 0 auto 1.1rem;
+  width: min(100%, 280px);
+  opacity: 0;
+  transform: translateY(28px) scale(0.96);
+  transition: opacity 0.7s ease, transform 0.7s ease;
+}
+
+.mvc-section.is-inview .mvc-side__captain-wrap {
+  opacity: 1;
+  transform: none;
+  transition-delay: 0.4s;
+}
+
+.mvc-side--blue .mvc-side__captain-wrap {
+  transition-delay: 0.5s;
+}
+
+/* Collision core */
+.mvc-core {
+  position: relative;
+  z-index: 3;
+  align-self: center;
+  width: 5.5rem;
+  height: 14rem;
+  display: grid;
+  place-items: center;
+  opacity: 0;
+  transform: scale(0.8);
+  transition: opacity 0.6s ease 0.25s, transform 0.6s ease 0.25s;
+}
+
+.mvc-section.is-inview .mvc-core {
+  opacity: 1;
+  transform: none;
+}
+
+.mvc-core__ring {
+  position: absolute;
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 50%;
+  border: 1px dashed rgba(212, 175, 55, 0.55);
+  animation: mvc-spin 14s linear infinite;
+}
+
+.mvc-core__ring--2 {
+  width: 6rem;
+  height: 6rem;
+  border-color: rgba(0, 212, 255, 0.35);
+  animation-direction: reverse;
+  animation-duration: 20s;
+}
+
+.mvc-core__badge {
+  position: relative;
+  z-index: 1;
+  width: 4.4rem;
+  aspect-ratio: 1;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  border-radius: 50%;
+  border: 1px solid rgba(212, 175, 55, 0.5);
+  background:
+    radial-gradient(circle, rgba(255, 255, 255, 0.12), rgba(8, 10, 16, 0.95) 60%);
+  box-shadow:
+    0 0 28px rgba(237, 29, 36, 0.35),
+    0 0 28px rgba(0, 212, 255, 0.3);
+  font-family: var(--font-hud, Orbitron, sans-serif);
+}
+
+.mvc-core__badge span {
+  font-size: 0.48rem;
+  letter-spacing: 0.16em;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.mvc-core__badge strong {
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 1.7rem;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  background: linear-gradient(180deg, #fff, var(--mvc-gold));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Supporting roster — staggered flex, not equal grid */
+.mvc-roster {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.45rem;
+  min-height: 17rem;
+  padding: 0.25rem;
+}
+
+.mvc-roster__slot {
+  flex: 1 1 0;
+  min-width: 0;
+  transition: flex 0.35s cubic-bezier(0.22, 1, 0.36, 1), transform 0.35s ease;
+  opacity: 0;
+  transform: translateY(20px);
+}
+
+.mvc-section.is-inview .mvc-roster__slot {
+  opacity: 1;
+  transform: none;
+  transition:
+    flex 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s ease,
+    opacity 0.55s ease;
+  transition-delay: calc(0.55s + var(--slot-i, 0) * 0.05s);
+}
+
+.mvc-roster__slot:nth-child(1) {
+  --slot-i: 1;
+  transform: translateY(10px);
+}
+.mvc-roster__slot:nth-child(2) {
+  --slot-i: 2;
+  transform: translateY(0);
+}
+.mvc-roster__slot:nth-child(3) {
+  --slot-i: 3;
+  transform: translateY(14px);
+}
+.mvc-roster__slot:nth-child(4) {
+  --slot-i: 4;
+  transform: translateY(4px);
+}
+.mvc-roster__slot:nth-child(5) {
+  --slot-i: 5;
+  transform: translateY(12px);
+}
+
+.mvc-section.is-inview .mvc-roster__slot:nth-child(n) {
+  transform: translateY(var(--mvc-stagger, 0px));
+}
+
+.mvc-roster__slot:nth-child(1) {
+  --mvc-stagger: 10px;
+}
+.mvc-roster__slot:nth-child(2) {
+  --mvc-stagger: 0px;
+}
+.mvc-roster__slot:nth-child(3) {
+  --mvc-stagger: 16px;
+}
+.mvc-roster__slot:nth-child(4) {
+  --mvc-stagger: 4px;
+}
+.mvc-roster__slot:nth-child(5) {
+  --mvc-stagger: 12px;
+}
+
+.mvc-roster:has(.mvc-panel:hover) .mvc-roster__slot:not(:has(.mvc-panel:hover)),
+.mvc-roster:has(.mvc-panel:focus-within) .mvc-roster__slot:not(:has(.mvc-panel:focus-within)) {
+  flex: 0.72;
+}
+
+.mvc-roster:has(.mvc-panel:hover) .mvc-roster__slot:has(.mvc-panel:hover),
+.mvc-roster:has(.mvc-panel:focus-within) .mvc-roster__slot:has(.mvc-panel:focus-within) {
+  flex: 1.45;
+}
+
+/* ========== Portrait panels ========== */
+.mvc-panel {
+  --mvc-accent: var(--mvc-gold);
+  --mvc-glow: rgba(212, 175, 55, 0.35);
+  position: relative;
+  height: 100%;
+  min-height: 15.5rem;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: pointer;
+  outline: none;
+  isolation: isolate;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), filter 0.35s ease;
+}
+
+.mvc-panel--red {
+  --mvc-accent: var(--mvc-red);
+  --mvc-glow: rgba(237, 29, 36, 0.45);
+}
+
+.mvc-panel--blue {
+  --mvc-accent: var(--mvc-cyan);
+  --mvc-glow: rgba(0, 212, 255, 0.4);
+}
+
+.mvc-panel--captain,
+.mvc-panel.is-captain {
+  min-height: 22rem;
+}
+
+.mvc-panel--narrow {
+  min-height: 14.5rem;
+}
+
+.mvc-panel--tall {
+  min-height: 17.5rem;
+}
+
+.mvc-panel--medium {
+  min-height: 16rem;
+}
+
+/* Frame variants */
+.mvc-panel--vertical .mvc-panel__stage {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.mvc-panel--diagonal .mvc-panel__stage {
+  clip-path: polygon(0 4%, 100% 0, 100% 96%, 0 100%);
+}
+
+.mvc-panel--fracture .mvc-panel__stage {
+  clip-path: polygon(0 0, 92% 0, 100% 8%, 100% 100%, 8% 100%, 0 92%);
+}
+
+.mvc-panel--hud .mvc-panel__stage {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+
+.mvc-panel--hud .mvc-panel__scan {
+  opacity: 0.55;
+}
+
+.mvc-panel:hover,
+.mvc-panel:focus-visible,
+.mvc-panel.is-active {
+  transform: translateY(-6px);
+  z-index: 4;
+}
+
+.mvc-panel:focus-visible {
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.35), 0 0 0 4px var(--mvc-accent);
+}
+
+.mvc-panel__bg-rank {
+  position: absolute;
+  right: -0.15em;
+  top: 8%;
+  z-index: 0;
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: clamp(5rem, 12vw, 8.5rem);
+  line-height: 0.8;
+  letter-spacing: -0.04em;
+  color: #fff;
+  opacity: 0.07;
+  pointer-events: none;
+  user-select: none;
+}
+
+.mvc-panel--red .mvc-panel__bg-rank {
+  color: #ff6b72;
+  opacity: 0.1;
+}
+
+.mvc-panel--blue .mvc-panel__bg-rank {
+  color: #6ae6ff;
+  opacity: 0.1;
+}
+
+.mvc-panel__stage {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background:
+    linear-gradient(180deg, rgba(8, 10, 16, 0.2), rgba(5, 5, 10, 0.15)),
+    radial-gradient(ellipse at 50% 30%, color-mix(in srgb, var(--mvc-accent) 22%, transparent), transparent 55%);
+}
+
+.mvc-panel__fog {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background:
+    radial-gradient(ellipse at 50% 80%, rgba(0, 0, 0, 0.45), transparent 55%),
+    linear-gradient(180deg, transparent 40%, rgba(5, 5, 10, 0.55) 100%);
+  pointer-events: none;
+}
+
+.mvc-panel__aura {
+  position: absolute;
+  left: 10%;
+  right: 10%;
+  top: 8%;
+  bottom: 18%;
+  z-index: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--mvc-accent) 40%, transparent), transparent 70%);
+  filter: blur(2px);
+  opacity: 0.7;
+  transition: opacity 0.35s ease, transform 0.35s ease;
+  will-change: transform, opacity;
+}
+
+.mvc-panel:hover .mvc-panel__aura,
+.mvc-panel.is-active .mvc-panel__aura {
+  opacity: 1;
+  transform: scale(1.08);
+}
+
+.mvc-panel__particles {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0.4;
+  background-image:
+    radial-gradient(circle at 18% 28%, #fff 0 1px, transparent 2px),
+    radial-gradient(circle at 78% 22%, var(--mvc-accent) 0 1.1px, transparent 2.2px),
+    radial-gradient(circle at 34% 72%, #fff 0 1px, transparent 2px),
+    radial-gradient(circle at 86% 64%, var(--mvc-accent) 0 1px, transparent 2px);
+  animation: mvc-dust 16s linear infinite;
+  pointer-events: none;
+}
+
+.mvc-panel__streaks {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  opacity: 0.25;
+  background: repeating-linear-gradient(
+    -18deg,
+    transparent 0 14px,
+    color-mix(in srgb, var(--mvc-accent) 18%, transparent) 14px 15px
+  );
+  mask-image: linear-gradient(180deg, transparent, #000 40%, transparent);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 40%, transparent);
+  pointer-events: none;
+}
+
+.mvc-panel__ground {
+  position: absolute;
+  left: 18%;
+  right: 18%;
+  bottom: 14%;
+  height: 18%;
+  z-index: 1;
+  background: radial-gradient(ellipse at center, rgba(0, 0, 0, 0.7), transparent 70%);
+  pointer-events: none;
+}
+
+.mvc-panel__art {
+  position: absolute;
+  left: 50%;
+  bottom: 8%;
+  z-index: 2;
+  width: 118%;
+  max-width: none;
+  height: 92%;
+  object-fit: cover;
+  object-position: center top;
+  transform: translateX(-50%) translateY(8px);
+  transition: transform 0.38s cubic-bezier(0.22, 1, 0.36, 1), filter 0.35s ease;
+  filter: saturate(1.12) contrast(1.08);
+}
+
+.mvc-panel.is-svg .mvc-panel__art {
+  width: 92%;
+  height: 86%;
+  object-fit: contain;
+  object-position: center bottom;
+  mix-blend-mode: screen;
+  filter:
+    saturate(1.25) contrast(1.15) brightness(1.05)
+    drop-shadow(0 0 18px var(--mvc-glow))
+    drop-shadow(0 12px 20px rgba(0, 0, 0, 0.55));
+}
+
+.mvc-panel:hover .mvc-panel__art,
+.mvc-panel.is-active .mvc-panel__art {
+  transform: translateX(-50%) translateY(-6px) scale(1.04);
+}
+
+.mvc-panel.is-captain .mvc-panel__art {
+  width: 125%;
+  height: 96%;
+  filter: saturate(1.15) contrast(1.1) drop-shadow(0 0 28px var(--mvc-glow));
+}
+
+.mvc-panel__rim {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  box-shadow: inset 0 -5.5rem 3.5rem rgba(5, 5, 10, 0.92), inset 0 0 0 1px color-mix(in srgb, var(--mvc-accent) 28%, transparent);
+  pointer-events: none;
+  transition: box-shadow 0.35s ease;
+}
+
+.mvc-panel:hover .mvc-panel__rim,
+.mvc-panel.is-active .mvc-panel__rim {
+  box-shadow:
+    inset 0 -5.5rem 3.5rem rgba(5, 5, 10, 0.9),
+    inset 0 0 0 1px color-mix(in srgb, var(--mvc-accent) 65%, transparent),
+    0 0 28px var(--mvc-glow);
+}
+
+.mvc-panel__sheen {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  background: linear-gradient(115deg, transparent 35%, rgba(255, 255, 255, 0.2), transparent 65%);
+  transform: translateX(-130%);
+  pointer-events: none;
+}
+
+.mvc-panel:hover .mvc-panel__sheen,
+.mvc-panel.is-active .mvc-panel__sheen {
+  animation: mvc-sheen 0.75s ease;
+}
+
+.mvc-panel__scan {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  opacity: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent 0 6px,
+    rgba(0, 212, 255, 0.06) 6px 7px
+  );
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.mvc-panel--hud:hover .mvc-panel__scan,
+.mvc-panel--hud.is-active .mvc-panel__scan {
+  opacity: 0.8;
+}
+
+.mvc-panel__silhouette {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+}
+
+/* HUD copy */
+.mvc-panel__hud {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  padding: 3.4rem 0.7rem 0.85rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  background: linear-gradient(180deg, transparent, rgba(5, 5, 10, 0.55) 28%, rgba(5, 5, 10, 0.96));
+  transform: translateY(4px);
+  transition: transform 0.35s ease;
+}
+
+.mvc-panel:hover .mvc-panel__hud,
+.mvc-panel.is-active .mvc-panel__hud {
+  transform: translateY(0);
+}
+
+.mvc-panel__champ-label {
+  margin: 0;
+  font-family: var(--font-hud, Orbitron, sans-serif);
+  font-size: 0.52rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.mvc-panel__captain-badge {
+  display: inline-flex;
+  padding: 0.2rem 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--mvc-accent) 55%, transparent);
+  background: color-mix(in srgb, var(--mvc-accent) 16%, transparent);
+  font-family: var(--font-hud, Orbitron, sans-serif);
+  font-size: 0.55rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+  color: #fff;
+  box-shadow: 0 0 16px var(--mvc-glow);
+}
+
+.mvc-panel__nameblock {
+  width: 100%;
+}
+
+.mvc-panel__name {
+  margin: 0;
+  display: grid;
+  gap: 0;
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: clamp(1.15rem, 1.8vw, 1.55rem);
+  line-height: 0.9;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-style: italic;
+  transform: skewX(-4deg);
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.85), 0 0 16px var(--mvc-glow);
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path 0.55s ease;
+}
+
+.mvc-section.is-inview .mvc-panel__name {
+  clip-path: inset(0 0 0 0);
+  transition-delay: calc(0.45s + var(--mvc-i, 0) * 0.04s);
+}
+
+.mvc-panel__name span:last-child {
+  color: var(--mvc-accent);
+}
+
+.mvc-panel.is-captain .mvc-panel__name {
+  font-size: clamp(1.7rem, 2.8vw, 2.35rem);
+}
+
+.mvc-panel__role,
+.mvc-panel__universe {
+  margin: 0.2rem 0 0;
+  font-family: var(--font-hud, Orbitron, sans-serif);
+  font-size: 0.58rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.62);
+  opacity: 0.85;
+  transform: translateY(6px);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.mvc-panel__universe {
+  color: var(--mvc-accent);
+  opacity: 0;
+}
+
+.mvc-panel:hover .mvc-panel__role,
+.mvc-panel.is-active .mvc-panel__role {
+  opacity: 1;
+  transform: none;
+}
+
+.mvc-panel:hover .mvc-panel__universe,
+.mvc-panel.is-active .mvc-panel__universe {
+  opacity: 0.95;
+  transform: none;
+}
+
+/* Detail reveal */
+.mvc-panel__detail {
+  position: absolute;
+  left: 0.55rem;
+  right: 0.55rem;
+  top: 0.55rem;
+  z-index: 6;
+  padding: 0.7rem 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--mvc-accent) 40%, transparent);
+  background: rgba(5, 5, 10, 0.88);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.mvc-panel__detail.is-open {
+  opacity: 1;
+  transform: none;
+}
+
+.mvc-panel__detail-emblem {
+  width: 26px;
+  height: 26px;
+  margin-bottom: 0.35rem;
+}
+
+.mvc-panel__detail-name {
+  margin: 0;
+  font-family: var(--font-display, "Bebas Neue", sans-serif);
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.mvc-panel__detail-role,
+.mvc-panel__detail-meta,
+.mvc-panel__detail-line {
+  margin: 0.2rem 0 0;
+  font-family: var(--font-hud, Orbitron, sans-serif);
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.mvc-panel__detail-line {
+  color: var(--mvc-accent);
+}
+
+/* Desktop hide mobile rail */
+.mvc-mobile {
+  display: none;
+}
+
+/* ========== Keyframes ========== */
+@keyframes mvc-dust {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-18px);
+  }
+}
+
+@keyframes mvc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes mvc-sheen {
+  from {
+    transform: translateX(-130%);
+  }
+  to {
+    transform: translateX(130%);
+  }
+}
+
+/* ========== Breakpoints ========== */
+@media (max-width: 1200px) {
+  .mvc-arena {
+    min-height: 0;
+  }
+
+  .mvc-panel.is-captain {
+    min-height: 19rem;
+  }
+
+  .mvc-side__captain-wrap {
+    width: min(100%, 240px);
+  }
+}
+
+@media (max-width: 1024px) {
+  .mvc-arena {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .mvc-core {
+    width: 100%;
+    height: auto;
+    padding: 0.5rem 0 0.25rem;
+  }
+
+  .mvc-core__ring,
+  .mvc-core__ring--2 {
+    display: none;
+  }
+
+  .mvc-core__badge {
+    width: auto;
+    aspect-ratio: auto;
+    border-radius: 999px;
+    padding: 0.55rem 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+  }
+
+  .mvc-side--red,
+  .mvc-side--blue {
+    clip-path: none;
+  }
+
+  .mvc-roster {
+    min-height: 15rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .mvc-arena {
+    display: none;
+  }
+
+  .mvc-mobile {
+    display: block;
+    margin-top: 0.5rem;
+  }
+
+  .mvc-mobile__rail {
+    display: flex;
+    gap: 0.75rem;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    padding: 0.35rem 0.15rem 1rem;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mvc-mobile__rail .mvc-panel {
+    flex: 0 0 min(78vw, 280px);
+    min-height: 26rem;
+    scroll-snap-align: center;
+    border: 1px solid color-mix(in srgb, var(--mvc-accent) 30%, transparent);
+  }
+
+  .mvc-mobile__rail .mvc-panel.is-captain {
+    flex-basis: min(86vw, 320px);
+    min-height: 28rem;
+  }
+
+  .mvc-mobile__rail .mvc-panel__universe {
+    opacity: 0.9;
+    transform: none;
+  }
+
+  .mvc-mobile__rail .mvc-panel__detail.is-open {
+    opacity: 1;
+  }
+
+  .mvc-env__dust,
+  .mvc-panel__particles,
+  .mvc-panel__streaks {
+    opacity: 0.18;
+    animation: none;
+  }
+
+  .mvc-env__portal {
+    width: 42vw;
+    top: 28%;
+  }
+}
+
+@media (max-width: 390px) {
+  .mvc-mobile__rail .mvc-panel {
+    flex-basis: 84vw;
+    min-height: 24rem;
+  }
+
+  .mvc-header__title {
+    font-size: 2.35rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mvc-section .mvc-header,
+  .mvc-section .mvc-side,
+  .mvc-section .mvc-side__captain-wrap,
+  .mvc-section .mvc-roster__slot,
+  .mvc-section .mvc-core,
+  .mvc-section .mvc-env__city,
+  .mvc-section .mvc-env__portal,
+  .mvc-section .mvc-env__haze,
+  .mvc-section .mvc-header__line,
+  .mvc-panel__name {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    clip-path: none !important;
+    width: auto;
+  }
+
+  .mvc-section.is-inview .mvc-header__line {
+    width: min(16rem, 70%);
+  }
+
+  .mvc-env__dust,
+  .mvc-panel__particles,
+  .mvc-core__ring,
+  .mvc-panel__sheen,
+  .mvc-panel__aura {
+    animation: none !important;
+  }
+
+  .mvc-panel:hover .mvc-panel__sheen,
+  .mvc-panel.is-active .mvc-panel__sheen {
+    animation: none !important;
+  }
+}

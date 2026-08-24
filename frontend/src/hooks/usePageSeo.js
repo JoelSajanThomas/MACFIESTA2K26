@@ -5,7 +5,7 @@ import { BRAND } from "../utils/brand";
 const SITE_NAME = "MacFiesta Pro";
 const DEFAULT_DESC =
   "MACFAST national inter-college fest — events, registration, schedule, results, gallery, and announcements.";
-const DEFAULT_IMAGE = "/assets/official/macfiesta-logo.png";
+const DEFAULT_IMAGE = "/logo.png";
 
 function upsertMeta(selector, attr, key, value) {
   if (!value) return;

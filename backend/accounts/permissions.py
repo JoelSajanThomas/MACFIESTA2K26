@@ -20,7 +20,7 @@ ALL_MODULES = (
 MODULES_BY_COMMITTEE = {
     "core": list(ALL_MODULES),
     "finance": ["insights", "registrations", "verification", "reports"],
-    "food": ["insights", "reports", "announcements"],
+    "food": ["insights", "registrations", "reports", "announcements"],
     "hospitality": ["insights", "registrations", "verification", "reports"],
     "event": [
         "insights",
@@ -69,8 +69,8 @@ def user_modules(user):
         return []
     profile = getattr(user, "staff_profile", None)
     if profile is None:
-        # Legacy staff without profile → full access (e.g. old testuser)
-        return list(ALL_MODULES)
+        # Staff without a committee profile get no admin modules (deny by default).
+        return []
     return profile.modules
 
 

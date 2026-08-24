@@ -1,0 +1,529 @@
+/**
+ * MacFiesta Pro — Marvel × DC typography & spacing system
+ * Bebas Neue (display) · Orbitron (HUD) · Rajdhani (UI/body) · Source Sans 3 (fallback)
+ */
+
+:root {
+  --font-display: "Bebas Neue", "Anton", Impact, sans-serif;
+  --font-hud: "Orbitron", "Rajdhani", sans-serif;
+  --font-ui: "Rajdhani", "Source Sans 3", system-ui, sans-serif;
+  --font-body: "Rajdhani", "Source Sans 3", system-ui, sans-serif;
+
+  --tracking-tight: 0.015em;
+  --tracking-display: 0.04em;
+  --tracking-section: 0.035em;
+  --tracking-ui: 0.06em;
+  --tracking-hud: 0.1em;
+  --tracking-body: 0.01em;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4rem;
+  --space-9: 6rem;
+
+  --text-shadow-cinematic:
+    0 2px 2px rgba(0, 0, 0, 0.8),
+    0 8px 30px rgba(0, 0, 0, 0.55);
+}
+
+/* —— Base —— */
+.app:not(:has(.admin-shell)),
+.app:not(:has(.admin-shell)) body {
+  --font-display: "Bebas Neue", "Anton", Impact, sans-serif;
+  --font-hud: "Orbitron", "Rajdhani", sans-serif;
+  --font-ui: "Rajdhani", "Source Sans 3", system-ui, sans-serif;
+  --font-body: "Rajdhani", "Source Sans 3", system-ui, sans-serif;
+  --font-heading: var(--font-display);
+  --mf-font-display: var(--font-display);
+  --mf-font-hud: var(--font-hud);
+  --mf-font-body: var(--font-body);
+  font-family: var(--font-body);
+  letter-spacing: var(--tracking-body);
+  color: #f2f4f8;
+}
+
+.app:not(:has(.admin-shell)) p,
+.app:not(:has(.admin-shell)) li,
+.app:not(:has(.admin-shell)) label,
+.app:not(:has(.admin-shell)) input,
+.app:not(:has(.admin-shell)) textarea,
+.app:not(:has(.admin-shell)) select {
+  font-family: var(--font-body) !important;
+  letter-spacing: var(--tracking-body) !important;
+  line-height: 1.65;
+  text-transform: none;
+}
+
+.app:not(:has(.admin-shell)) p {
+  max-width: 65ch;
+  font-size: clamp(1rem, 1.15vw, 1.12rem);
+}
+
+/* Kill stretched Marvel letter-spacing on large type */
+.app:not(:has(.admin-shell)) h1,
+.app:not(:has(.admin-shell)) h2,
+.app:not(:has(.admin-shell)) h3,
+.app:not(:has(.admin-shell)) .home-section-title,
+.app:not(:has(.admin-shell)) .section-title,
+.app:not(:has(.admin-shell)) .page-header h1,
+.app:not(:has(.admin-shell)) .mf1-page-header__title,
+.app:not(:has(.admin-shell)) .mf1-section-title,
+.app:not(:has(.admin-shell)) .ux-section-head__title,
+.app:not(:has(.admin-shell)) .ux-intro__title,
+.app:not(:has(.admin-shell)) .home-two-day-card h3,
+.app:not(:has(.admin-shell)) .mf1-timeline__card h3,
+.app:not(:has(.admin-shell)) .ux-roadmap__card h3 {
+  font-family: var(--font-display) !important;
+  letter-spacing: var(--tracking-section) !important;
+  text-transform: uppercase !important;
+  font-weight: 400 !important;
+  line-height: 0.95 !important;
+  -webkit-text-fill-color: unset !important;
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  filter: none !important;
+  text-shadow: var(--text-shadow-cinematic);
+}
+
+.app:not(:has(.admin-shell)) h1,
+.app:not(:has(.admin-shell)) .mf1-page-header__title,
+.app:not(:has(.admin-shell)) .page-header h1 {
+  font-size: clamp(2.6rem, 6vw, 5rem) !important;
+  letter-spacing: var(--tracking-display) !important;
+}
+
+.app:not(:has(.admin-shell)) h2,
+.app:not(:has(.admin-shell)) .mf1-section-title,
+.app:not(:has(.admin-shell)) .ux-section-head__title {
+  font-size: clamp(2.4rem, 5vw, 4.6rem) !important;
+}
+
+.app:not(:has(.admin-shell)) h3 {
+  font-size: clamp(1.7rem, 3vw, 2.6rem) !important;
+}
+
+/* —— HUD (Orbitron only for small technical chrome) —— */
+.app:not(:has(.admin-shell)) .mf1-section-badge,
+.app:not(:has(.admin-shell)) .mf1-hero__badge,
+.app:not(:has(.admin-shell)) .mf1-stark-label,
+.app:not(:has(.admin-shell)) .ux-section-head__eyebrow,
+.app:not(:has(.admin-shell)) .ux-intro__eyebrow,
+.app:not(:has(.admin-shell)) .ux-intro__fact-label,
+.app:not(:has(.admin-shell)) .ux-hero-meta__item em,
+.app:not(:has(.admin-shell)) .ux-stat-strip__micro,
+.app:not(:has(.admin-shell)) .ux-roadmap__micro,
+.app:not(:has(.admin-shell)) .mf1-timeline__phase,
+.app:not(:has(.admin-shell)) .home-two-day-eyebrow,
+.app:not(:has(.admin-shell)) .title-universe-chip,
+.app:not(:has(.admin-shell)) .nav-link-sub,
+.app:not(:has(.admin-shell)) .ux-nav-login__sub {
+  font-family: var(--font-hud) !important;
+  font-size: 0.68rem !important;
+  font-weight: 600 !important;
+  letter-spacing: var(--tracking-hud) !important;
+  text-transform: uppercase !important;
+  line-height: 1.3 !important;
+  -webkit-text-fill-color: unset !important;
+  background: none !important;
+}
+
+/* —— Nav / buttons (Rajdhani) —— */
+.app:not(:has(.admin-shell)) .nav-link,
+.app:not(:has(.admin-shell)) .nav-link-label,
+.app:not(:has(.admin-shell)) .btn,
+.app:not(:has(.admin-shell)) .mf1-btn,
+.app:not(:has(.admin-shell)) a.btn {
+  font-family: var(--font-ui) !important;
+  font-weight: 700 !important;
+  letter-spacing: var(--tracking-ui) !important;
+  text-transform: uppercase !important;
+}
+
+.app:not(:has(.admin-shell)) .ux-nav-link .nav-link-label {
+  font-size: 0.9rem !important;
+  letter-spacing: 0.07em !important;
+}
+
+.app:not(:has(.admin-shell)) .btn,
+.app:not(:has(.admin-shell)) .mf1-btn {
+  font-size: 0.95rem !important;
+  letter-spacing: 0.06em !important;
+}
+
+/* —— Hero MACFIESTA movie title —— */
+.app:not(:has(.admin-shell)) .mf1-hero__welcome {
+  font-family: var(--font-hud) !important;
+  font-size: 0.72rem !important;
+  letter-spacing: var(--tracking-hud) !important;
+  font-weight: 600 !important;
+  color: rgba(0, 212, 255, 0.9) !important;
+  margin: 0 0 var(--space-2) !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-hero__title {
+  font-family: var(--font-display) !important;
+  font-size: clamp(4.2rem, 10vw, 10rem) !important;
+  line-height: 0.82 !important;
+  letter-spacing: 0.02em !important;
+  text-transform: uppercase !important;
+  background: none !important;
+  background-image: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: #f5f7fb !important;
+  color: #f5f7fb !important;
+  filter: none !important;
+  animation: none !important;
+  transform: skewX(-2deg);
+  transform-origin: left center;
+}
+
+.app:not(:has(.admin-shell)) .mf1-hero__edition {
+  font-family: var(--font-display) !important;
+  font-size: clamp(2.4rem, 6vw, 5.5rem) !important;
+  line-height: 0.82 !important;
+  letter-spacing: 0.02em !important;
+  background: none !important;
+  background-image: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: #00d4ff !important;
+  color: #00d4ff !important;
+  filter: none !important;
+  animation: none !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-hero__verse,
+.app:not(:has(.admin-shell)) .mf-theme-split {
+  margin: var(--space-3) 0 0 !important;
+  font-family: var(--font-display) !important;
+  font-size: clamp(1.6rem, 3.8vw, 3.4rem) !important;
+  letter-spacing: 0.06em !important;
+  line-height: 1 !important;
+  text-transform: uppercase !important;
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  background: none !important;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.35rem 0.55rem;
+}
+
+.app:not(:has(.admin-shell)) .mf-theme-split__marvel {
+  color: #ff5a5f !important;
+  -webkit-text-fill-color: #ff5a5f !important;
+  text-shadow: 0 0 18px rgba(237, 29, 36, 0.35), var(--text-shadow-cinematic);
+  transform: skewX(-3deg);
+}
+
+.app:not(:has(.admin-shell)) .mf-theme-split__x {
+  color: #f0d78c !important;
+  -webkit-text-fill-color: #f0d78c !important;
+  font-size: 0.85em;
+}
+
+.app:not(:has(.admin-shell)) .mf-theme-split__dc {
+  color: #5ce1ff !important;
+  -webkit-text-fill-color: #5ce1ff !important;
+  letter-spacing: 0.08em !important;
+  text-shadow: 0 0 18px rgba(0, 212, 255, 0.45), var(--text-shadow-cinematic);
+}
+
+.app:not(:has(.admin-shell)) .mf-theme-split__tag {
+  width: 100%;
+  margin-top: 0.15rem;
+  font-family: var(--font-hud) !important;
+  font-size: 0.72rem !important;
+  letter-spacing: var(--tracking-hud) !important;
+  color: rgba(255, 255, 255, 0.72) !important;
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.72) !important;
+  font-weight: 600 !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-hero__tagline {
+  margin-top: var(--space-4) !important;
+  max-width: 55ch !important;
+  font-family: var(--font-body) !important;
+  font-size: clamp(1.05rem, 1.4vw, 1.2rem) !important;
+  letter-spacing: var(--tracking-body) !important;
+  line-height: 1.6 !important;
+  text-transform: none !important;
+  color: rgba(242, 244, 248, 0.86) !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-hero__actions {
+  margin-top: var(--space-5) !important;
+  gap: var(--space-3) !important;
+}
+
+/* —— Universe title utilities —— */
+.title-red-universe,
+.title-blue-universe {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+}
+
+.title-universe-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.title-universe-chip::before {
+  content: "";
+  width: 1.6rem;
+  height: 2px;
+  border-radius: 999px;
+}
+
+.title-red-universe .title-universe-chip {
+  color: #ffb4b7;
+}
+
+.title-red-universe .title-universe-chip::before {
+  background: #ed1d24;
+}
+
+.title-blue-universe .title-universe-chip {
+  color: #ffe08a;
+}
+
+.title-blue-universe .title-universe-chip::before {
+  background: #00d4ff;
+}
+
+.title-stack {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2.2rem, 4.5vw, 3.8rem);
+  line-height: 0.88;
+  text-transform: uppercase;
+  color: #fff;
+  text-shadow: var(--text-shadow-cinematic);
+}
+
+.title-red-universe .title-stack {
+  letter-spacing: 0.02em;
+  transform: skewX(-3deg);
+  transform-origin: left center;
+  background: none;
+  -webkit-background-clip: unset;
+  background-clip: unset;
+  -webkit-text-fill-color: #fff;
+  color: #fff;
+  filter: none;
+}
+
+.title-blue-universe .title-stack {
+  letter-spacing: 0.05em;
+  background: none;
+  -webkit-background-clip: unset;
+  background-clip: unset;
+  -webkit-text-fill-color: #fff;
+  color: #fff;
+  filter: none;
+}
+
+/* —— Section chrome —— */
+.app:not(:has(.admin-shell)) .mf1-section-header {
+  margin-bottom: var(--space-6) !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-section-badge {
+  margin-bottom: var(--space-3) !important;
+  color: #00d4ff !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-section-title {
+  margin: 0 0 var(--space-3) !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-section-sub,
+.app:not(:has(.admin-shell)) .ux-section-head__sub,
+.app:not(:has(.admin-shell)) .mf1-page-header__sub {
+  margin-top: var(--space-3) !important;
+  max-width: 55ch !important;
+  font-family: var(--font-body) !important;
+  font-size: clamp(1rem, 1.2vw, 1.15rem) !important;
+  letter-spacing: var(--tracking-body) !important;
+  line-height: 1.6 !important;
+  text-transform: none !important;
+  color: rgba(232, 236, 245, 0.8) !important;
+  font-weight: 500 !important;
+}
+
+.app:not(:has(.admin-shell)) .ux-section-head {
+  margin-bottom: var(--space-6) !important;
+}
+
+.app:not(:has(.admin-shell)) .ux-section-head__eyebrow {
+  margin-bottom: var(--space-3) !important;
+}
+
+.app:not(:has(.admin-shell)) .ux-section-head__title {
+  letter-spacing: var(--tracking-section) !important;
+}
+
+.app:not(:has(.admin-shell)) .ux-section-head__title span {
+  color: #d4af37;
+}
+
+/* —— Stats numbers —— */
+.app:not(:has(.admin-shell)) .ux-stat-strip__value {
+  font-family: var(--font-display) !important;
+  font-size: clamp(2.4rem, 4vw, 3.2rem) !important;
+  letter-spacing: 0 !important;
+  line-height: 1 !important;
+  text-shadow: var(--text-shadow-cinematic);
+}
+
+.app:not(:has(.admin-shell)) .ux-stat-strip__label {
+  font-family: var(--font-ui) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+}
+
+/* —— Roadmap hierarchy —— */
+.ux-roadmap__title {
+  font-size: clamp(1.55rem, 2.5vw, 2.15rem) !important;
+  gap: 0 !important;
+}
+
+.ux-roadmap__title span {
+  display: block;
+}
+
+.app:not(:has(.admin-shell)) .mf1-timeline__date {
+  font-family: var(--font-ui) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.04em !important;
+  text-transform: none !important;
+}
+
+.app:not(:has(.admin-shell)) .mf1-timeline__desc {
+  font-family: var(--font-body) !important;
+  letter-spacing: var(--tracking-body) !important;
+  text-transform: none !important;
+  line-height: 1.55 !important;
+}
+
+/* —— Day cards —— */
+.app:not(:has(.admin-shell)) .ux-day-card__body .home-two-day-theme,
+.app:not(:has(.admin-shell)) .ux-day-card__date {
+  font-family: var(--font-body) !important;
+  letter-spacing: var(--tracking-body) !important;
+  text-transform: none !important;
+}
+
+/* —— Intro —— */
+.app:not(:has(.admin-shell)) .ux-intro__title {
+  font-size: clamp(2.8rem, 6vw, 4.8rem) !important;
+  letter-spacing: 0.025em !important;
+  line-height: 0.88 !important;
+}
+
+.app:not(:has(.admin-shell)) .ux-intro__support {
+  font-family: var(--font-ui) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.08em !important;
+  margin-bottom: var(--space-4) !important;
+}
+
+.app:not(:has(.admin-shell)) .ux-intro__body {
+  max-width: 55ch !important;
+  font-size: clamp(1.05rem, 1.3vw, 1.2rem) !important;
+}
+
+.app:not(:has(.admin-shell)) .ux-intro__actions {
+  margin-top: var(--space-5) !important;
+}
+
+/* —— Gold prestige only —— */
+.app:not(:has(.admin-shell)) .title-championship,
+.app:not(:has(.admin-shell)) .prize-amount,
+.app:not(:has(.admin-shell)) .podium-card--gold .podium-place {
+  color: #e8c84a !important;
+  text-shadow: 0 0 16px rgba(212, 175, 55, 0.35), var(--text-shadow-cinematic);
+}
+
+/* —— Footer —— */
+.app:not(:has(.admin-shell)) .site-footer-pro,
+.app:not(:has(.admin-shell)) .site-footer-pro p,
+.app:not(:has(.admin-shell)) .site-footer-pro a,
+.app:not(:has(.admin-shell)) .site-footer-simple,
+.app:not(:has(.admin-shell)) .site-footer-simple p,
+.app:not(:has(.admin-shell)) .site-footer-simple a {
+  font-family: var(--font-body) !important;
+  letter-spacing: var(--tracking-body) !important;
+  text-transform: none;
+}
+
+.app:not(:has(.admin-shell)) .site-footer-pro__title,
+.app:not(:has(.admin-shell)) .site-footer-simple h3,
+.app:not(:has(.admin-shell)) .site-footer-simple h4 {
+  font-family: var(--font-display) !important;
+  letter-spacing: var(--tracking-display) !important;
+}
+
+/* —— Auth / forms stay readable —— */
+.app:not(:has(.admin-shell)) .auth-card,
+.app:not(:has(.admin-shell)) .login-form-premium,
+.app:not(:has(.admin-shell)) .student-dashboard {
+  letter-spacing: var(--tracking-body);
+}
+
+.app:not(:has(.admin-shell)) .auth-card h1,
+.app:not(:has(.admin-shell)) .auth-card h2 {
+  letter-spacing: var(--tracking-display) !important;
+}
+
+/* —— Mobile —— */
+@media (max-width: 768px) {
+  .app:not(:has(.admin-shell)) .mf1-hero__title {
+    font-size: clamp(3.4rem, 16vw, 5.2rem) !important;
+    letter-spacing: 0.01em !important;
+    transform: skewX(-2deg);
+  }
+
+  .app:not(:has(.admin-shell)) .mf1-hero__verse,
+  .app:not(:has(.admin-shell)) .mf-theme-split {
+    font-size: clamp(1.35rem, 6vw, 2rem) !important;
+    letter-spacing: 0.04em !important;
+  }
+
+  .app:not(:has(.admin-shell)) h2,
+  .app:not(:has(.admin-shell)) .mf1-section-title,
+  .app:not(:has(.admin-shell)) .ux-section-head__title {
+    font-size: clamp(2.1rem, 9vw, 3rem) !important;
+    letter-spacing: 0.03em !important;
+  }
+
+  .title-stack {
+    font-size: clamp(2rem, 10vw, 3rem);
+    letter-spacing: 0.02em !important;
+  }
+
+  .app:not(:has(.admin-shell)) .section,
+  .app:not(:has(.admin-shell)) .mf1-zip-section {
+    padding-block: clamp(3.5rem, 10vw, 5rem) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app:not(:has(.admin-shell)) .mf1-hero__title,
+  .title-red-universe .title-stack {
+    transform: none !important;
+  }
+}

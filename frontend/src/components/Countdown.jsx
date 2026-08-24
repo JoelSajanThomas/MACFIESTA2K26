@@ -1,7 +1,5 @@
 import { useEffect, useState } from "react";
-import { AnimatePresence, motion } from "framer-motion";
 import { FEST_DATE } from "../utils/constants";
-import { EASE_PREMIUM, MOTION } from "../utils/animations";
 
 function getTimeLeft(targetMs) {
   if (!Number.isFinite(targetMs)) {
@@ -18,53 +16,57 @@ function getTimeLeft(targetMs) {
   };
 }
 
+/**
+ * Visual digit layer only. Parent timer owns the accessible announcement.
+ * Do not add sr-only / aria text here — that caused "43 / 43 Days / Days" duplication.
+ */
 function AnimatedValue({ value }) {
   const display = String(value).padStart(2, "0");
-
   return (
     <span className="countdown-value" aria-hidden="true">
       <span className="countdown-value-track">
-        <AnimatePresence mode="popLayout" initial={false}>
-          <motion.span
-            key={display}
-            className="countdown-value-digit"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: MOTION.digit, ease: EASE_PREMIUM }}
-          >
-            {display}
-          </motion.span>
-        </AnimatePresence>
+        <span className="countdown-value-digit">{display}</span>
       </span>
     </span>
   );
 }
 
 function Unit({ value, label }) {
-  const display = String(value).padStart(2, "0");
-
   return (
     <div className="countdown-unit">
       <span className="countdown-unit-glow" aria-hidden="true" />
       <span className="countdown-unit-shine" aria-hidden="true" />
       <AnimatedValue value={value} />
-      <span className="sr-only">{display} {label}</span>
-      <span className="countdown-label">{label}</span>
+      <span className="countdown-label" aria-hidden="true">
+        {label}
+      </span>
     </div>
   );
 }
 
 function Separator() {
-  return <span className="countdown-sep countdown-sep-animated" aria-hidden="true">:</span>;
+  return (
+    <span className="countdown-sep countdown-sep-animated" aria-hidden="true">
+      :
+    </span>
+  );
+}
+
+function parseTargetMs(targetDate) {
+  let ms = 0;
+  if (typeof targetDate === "number") {
+    ms = targetDate;
+  } else if (targetDate) {
+    ms = new Date(targetDate).getTime();
+  }
+  if (!Number.isFinite(ms)) {
+    ms = new Date(FEST_DATE || "2026-09-24T09:00:00").getTime();
+  }
+  return ms;
 }
 
 export default function Countdown({ targetDate, variant = "default", embedded = false }) {
-  const targetMs = (() => {
-    const raw = targetDate || FEST_DATE;
-    const ms = raw instanceof Date ? raw.getTime() : new Date(raw).getTime();
-    return Number.isFinite(ms) ? ms : FEST_DATE.getTime();
-  })();
+  const targetMs = parseTargetMs(targetDate);
   const [time, setTime] = useState(() => getTimeLeft(targetMs));
 
   useEffect(() => {
@@ -73,16 +75,21 @@ export default function Countdown({ targetDate, variant = "default", embedded = 
     return () => clearInterval(id);
   }, [targetMs]);
 
+  const announcement = `${time.days} days, ${time.hours} hours, ${time.minutes} minutes, ${time.seconds} seconds remaining`;
+
   return (
     <div className={`countdown-wrap countdown-wrap-${variant}${embedded ? " countdown-embedded" : ""}`}>
       {variant === "hero" && (
-        <p className="countdown-eyebrow">Festival begins in</p>
+        <p className="countdown-eyebrow" aria-hidden="true">
+          Festival begins in
+        </p>
       )}
       <div
         className={`countdown countdown-${variant}`}
         role="timer"
         aria-live="polite"
-        aria-label={`${time.days} days, ${time.hours} hours, ${time.minutes} minutes, ${time.seconds} seconds remaining`}
+        aria-atomic="true"
+        aria-label={announcement}
       >
         <Unit value={time.days} label="Days" />
         <Separator />

@@ -1,5 +1,5 @@
 import axios from "axios";
-import { logout } from "../utils/auth";
+import { logout, notifyAuthChange } from "../utils/auth";
 
 /**
  * Resolve API base for desktop, LAN phone browsers, and Capacitor.
@@ -36,6 +36,39 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
+/** Short-lived in-memory cache for public GETs (navigation / remount). */
+const GET_CACHE_TTL_MS = 60_000;
+const getCache = new Map();
+
+function cachedGet(key, request) {
+  const hit = getCache.get(key);
+  if (hit?.data && Date.now() - hit.at < GET_CACHE_TTL_MS) {
+    return Promise.resolve(hit.data);
+  }
+  if (hit?.pending) return hit.pending;
+  const pending = request()
+    .then((res) => {
+      getCache.set(key, { at: Date.now(), data: res });
+      return res;
+    })
+    .catch((err) => {
+      getCache.delete(key);
+      throw err;
+    });
+  getCache.set(key, { at: 0, pending });
+  return pending;
+}
+
+export function invalidateApiGetCache(prefix) {
+  if (!prefix) {
+    getCache.clear();
+    return;
+  }
+  for (const key of [...getCache.keys()]) {
+    if (key.startsWith(prefix)) getCache.delete(key);
+  }
+}
+
 export function mediaUrl(path) {
   if (!path) return null;
   if (path.startsWith("http")) return path;
@@ -44,7 +77,7 @@ export function mediaUrl(path) {
 }
 
 export function getEvents() {
-  return api.get("/events/");
+  return cachedGet("events", () => api.get("/events/"));
 }
 
 export function getEvent(id) {
@@ -52,11 +85,11 @@ export function getEvent(id) {
 }
 
 export function getResults() {
-  return api.get("/results/");
+  return cachedGet("results", () => api.get("/results/"));
 }
 
 export function getGallery() {
-  return api.get("/gallery/");
+  return cachedGet("gallery", () => api.get("/gallery/"));
 }
 
 export function getAnnouncements(asAdmin = false) {
@@ -68,8 +101,32 @@ export function getPublicStats() {
   return api.get("/public/stats/");
 }
 
+export function getPublicFestConfig() {
+  return cachedGet("public:config", () => api.get("/public/config/"));
+}
+
+export function getInstitutions() {
+  return api.get("/public/institutions/");
+}
+
+export function suggestInstitution(name) {
+  return api.post("/public/institutions/", { name });
+}
+
 export function getDashboardStats() {
   return api.get("/dashboard/stats/", { headers: authHeaders() });
+}
+
+export function getStaffDirectory() {
+  return api.get("/admin/staff/", { headers: authHeaders() });
+}
+
+export function createStaffAccount(data) {
+  return api.post("/admin/staff/", data, { headers: authHeaders() });
+}
+
+export function updateStaffAccount(id, data) {
+  return api.patch(`/admin/staff/${id}/`, data, { headers: authHeaders() });
 }
 
 export function getCurrentUser() {
@@ -78,6 +135,17 @@ export function getCurrentUser() {
 
 export function getAdminRegistrations() {
   return api.get("/admin/registrations/", { headers: authHeaders() });
+}
+
+export function verifyRegistrationLookup(q) {
+  return api.get("/admin/verification/lookup/", {
+    headers: authHeaders(),
+    params: { q },
+  });
+}
+
+export function verifyCheckIn(data) {
+  return api.post("/admin/verification/check-in/", data, { headers: authHeaders() });
 }
 
 export function updateAdminRegistration(id, data) {
@@ -105,8 +173,34 @@ export function createRegistration(data) {
   return api.post("/registrations/", data, { headers: authHeaders() });
 }
 
+export function createRegistrationBatch(data) {
+  return api.post("/registrations/batch/", data, { headers: authHeaders() });
+}
+
 export function cancelRegistration(id) {
   return api.post(`/registrations/${id}/cancel/`, {}, { headers: authHeaders() });
+}
+
+export function submitRegistrationPayment(id, { payment_transaction_id, payment_proof, payment_method }) {
+  const form = new FormData();
+  form.append("payment_transaction_id", payment_transaction_id || "");
+  if (payment_method) form.append("payment_method", payment_method);
+  if (payment_proof) form.append("payment_proof", payment_proof);
+  return api.post(`/registrations/${id}/submit-payment/`, form, adminConfig(form));
+}
+
+export function submitRegistrationPaymentBatch({
+  payment_batch_id,
+  payment_transaction_id,
+  payment_proof,
+  payment_method,
+}) {
+  const form = new FormData();
+  form.append("payment_batch_id", payment_batch_id || "");
+  form.append("payment_transaction_id", payment_transaction_id || "");
+  if (payment_method) form.append("payment_method", payment_method);
+  if (payment_proof) form.append("payment_proof", payment_proof);
+  return api.post(`/registrations/submit-payment-batch/`, form, adminConfig(form));
 }
 
 export function getRegistrationPass(id) {
@@ -150,12 +244,24 @@ export function changePassword(data) {
 export function storeAuthTokens({ access, refresh }) {
   if (access) localStorage.setItem("access_token", access);
   if (refresh) localStorage.setItem("refresh_token", refresh);
+  notifyAuthChange();
 }
 
 function adminConfig(data) {
-  const headers = authHeaders();
+  const headers = { ...authHeaders() };
   if (data instanceof FormData) {
-    return { headers };
+    return {
+      headers,
+      transformRequest: [
+        (body, hdrs) => {
+          if (typeof FormData !== "undefined" && body instanceof FormData) {
+            delete hdrs["Content-Type"];
+            delete hdrs["content-type"];
+          }
+          return body;
+        },
+      ],
+    };
   }
   return { headers };
 }
@@ -223,11 +329,42 @@ export function getResult(id) {
 // ── CMS ─────────────────────────────────────────────────────
 
 export function getSiteSettings() {
-  return api.get("/cms/site-settings/");
+  return cachedGet("cms:site-settings", () => api.get("/cms/site-settings/"));
 }
 
 export function updateSiteSettings(id, data) {
+  invalidateApiGetCache("cms:");
   return api.patch(`/cms/site-settings/${id}/`, data, adminConfig(data));
+}
+
+export function patchCmsHomepageSection(id, data) {
+  invalidateApiGetCache("cms-homepage-sections");
+  return api.patch(`/cms/homepage-sections/${id}/`, data, adminConfig(data));
+}
+
+// --- Accommodation & Hospitality ---
+export function getHostels() {
+  return cachedGet("hostels", () => api.get("/hostels/"));
+}
+
+export function createAccommodationBooking(data) {
+  return api.post("/accommodation/bookings/", data);
+}
+
+export function getMyAccommodationBookings() {
+  return api.get("/accommodation/bookings/my_bookings/", { headers: authHeaders() });
+}
+
+export function getAdminAccommodationBookings() {
+  return api.get("/accommodation/bookings/", { headers: authHeaders() });
+}
+
+export function updateAdminAccommodationBooking(id, data) {
+  return api.patch(`/accommodation/bookings/${id}/`, data, adminConfig(data));
+}
+
+export function getHospitalityStats() {
+  return api.get("/admin/hospitality/stats/", { headers: authHeaders() });
 }
 
 export function createSiteSettings(data) {
@@ -277,8 +414,8 @@ export function getCategoryContent(id) {
 }
 
 export function getEventFormats(asAdmin = false) {
-  const config = asAdmin ? { headers: authHeaders() } : {};
-  return api.get("/cms/formats/", config);
+  if (asAdmin) return api.get("/cms/formats/", { headers: authHeaders() });
+  return cachedGet("cms:formats", () => api.get("/cms/formats/"));
 }
 
 export function createEventFormat(data) {
@@ -298,8 +435,8 @@ export function getEventFormat(id) {
 }
 
 export function getGuestProfiles(asAdmin = false) {
-  const config = asAdmin ? { headers: authHeaders() } : {};
-  return api.get("/cms/guests/", config);
+  if (asAdmin) return api.get("/cms/guests/", { headers: authHeaders() });
+  return cachedGet("cms:guests", () => api.get("/cms/guests/"));
 }
 
 export function createGuestProfile(data) {
@@ -319,8 +456,8 @@ export function getGuestProfile(id) {
 }
 
 export function getThemeSections(asAdmin = false) {
-  const config = asAdmin ? { headers: authHeaders() } : {};
-  return api.get("/cms/theme/", config);
+  if (asAdmin) return api.get("/cms/theme/", { headers: authHeaders() });
+  return cachedGet("cms:theme", () => api.get("/cms/theme/"));
 }
 
 export function createThemeSection(data) {
@@ -364,6 +501,7 @@ export function getFAQs(asAdmin = false) {
   const config = asAdmin ? { headers: authHeaders() } : {};
   return api.get("/cms/faqs/", config);
 }
+export const getFaqs = getFAQs;
 
 export function createFAQ(data) {
   return api.post("/cms/faqs/", data, adminConfig(data));
@@ -382,8 +520,8 @@ export function getFAQ(id) {
 }
 
 export function getSponsors(asAdmin = false) {
-  const config = asAdmin ? { headers: authHeaders() } : {};
-  return api.get("/cms/sponsors/", config);
+  if (asAdmin) return api.get("/cms/sponsors/", { headers: authHeaders() });
+  return cachedGet("cms:sponsors", () => api.get("/cms/sponsors/"));
 }
 
 export function createSponsor(data) {
@@ -403,8 +541,8 @@ export function getSponsor(id) {
 }
 
 export function getFestRewindItems(asAdmin = false) {
-  const config = asAdmin ? { headers: authHeaders() } : {};
-  return api.get("/cms/rewind/", config);
+  if (asAdmin) return api.get("/cms/rewind/", { headers: authHeaders() });
+  return cachedGet("cms:rewind", () => api.get("/cms/rewind/"));
 }
 
 export function createFestRewindItem(data) {
@@ -424,8 +562,8 @@ export function getFestRewindItem(id) {
 }
 
 export function getHomepageSections(asAdmin = false) {
-  const config = asAdmin ? { headers: authHeaders() } : {};
-  return api.get("/cms/homepage-sections/", config);
+  if (asAdmin) return api.get("/cms/homepage-sections/", { headers: authHeaders() });
+  return cachedGet("cms:homepage-sections", () => api.get("/cms/homepage-sections/"));
 }
 
 export function updateHomepageSection(id, data) {

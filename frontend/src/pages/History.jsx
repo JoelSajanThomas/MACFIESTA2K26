@@ -7,7 +7,7 @@ import { usePageSeo } from "../hooks/usePageSeo";
 export default function History() {
   usePageSeo({
     title: "Macfiesta History",
-    description: "The story of Macfiesta — from foundation to Retro Fiesta.",
+    description: "The story of Macfiesta — from foundation to Marvel × DC 2026.",
     image: PAGE_IMAGES.about,
   });
 
@@ -16,7 +16,7 @@ export default function History() {
       <PageHeader
         eyebrow="Our legacy"
         title="MACFIESTA History"
-        subtitle="Foundation, growth, and the road to Retro Fiesta."
+        subtitle="Foundation, growth, Retro Fiesta, and Marvel × DC 2026."
         image={PAGE_IMAGES.results}
       />
       <section className="section page-content history-page">

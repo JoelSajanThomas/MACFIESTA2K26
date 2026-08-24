@@ -1,37 +1,39 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BRAND } from "../utils/brand";
-import { useSiteSettings } from "../hooks/useSiteSettings";
+
+const LOGO = BRAND.logo.src;
 
 const VARIANTS = {
-  mark: { src: BRAND.logo.mark, showText: false, className: "brand-logo-mark" },
-  lockup: { src: BRAND.logo.lockup, showText: false, className: "brand-logo-lockup" },
-  footer: { src: BRAND.logo.footer, showText: false, className: "brand-logo-footer" },
-  default: { src: BRAND.logo.mark, showText: false, className: "" },
+  mark: { src: LOGO, showText: false, className: "brand-logo-mark" },
+  lockup: { src: LOGO, showText: false, className: "brand-logo-lockup" },
+  footer: { src: LOGO, showText: false, className: "brand-logo-footer" },
+  default: { src: LOGO, showText: false, className: "" },
 };
 
+/**
+ * Official MacFiesta crest only — no alternate logos.
+ */
 export default function BrandLogo({ variant = "default", showText, className = "", onClick }) {
-  const settings = useSiteSettings();
   const [imgError, setImgError] = useState(false);
   const config = VARIANTS[variant] || VARIANTS.default;
   const displayText = showText ?? config.showText;
-  const logoSrc = settings?.logo_image_url || config.src;
-  const showFallback = imgError || !logoSrc;
+  const showFallback = imgError || !config.src;
 
   return (
     <Link
       to="/"
-      className={`brand-logo ${config.className} ${className}`.trim()}
+      className={`brand-logo brand-logo--crest ${config.className} ${className}`.trim()}
       aria-label={`${BRAND.festName} home`}
       onClick={onClick}
     >
       {!showFallback && (
         <img
-          src={logoSrc}
+          src={config.src}
           alt={BRAND.logo.alt}
           className="brand-logo-img"
-          width={variant === "lockup" ? 220 : 36}
-          height={variant === "lockup" ? 44 : 36}
+          width={variant === "lockup" || variant === "footer" ? 160 : 62}
+          height={variant === "lockup" || variant === "footer" ? 160 : 62}
           loading="eager"
           decoding="async"
           onError={() => setImgError(true)}

@@ -1,38 +1,46 @@
 /**
- * MacFiesta Pro — Design system tokens (mirrors App.css :root).
- * Use for JS-driven styling; CSS remains source of truth for components.
+ * MacFiesta Pro — Design system tokens (mirrors superhero-theme.css :root).
  */
 
 import { BRAND } from "./brand";
+import { SUPERHERO_THEME } from "../theme/superheroTheme";
 
 export const DESIGN = {
+  theme: SUPERHERO_THEME.name,
+  factions: SUPERHERO_THEME.factions,
+  pageTitles: SUPERHERO_THEME.pageTitles,
   colors: {
-    navy950: "#04040f",
-    navy900: "#08081a",
-    navy800: "#0f0f24",
-    navy700: "#161632",
-    surface: "#12121f",
-    surfaceRaised: "#18182a",
-    gold400: "#e8c547",
-    gold500: "#d4af37",
-    gold600: "#c9a227",
-    white: "#f8f7fc",
-    muted: "#9490a8",
-    mutedDark: "#5c5870",
-    borderSubtle: "rgba(255, 255, 255, 0.08)",
-    overlayDark: "rgba(4, 4, 15, 0.75)",
+    navy950: SUPERHERO_THEME.colors.void,
+    navy900: SUPERHERO_THEME.colors.navy,
+    navy800: SUPERHERO_THEME.colors.charcoal,
+    navy700: SUPERHERO_THEME.colors.panelRaised,
+    surface: SUPERHERO_THEME.colors.panel,
+    surfaceRaised: SUPERHERO_THEME.colors.panelRaised,
+    gold400: SUPERHERO_THEME.colors.goldSoft,
+    gold500: SUPERHERO_THEME.colors.gold,
+    gold600: "#d4a017",
+    heroRed: SUPERHERO_THEME.colors.heroRed,
+    electricBlue: SUPERHERO_THEME.colors.electricBlue,
+    purple: SUPERHERO_THEME.colors.purple,
+    silver: SUPERHERO_THEME.colors.silver,
+    white: SUPERHERO_THEME.colors.white,
+    muted: SUPERHERO_THEME.colors.muted,
+    mutedDark: "#6b7385",
+    borderSubtle: "rgba(255, 255, 255, 0.1)",
+    overlayDark: "rgba(5, 6, 12, 0.78)",
   },
 
   typography: {
     fontDisplay: BRAND.typography.display,
+    fontHud: BRAND.typography.hud,
     fontBody: BRAND.typography.body,
     scale: {
       eyebrow: "0.75rem",
       body: "1rem",
       bodySm: "0.92rem",
-      h1: "clamp(2rem, 5vw, 3.25rem)",
+      h1: "clamp(2.25rem, 6vw, 4rem)",
       h2: "clamp(1.75rem, 4vw, 2.75rem)",
-      h3: "1.25rem",
+      h3: "1.2rem",
     },
     weight: {
       regular: 400,
@@ -45,7 +53,7 @@ export const DESIGN = {
   spacing: {
     sectionY: "4.5rem",
     sectionYMobile: "2.75rem",
-    containerPad: "1.5rem",
+    containerPad: "1.25rem",
     stackSm: "0.5rem",
     stackMd: "1rem",
     stackLg: "1.5rem",
@@ -53,17 +61,20 @@ export const DESIGN = {
   },
 
   radius: {
-    sm: "8px",
-    md: "12px",
-    lg: "16px",
-    xl: "24px",
+    sm: "2px",
+    md: "4px",
+    lg: "8px",
+    xl: "12px",
     pill: "999px",
+    clip: "polygon(0 0, calc(100% - 14px) 0, 100% 14px, 100% 100%, 14px 100%, 0 calc(100% - 14px))",
   },
 
   shadow: {
-    card: "0 4px 24px rgba(0, 0, 0, 0.28)",
-    cardHover: "0 8px 32px rgba(0, 0, 0, 0.35)",
-    nav: "0 4px 24px rgba(0, 0, 0, 0.25)",
+    card: "0 10px 36px rgba(0, 0, 0, 0.35)",
+    cardHover: "0 14px 40px rgba(0, 0, 0, 0.4)",
+    nav: "0 8px 32px rgba(0, 0, 0, 0.45)",
+    glowBlue: "0 0 24px rgba(30, 107, 255, 0.35)",
+    glowRed: "0 0 24px rgba(225, 29, 46, 0.35)",
   },
 
   motion: {
@@ -73,8 +84,8 @@ export const DESIGN = {
   },
 
   layout: {
-    container: "1200px",
-    navHeight: "72px",
+    container: "1180px",
+    navHeight: "64px",
   },
 
   logo: {
@@ -99,7 +110,11 @@ export const DESIGN = {
     category: "event-cat-badge",
   },
 
-  imageOverlay: "linear-gradient(180deg, rgba(4,4,15,0.55) 0%, rgba(4,4,15,0.88) 100%)",
+  categoryDisplay: SUPERHERO_THEME.categoryDisplay,
+  committeeDisplay: SUPERHERO_THEME.committeeDisplay,
+
+  imageOverlay:
+    "linear-gradient(180deg, rgba(5,6,12,0.45) 0%, rgba(5,6,12,0.88) 100%)",
 };
 
 export default DESIGN;
