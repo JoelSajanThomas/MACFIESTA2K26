@@ -56,7 +56,7 @@ export function RegistrationCTA() {
               className="flex flex-wrap justify-center gap-6 sm:gap-8 py-4 border-y border-white/10"
             >
               {[
-                { label: "26+", desc: "Missions" },
+                { label: "23", desc: "Missions" },
                 { label: "₹20L+", desc: "Prize Pool" },
                 { label: "5000+", desc: "Agents" },
               ].map((stat) => (

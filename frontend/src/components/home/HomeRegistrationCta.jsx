@@ -138,7 +138,7 @@ export default function HomeRegistrationCta() {
           >
             <div>
               <div style={{ fontSize: "28px", fontWeight: "900", color: "#00D4FF", fontFamily: "var(--font-excon-black)" }}>
-                26+
+                23
               </div>
               <div style={{ fontSize: "10px", color: "rgba(255, 255, 255, 0.6)", letterSpacing: "0.14em", textTransform: "uppercase" }}>
                 Missions

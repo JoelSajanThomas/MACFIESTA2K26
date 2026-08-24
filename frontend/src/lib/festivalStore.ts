@@ -226,7 +226,7 @@ const DEFAULT_SETTINGS: FestivalSettings = {
   heroTitle: "WELCOME TO",
   heroName: "MACFIESTA",
   heroSubtitle: "MARVELVERSE",
-  heroDesc: "Unleash your superpower across 26 national inter-collegiate tech, cultural, gaming & management challenges.",
+  heroDesc: "Unleash your superpower across 23 national inter-collegiate tech, cultural, gaming & management challenges.",
   bgType: "image",
   videoBgUrl: "/MARVEL/Video Project 4.mp4",
   wallpaperUrl: "/MARVEL/3025924746959430.jpg",
@@ -360,7 +360,7 @@ const DEFAULT_ANIMATIONS: AnimationSettings = {
 
 const DEFAULT_SEO: SeoSettings = {
   metaTitle: "MacFiesta 2K26 — Premier National Inter-Collegiate Festival",
-  metaDescription: "Experience 26 national technical, cultural & gaming challenges at MACFAST Tiruvalla. Win cash prizes worth ₹20 Lakhs!",
+  metaDescription: "Experience 23 national technical, cultural & gaming challenges at MACFAST Tiruvalla. Win cash prizes worth ₹20 Lakhs!",
   keywords: "MacFiesta, MACFAST, College Fest, Inter-Collegiate, Kerala Tech Fest, Esports, Hackathon",
   ogImage: "/MARVEL/3025924746959430.jpg",
   twitterHandle: "@macfiesta",

@@ -32,7 +32,7 @@ export function AICopilotModule() {
     setIsAnalyzing(true);
 
     setTimeout(() => {
-      let reply = "Based on live telemetry, registration velocity has increased by 24% today. All 26 event queue sheets are validated with 0 scheduling conflicts.";
+      let reply = "Based on live telemetry, registration velocity has increased by 24% today. All 23 event queue sheets are validated with 0 scheduling conflicts.";
       if (prompt.toLowerCase().includes("revenue") || prompt.toLowerCase().includes("finance")) {
         reply = "Current gross revenue stands at ₹1,72,500 with 14 pending UPI verifications. Recommended action: approve pending payments in Finance -> Pending Payment Review.";
       } else if (prompt.toLowerCase().includes("schedule") || prompt.toLowerCase().includes("event")) {

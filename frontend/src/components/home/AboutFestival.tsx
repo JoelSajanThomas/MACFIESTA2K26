@@ -79,7 +79,7 @@ function StatCard({
 }
 
 const stats = [
-  { icon: RiAwardLine, rawValue: 26, suffix: "+", label: "Avenger Missions", color: "text-metallic-gold" },
+  { icon: RiAwardLine, rawValue: 23, suffix: "", label: "Avenger Missions", color: "text-metallic-gold" },
   { icon: RiGroupLine, rawValue: 5000, suffix: "+", label: "Recruited Agents", color: "text-arc-cyan" },
   { icon: RiFlashlightLine, rawValue: 20, suffix: "L+", label: "Bounty Pool", color: "text-marvel-red" },
   { icon: RiShieldFlashLine, rawValue: 100, suffix: "%", label: "MCU Immersion", color: "text-vibranium-purple" },

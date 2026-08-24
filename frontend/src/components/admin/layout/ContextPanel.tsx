@@ -51,7 +51,7 @@ export function ContextPanel({ activePage, onQuickAction, auditLogs = [] }: Cont
               </span>
               <div className="flex justify-between text-zinc-300">
                 <span>Active Competitions</span>
-                <span className="font-bold text-white">26 Events</span>
+                <span className="font-bold text-white">23 Events</span>
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>Total Prize Pool</span>
@@ -59,7 +59,7 @@ export function ContextPanel({ activePage, onQuickAction, auditLogs = [] }: Cont
               </div>
               <div className="flex justify-between text-zinc-300">
                 <span>Queue Sheets Ready</span>
-                <span className="font-bold text-emerald-400">18 / 26</span>
+                <span className="font-bold text-emerald-400">18 / 23</span>
               </div>
             </div>
 

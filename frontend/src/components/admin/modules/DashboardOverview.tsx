@@ -78,7 +78,7 @@ export function DashboardOverview({
           </h1>
 
           <p className="text-xs text-white/70 leading-relaxed font-mono">
-            Unified tactical operational center for MACFIESTA MARVELVERSE. Instantly control 26 superhero events, live scoreboards, delegate registrations, financial ledgers, and emergency broadcasts.
+            Unified tactical operational center for MACFIESTA MARVELVERSE. Instantly control 23 superhero events, live scoreboards, delegate registrations, financial ledgers, and emergency broadcasts.
           </p>
 
           <div className="pt-2 flex flex-wrap items-center gap-3">
@@ -92,7 +92,7 @@ export function DashboardOverview({
               onClick={() => onSelectTab("cms")}
               className="px-5 py-2.5 rounded-xl bg-marvel-red hover:bg-white hover:text-black text-white font-extrabold text-xs uppercase tracking-widest shadow-[0_0_20px_#ED1D24] transition-all flex items-center gap-2 cursor-pointer"
             >
-              <RiShieldCheckLine /> Manage 26 Missions
+              <RiShieldCheckLine /> Manage 23 Missions
             </button>
           </div>
         </div>
@@ -126,7 +126,7 @@ export function DashboardOverview({
             { label: "Total Registrations", value: totalRegs.toLocaleString(), color: "text-metallic-gold", border: "border-metallic-gold/30 hover:border-metallic-gold", bg: "bg-metallic-gold/10", icon: RiUserSharedLine, target: "registrations" },
             { label: "Today's Income", value: "₹1,72,500", color: "text-emerald-400", border: "border-emerald-500/30 hover:border-emerald-500", bg: "bg-emerald-500/10", icon: RiMoneyDollarCircleLine, target: "finance" },
             { label: "Pending Clearances", value: "23 Agents", color: "text-amber-400", border: "border-amber-500/30 hover:border-amber-500", bg: "bg-amber-500/10", icon: RiAlertLine, target: "registrations" },
-            { label: "Active Events", value: `${events.length || 26} Missions`, color: "text-arc-cyan", border: "border-arc-cyan/30 hover:border-arc-cyan", bg: "bg-arc-cyan/10", icon: RiTimeLine, target: "events" },
+            { label: "Active Events", value: `${events.length || 23} Missions`, color: "text-arc-cyan", border: "border-arc-cyan/30 hover:border-arc-cyan", bg: "bg-arc-cyan/10", icon: RiTimeLine, target: "events" },
             { label: "Ongoing Arenas", value: "4 Live", color: "text-vibranium-purple", border: "border-vibranium-purple/30 hover:border-vibranium-purple", bg: "bg-vibranium-purple/10", icon: RiPulseLine, target: "schedule" },
             { label: "Volunteers On Duty", value: "86 / 110", color: "text-emerald-400", border: "border-emerald-500/30 hover:border-emerald-500", bg: "bg-emerald-500/10", icon: RiUserHeartLine, target: "operations" },
             { label: "Hostel Occupancy", value: "88% Full", color: "text-pink-400", border: "border-pink-500/30 hover:border-pink-500", bg: "bg-pink-500/10", icon: RiHotelBedLine, target: "operations" },

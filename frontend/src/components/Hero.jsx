@@ -32,7 +32,7 @@ export default function Hero({ settings }) {
   const registrationOpen = settings?.registration_open !== false;
 
   const tickerItems = [
-    "★ 26 EXCITING EVENTS",
+    "★ 23 EXCITING EVENTS",
     "★ PRIZE POOL WORTH 20 LAKHS",
     "★ HACKATHON & CODING COMBAT",
     "★ ESPORTS GAMING ARENA",
@@ -179,7 +179,7 @@ export default function Hero({ settings }) {
               }}
             >
               MACFAST&apos;s premier national-level collegiate fest — where creativity meets competition. Compete across{" "}
-              <strong style={{ color: "#00D4FF" }}>26 thrilling events</strong>.
+              <strong style={{ color: "#00D4FF" }}>23 thrilling events</strong>.
             </p>
 
             {/* Action Buttons */}

@@ -333,7 +333,7 @@ export default function Announcements() {
               to="/events"
               className="px-6 py-3 rounded-xl bg-black/60 hover:bg-white/10 text-white border border-white/20 font-bold text-xs uppercase tracking-wider transition-all flex items-center gap-2"
             >
-              <RiCompass3Line className="text-base" /> Browse 26 Missions
+              <RiCompass3Line className="text-base" /> Browse 23 Missions
             </Link>
           </div>
         </div>

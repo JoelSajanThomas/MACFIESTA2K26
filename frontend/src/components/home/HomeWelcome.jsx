@@ -10,7 +10,7 @@ import { BRAND, formatFestDateRange } from "../../utils/brand";
 import { MF1_MARVEL } from "../../utils/assets";
 
 const STATS = [
-  { value: "26+", label: "Events", icon: <RiTrophyLine />, color: "#FFD700" },
+  { value: "23", label: "Events", icon: <RiTrophyLine />, color: "#FFD700" },
   { value: "5000+", label: "Participants", icon: <RiTeamLine />, color: "#00D4FF" },
   { value: "20L+", label: "Prize Pool", icon: <RiFlashlightLine />, color: "#ED1D24" },
   { value: "100%", label: "Fest Experience", icon: <RiShieldFlashLine />, color: "#7B2FBE" },

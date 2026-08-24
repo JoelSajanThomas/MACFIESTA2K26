@@ -35,10 +35,10 @@ const PRESET_QUERIES = [
 ];
 
 const MARVEL_RESPONSES: Record<string, string> = {
-  events: `MACFIESTA 2K26 hosts 26 high-level missions across General, Technical, Cultural, Gaming, and Sports categories! Key missions include Code Wars, Robo Race, BGMI Championship, Beat Boxing, and Pro-Show Concert.`,
+  events: `MACFIESTA 2K26 hosts 23 high-level missions across General, Technical, Cultural, Gaming, and Sports categories! Key missions include Code Wars, Robo Race, BGMI Championship, Beat Boxing, and Pro-Show Concert.`,
   schedule: `S.H.I.E.L.D. Mission Timeline:\n• Day 1 (Sept 24): Registration, Inauguration, Coding Sprint, Gaming Prelims.\n• Day 2 (Sept 25): Cultural Battle, Finals, Grand Award Ceremony & Pro Show!`,
   location: `MACFAST (Mar Athanasios College for Advanced Studies) is located in Tiruvalla, Pathanamthitta, Kerala. Coordinates verified, Agent.`,
-  prize: `The total prize pool across all 26 missions exceeds ₹2,000,000 along with S.H.I.E.L.D. Certificates and Avenger Trophies!`,
+  prize: `The total prize pool across all 23 missions exceeds ₹2,000,000 along with S.H.I.E.L.D. Certificates and Avenger Trophies!`,
   quote: `"Part of the journey is the end." — Tony Stark\n"I can do this all day." — Captain America\n"Whatever it takes." — The Avengers`,
 };
 

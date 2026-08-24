@@ -89,7 +89,7 @@ export function EventMediaModule({ events, onUpdateMedia }: EventMediaModuleProp
             Event Photos & Video Manager
           </h1>
           <p className="text-xs text-zinc-400 mt-1">
-            Configure cover photo banners, promo teaser videos, and photo gallery grids for all 26 festival events.
+            Configure cover photo banners, promo teaser videos, and photo gallery grids for all 23 festival events.
           </p>
         </div>
 

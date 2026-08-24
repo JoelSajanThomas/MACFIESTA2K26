@@ -146,7 +146,7 @@ export default function HomeFeaturedMissions() {
               transition: "all 0.2s",
             }}
           >
-            <span>View All 26 Events</span>
+            <span>View All 23 Events</span>
             <RiArrowRightLine />
           </Link>
         </div>

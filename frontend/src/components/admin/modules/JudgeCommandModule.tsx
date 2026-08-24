@@ -400,7 +400,7 @@ export function JudgeCommandModule({ activePage }: JudgeCommandModuleProps) {
 
             <div className="p-5 rounded-2xl bg-black/40 border border-arc-cyan/30 space-y-1">
               <span className="text-white/50 text-[10px] uppercase font-bold">Submitted Scorecards</span>
-              <div className="text-3xl font-black text-arc-cyan">18 / 26</div>
+              <div className="text-3xl font-black text-arc-cyan">18 / 23</div>
               <span className="text-arc-cyan text-[10px]">69% Completed</span>
             </div>
 
