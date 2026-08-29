@@ -262,9 +262,8 @@ h4,
   color: var(--gold-400, #e8c84a) !important;
 }
 
-.nav-link-account-menu {
-  /* Create Account stays in the menu only — Login lives once in navbar-end */
-}
+/* Note: Create Account stays in the menu only — Login lives once in navbar-end */
+
 
 @media (max-width: 1024px) {
   .nav-link-login-pin {

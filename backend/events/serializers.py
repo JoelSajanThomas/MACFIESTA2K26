@@ -1,11 +1,14 @@
 from rest_framework import serializers
 
-from config.validators import validate_uploaded_image
+from config.serializers_mixins import ImageValidationMixin
 from .models import Event
 
 
-class EventSerializer(serializers.ModelSerializer):
+class EventSerializer(ImageValidationMixin, serializers.ModelSerializer):
     participant_count = serializers.SerializerMethodField()
+    image = serializers.FileField(required=False, allow_null=True)
+    banner_image = serializers.FileField(required=False, allow_null=True)
+    poster_image = serializers.FileField(required=False, allow_null=True)
 
     class Meta:
         model = Event
@@ -16,13 +19,4 @@ class EventSerializer(serializers.ModelSerializer):
             return obj.participant_count_cached
         return obj.registrations.filter(
             is_waiting_list=False, cancelled_at__isnull=True
-        ).count()
-
-    def validate_image(self, value):
-        return validate_uploaded_image(value)
-
-    def validate_banner_image(self, value):
-        return validate_uploaded_image(value)
-
-    def validate_poster_image(self, value):
-        return validate_uploaded_image(value)
+        ).count()

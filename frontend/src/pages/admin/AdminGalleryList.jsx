@@ -21,28 +21,27 @@ export default function AdminGalleryList() {
         const backendItems = (res.data || []).map((b) => ({
           id: b.id,
           title: b.title,
-          image: mediaUrl(b.image) || "/logo.png",
-          type: "image",
-          category: "general",
+          // Use thumbnail for videos, otherwise the image URL
+          image: b.type === "video"
+            ? (mediaUrl(b.thumbnail) || "/logo.png")
+            : (b.url || mediaUrl(b.image) || "/logo.png"),
+          type: b.type || "image",
+          category: b.category || "general",
+          isBackend: true,
         }));
 
-        const storeItems = getGalleryItems().map((s) => ({
-          id: s.id,
-          title: s.title,
-          image: s.thumbnailUrl || s.url,
-          type: s.type || "image",
-          category: s.category || "general",
-        }));
+        const storeItems = getGalleryItems()
+          .filter((s) => !backendItems.some((b) => String(b.id) === String(s.id)))
+          .map((s) => ({
+            id: s.id,
+            title: s.title,
+            image: s.thumbnailUrl || s.url,
+            type: s.type || "image",
+            category: s.category || "general",
+            isBackend: false,
+          }));
 
-        // Merge without duplicates
-        const combined = [...backendItems];
-        storeItems.forEach((s) => {
-          if (!combined.some((c) => String(c.id) === String(s.id))) {
-            combined.push(s);
-          }
-        });
-
-        setItems(combined);
+        setItems([...backendItems, ...storeItems]);
       })
       .catch(() => {
         // Fallback to local gallery store items
@@ -52,11 +51,13 @@ export default function AdminGalleryList() {
           image: s.thumbnailUrl || s.url,
           type: s.type || "image",
           category: s.category || "general",
+          isBackend: false,
         }));
         setItems(storeItems);
       })
       .finally(() => setLoading(false));
   }
+
 
   useEffect(() => {
     load();

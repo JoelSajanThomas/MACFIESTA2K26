@@ -40,9 +40,10 @@ class ActiveContentViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         qs = super().get_queryset()
-        if not _is_staff(self.request.user):
+        if self.action == "list" and not _is_staff(self.request.user):
             qs = qs.filter(is_active=True)
         return qs
+
 
 
 class SiteSettingViewSet(viewsets.ModelViewSet):

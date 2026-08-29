@@ -17,6 +17,7 @@ import {
   RiLogoutBoxRLine,
   RiStarSmileLine,
   RiToggleLine,
+  RiCloseLine,
 } from "react-icons/ri";
 import { logout } from "../../utils/auth";
 import { dashboardRoleLabel, groupedAdminNav, staffLogoutPath } from "../../utils/committeeAccess";
@@ -66,15 +67,27 @@ export default function AdminSidebar({ mobileOpen = false, onClose }) {
       )}
       <aside className={`admin-sidebar${mobileOpen ? " is-open" : ""}`}>
         {/* Brand Header */}
-        <div className="admin-sidebar-brand">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FFD700] via-amber-500 to-amber-700 flex items-center justify-center text-black font-black text-sm shrink-0 shadow-[0_0_15px_rgba(255,215,0,0.35)]">
-              MF
+        <div className="admin-sidebar-brand relative">
+          <div className="flex items-center justify-between gap-2 mb-2">
+            <div className="flex items-center gap-3 min-w-0">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#FFD700] via-amber-500 to-amber-700 flex items-center justify-center text-black font-black text-sm shrink-0 shadow-[0_0_15px_rgba(255,215,0,0.35)]">
+                MF
+              </div>
+              <div className="min-w-0">
+                <span className="section-eyebrow">COMMAND OS</span>
+                <strong className="truncate block">MacFiesta Pro</strong>
+              </div>
             </div>
-            <div className="min-w-0">
-              <span className="section-eyebrow">COMMAND OS</span>
-              <strong className="truncate">MacFiesta Pro</strong>
-            </div>
+
+            {/* Mobile close button inside drawer */}
+            <button
+              type="button"
+              className="admin-sidebar-close-btn p-1.5 rounded-lg text-white/60 hover:text-white hover:bg-white/10 transition-colors"
+              onClick={onClose}
+              aria-label="Close navigation"
+            >
+              <RiCloseLine size={20} />
+            </button>
           </div>
           <div className="pt-2 border-t border-white/10 flex items-center justify-between">
             <span className="admin-sidebar-user truncate">

@@ -4,16 +4,22 @@ import { useState, useRef } from "react";
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { RiMapPinLine, RiTimeLine, RiArrowRightLine, RiFlashlightLine } from "react-icons/ri";
-import { Reveal, RevealGroup, RevealItem } from "@/components/ui/Reveal";
-import { useFestivalControl } from "@/lib/festivalStore";
+import {
+  RiMapPinLine,
+  RiTimeLine,
+  RiArrowRightLine,
+  RiFlashlightLine,
+  RiCompass3Line,
+  RiSparklingFill,
+} from "react-icons/ri";
+import { Reveal } from "@/components/ui/Reveal";
 
-const typeColors: Record<string, { bg: string; text: string; border: string; rgb: string }> = {
-  General:    { bg: "bg-arc-cyan/15",         text: "text-arc-cyan",     border: "border-arc-cyan/30",     rgb: "0,212,255"   },
-  Gaming:     { bg: "bg-vibranium-purple/15",  text: "text-vibranium-purple", border: "border-vibranium-purple/30", rgb: "123,47,190" },
-  Technical:  { bg: "bg-metallic-gold/15",     text: "text-metallic-gold", border: "border-metallic-gold/30", rgb: "212,175,55" },
-  Management: { bg: "bg-marvel-red/15",         text: "text-marvel-red",  border: "border-marvel-red/30",   rgb: "237,29,36"   },
-  Cultural:   { bg: "bg-vibranium-purple/15",  text: "text-vibranium-purple", border: "border-vibranium-purple/30", rgb: "123,47,190" },
+const typeColors: Record<string, { bg: string; text: string; border: string; rgb: string; glow: string }> = {
+  General:    { bg: "bg-arc-cyan/15",         text: "text-arc-cyan",         border: "border-arc-cyan/40",         rgb: "0,212,255",   glow: "#00D4FF" },
+  Gaming:     { bg: "bg-vibranium-purple/15",  text: "text-vibranium-purple", border: "border-vibranium-purple/40", rgb: "123,47,190", glow: "#7B2FBE" },
+  Technical:  { bg: "bg-metallic-gold/15",     text: "text-metallic-gold",     border: "border-metallic-gold/40",     rgb: "212,175,55",  glow: "#D4AF37" },
+  Management: { bg: "bg-marvel-red/15",         text: "text-marvel-red",      border: "border-marvel-red/40",       rgb: "237,29,36",   glow: "#ED1D24" },
+  Cultural:   { bg: "bg-vibranium-purple/15",  text: "text-vibranium-purple", border: "border-vibranium-purple/40", rgb: "123,47,190", glow: "#7B2FBE" },
 };
 
 const defaultScheduleData = {
@@ -39,8 +45,8 @@ function ScheduleCard({ slot, idx }: { slot: typeof defaultScheduleData.day1[0];
 
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
-  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [5, -5]), { stiffness: 200, damping: 25 });
-  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-6, 6]), { stiffness: 200, damping: 25 });
+  const rotateX = useSpring(useTransform(mouseY, [-0.5, 0.5], [6, -6]), { stiffness: 220, damping: 20 });
+  const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-7, 7]), { stiffness: 220, damping: 20 });
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const rect = cardRef.current?.getBoundingClientRect();
@@ -56,67 +62,80 @@ function ScheduleCard({ slot, idx }: { slot: typeof defaultScheduleData.day1[0];
 
   return (
     <motion.div
-      initial={{ opacity: 0, x: -40, scale: 0.95 }}
-      animate={{ opacity: 1, x: 0, scale: 1 }}
-      exit={{ opacity: 0, x: 40, scale: 0.95 }}
-      transition={{ duration: 0.4, delay: idx * 0.08, ease: [0.25, 0.46, 0.45, 0.94] }}
+      initial={{ opacity: 0, x: -50, filter: "blur(6px)", scale: 0.94 }}
+      animate={{ opacity: 1, x: 0, filter: "blur(0px)", scale: 1 }}
+      exit={{ opacity: 0, x: 40, filter: "blur(6px)", scale: 0.94 }}
+      transition={{ duration: 0.45, delay: idx * 0.08, ease: [0.22, 1, 0.36, 1] }}
       className="relative group"
       style={{ perspective: "1000px" }}
     >
-      {/* Timeline point */}
-      <div
-        className="absolute -left-[27px] sm:-left-[31px] md:-left-[39px] top-5 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border-2 bg-black group-hover:scale-150 transition-all duration-300 z-10"
-        style={{
-          borderColor: `rgba(${tc.rgb},0.8)`,
-          boxShadow: `0 0 10px rgba(${tc.rgb},0.6)`,
-          backgroundColor: `rgba(${tc.rgb},0.1)`,
-        }}
-      />
+      {/* Dynamic Animated Timeline Node with Pulse Ripple */}
+      <div className="absolute -left-[27px] sm:-left-[31px] md:-left-[39px] top-5 flex items-center justify-center z-20">
+        {/* Radar ping ring */}
+        <motion.div
+          animate={{ scale: [1, 2.2, 1], opacity: [0.7, 0, 0.7] }}
+          transition={{ duration: 2.2, repeat: Infinity, delay: idx * 0.3, ease: "easeInOut" }}
+          className="absolute w-4 h-4 rounded-full"
+          style={{ backgroundColor: `rgba(${tc.rgb}, 0.5)` }}
+        />
+        {/* Central glowing core */}
+        <div
+          className="w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border-2 bg-[#05050A] group-hover:scale-135 transition-transform duration-300 relative z-10"
+          style={{
+            borderColor: tc.glow,
+            boxShadow: `0 0 14px ${tc.glow}`,
+          }}
+        />
+      </div>
 
       <motion.div
         ref={cardRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
         style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
-        className="glass-aurora p-4 sm:p-5 rounded-2xl border border-white/10 group-hover:border-white/20 transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 cursor-default"
+        whileHover={{ y: -4 }}
+        transition={{ duration: 0.2 }}
+        className="glass-aurora relative overflow-hidden p-4 sm:p-5 md:p-6 rounded-2xl border border-white/10 group-hover:border-white/25 transition-all duration-300 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 cursor-default shadow-xl backdrop-blur-md"
       >
-        {/* Accent top border on hover */}
+        {/* Shimmer laser highlight on hover */}
         <div
-          className="absolute top-0 left-0 right-0 h-px rounded-t-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-400"
-          style={{ background: `linear-gradient(90deg, transparent, rgba(${tc.rgb},0.8), transparent)` }}
+          className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+          style={{
+            background: `linear-gradient(90deg, transparent, rgba(${tc.rgb}, 0.9), #FFFFFF, rgba(${tc.rgb}, 0.9), transparent)`,
+          }}
         />
-        <div className="space-y-1.5 min-w-0 flex-1" style={{ transform: "translateZ(8px)" }}>
-          <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
-            <RiTimeLine className="text-arc-cyan text-sm shrink-0" />
-            <span className="text-metallic-gold text-xs font-bold tracking-wider font-excon-bold">{slot.time}</span>
+
+        {/* Ambient subtle card aura */}
+        <div
+          className="absolute -inset-1 opacity-0 group-hover:opacity-20 transition-opacity duration-500 rounded-2xl pointer-events-none blur-xl"
+          style={{ backgroundColor: tc.glow }}
+        />
+
+        <div className="space-y-2 min-w-0 flex-1 relative z-10" style={{ transform: "translateZ(12px)" }}>
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="flex items-center gap-1.5 text-metallic-gold text-xs font-black tracking-wider font-excon-bold bg-metallic-gold/10 px-2.5 py-1 rounded-lg border border-metallic-gold/30">
+              <RiTimeLine className="text-arc-cyan text-sm shrink-0 animate-pulse" />
+              {slot.time}
+            </span>
             <span
-              className={`px-2 py-0.5 rounded text-[8px] sm:text-[9px] uppercase tracking-[0.12em] sm:tracking-[0.14em] font-black border font-excon-black ${tc.bg} ${tc.text} ${tc.border}`}
+              className={`px-2.5 py-0.5 rounded-lg text-[9px] uppercase tracking-[0.15em] font-black border font-excon-black shadow-sm ${tc.bg} ${tc.text} ${tc.border}`}
             >
               {slot.type}
             </span>
           </div>
-          <h3
-            className="text-sm sm:text-lg font-black text-white uppercase tracking-tight group-hover:text-metallic-gold transition-colors duration-300 font-excon-black truncate"
-          >
+
+          <h3 className="text-base sm:text-lg md:text-xl font-black text-white uppercase tracking-tight group-hover:text-metallic-gold transition-colors duration-300 font-excon-black truncate">
             {slot.title}
           </h3>
         </div>
 
         <div
-          className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs font-bold text-white/85 bg-white/5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl border border-white/10 shrink-0 font-excon-bold self-center"
-          style={{ transform: "translateZ(8px)" }}
+          className="flex items-center gap-2 text-[11px] sm:text-xs font-bold text-white/90 bg-white/5 group-hover:bg-white/10 px-3 py-2 rounded-xl border border-white/10 shrink-0 font-excon-bold self-start md:self-center transition-all duration-300 relative z-10"
+          style={{ transform: "translateZ(12px)" }}
         >
-          <RiMapPinLine className="text-arc-cyan text-xs sm:text-sm shrink-0" />
+          <RiMapPinLine className="text-arc-cyan text-sm shrink-0" />
           <span className="truncate">{slot.venue}</span>
         </div>
-
-        {/* Hover glow shadow */}
-        <motion.div
-          className="absolute inset-0 rounded-2xl pointer-events-none"
-          initial={{ boxShadow: "none" }}
-          whileHover={{ boxShadow: `0 0 30px rgba(${tc.rgb},0.15)` }}
-          transition={{ duration: 0.3 }}
-        />
       </motion.div>
     </motion.div>
   );
@@ -126,100 +145,144 @@ export function SchedulePreview() {
   const [activeDay, setActiveDay] = useState<"day1" | "day2">("day1");
 
   return (
-    <section className="relative bg-transparent section-padding border-t border-metallic-gold/20 overflow-hidden min-h-[600px]">
-      {/* Parallax Background */}
-      <div className="absolute inset-0 z-0 opacity-85 pointer-events-none overflow-hidden">
+    <section className="relative bg-transparent section-padding border-t border-metallic-gold/20 overflow-hidden min-h-[640px]">
+      {/* ─── Parallax Marvel Background & Mystical Time Portal Ring ─── */}
+      <div className="absolute inset-0 z-0 opacity-35 pointer-events-none overflow-hidden">
         <Image
           src="/MARVEL/Doctor Strange.png"
           alt="Doctor Strange Schedule Background"
           fill
           priority
-          className="object-cover object-top filter brightness-105 contrast-125 saturate-135 scale-[1.05]"
+          className="object-cover object-top filter brightness-100 contrast-115 scale-[1.05]"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#05050A]/60 via-transparent to-[#05050A]/70" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_45%,rgba(5,5,10,0.65)_95%)]" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#05050A]/80 via-transparent to-[#05050A]/90" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_40%,rgba(5,5,10,0.85)_95%)]" />
+      </div>
+
+      {/* ─── Rotating Mystical Doctor Strange Time Spell Rings ─── */}
+      <div className="absolute top-1/2 right-[-120px] sm:right-[-60px] -translate-y-1/2 pointer-events-none opacity-25 z-0">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+          className="w-96 h-96 sm:w-[480px] sm:h-[480px] rounded-full border-2 border-dashed border-metallic-gold/50 flex items-center justify-center shadow-[0_0_50px_rgba(212,175,55,0.3)]"
+        >
+          <motion.div
+            animate={{ rotate: -360 }}
+            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+            className="w-72 h-72 sm:w-[360px] sm:h-[360px] rounded-full border border-arc-cyan/40 border-dotted flex items-center justify-center"
+          >
+            <div className="w-48 h-48 sm:w-[240px] sm:h-[240px] rounded-full border border-marvel-red/30" />
+          </motion.div>
+        </motion.div>
       </div>
 
       <div className="max-w-4xl mx-auto relative z-10">
-
-        {/* Header */}
-        <Reveal y={60} duration={0.7} margin="-100px">
+        {/* Header with reveal animation */}
+        <Reveal y={50} duration={0.6} margin="-100px">
           <div className="text-center space-y-4 mb-8 sm:mb-12 max-w-2xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-metallic-gold/40 bg-metallic-gold/10 text-metallic-gold text-xs font-bold tracking-[0.2em] uppercase shadow-[0_0_15px_rgba(212,175,55,0.25)] font-space">
-              <RiFlashlightLine className="animate-pulse text-metallic-gold" />
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              whileInView={{ scale: 1, opacity: 1 }}
+              viewport={{ once: true }}
+              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-metallic-gold/40 bg-metallic-gold/10 text-metallic-gold text-xs font-bold tracking-[0.2em] uppercase shadow-[0_0_15px_rgba(212,175,55,0.25)] font-space"
+            >
+              <RiCompass3Line className="animate-spin text-metallic-gold text-sm" style={{ animationDuration: "8s" }} />
               <span>SANCTUM TIME REALM CHRONOLOGY</span>
-            </div>
+            </motion.div>
 
             <h2 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-white font-excon-black">
               <span className="shimmer-text">SCHEDULE</span>{" "}
               <span className="gradient-text-gold">PREVIEW</span>
             </h2>
 
-            {/* Animated expanding divider */}
-            <div
-              className="h-px w-32 mx-auto bg-gradient-to-r from-transparent via-arc-cyan to-metallic-gold to-transparent origin-center"
+            {/* Animated glowing expanding divider */}
+            <motion.div
+              initial={{ scaleX: 0 }}
+              whileInView={{ scaleX: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, ease: "easeOut" }}
+              className="h-[2px] w-36 mx-auto bg-gradient-to-r from-transparent via-arc-cyan to-metallic-gold to-transparent origin-center shadow-[0_0_10px_#00D4FF]"
             />
 
-            {/* Day toggle with 3D spring */}
-            <div className="flex flex-row justify-center gap-2.5 sm:gap-3 pt-2 w-full max-w-md mx-auto">
-              {(["day1", "day2"] as const).map((day) => (
-                <motion.button
-                  key={day}
-                  onClick={() => setActiveDay(day)}
-                  whileHover={{ scale: 1.04, y: -2 }}
-                  whileTap={{ scale: 0.96 }}
-                  transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                  className={`flex-1 px-4 sm:px-6 py-2 sm:py-2.5 rounded-full border text-[11px] sm:text-xs font-bold uppercase tracking-wider sm:tracking-[0.16em] transition-colors duration-300 cursor-pointer font-space text-center truncate ${
-                    activeDay === day
-                      ? "bg-marvel-red text-white border-marvel-red shadow-[0_0_20px_#ED1D24]"
-                      : "bg-black/60 text-white/75 border-white/15 hover:border-white/40 hover:text-white"
-                  }`}
-                >
-                  {day === "day1" ? "⚡ Day 1 — Tech" : "🏆 Day 2 — Finals"}
-                </motion.button>
-              ))}
+            {/* ─── Animated Day Toggle with Sliding Active Indicator ─── */}
+            <div className="relative flex flex-row justify-center gap-2 p-1.5 rounded-full bg-black/60 border border-white/15 backdrop-blur-xl w-full max-w-sm mx-auto mt-4 shadow-2xl">
+              {(["day1", "day2"] as const).map((day) => {
+                const isActive = activeDay === day;
+                return (
+                  <button
+                    key={day}
+                    onClick={() => setActiveDay(day)}
+                    className={`relative flex-1 px-4 py-2.5 rounded-full text-xs font-black uppercase tracking-[0.14em] font-space text-center transition-colors duration-300 z-10 cursor-pointer ${
+                      isActive ? "text-white" : "text-white/60 hover:text-white"
+                    }`}
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="activeScheduleTabPill"
+                        className="absolute inset-0 rounded-full bg-gradient-to-r from-marvel-red via-[#FF2D35] to-marvel-red shadow-[0_0_20px_rgba(237,29,36,0.7)] z-[-1]"
+                        transition={{ type: "spring", stiffness: 380, damping: 28 }}
+                      />
+                    )}
+                    <span className="flex items-center justify-center gap-1.5">
+                      {day === "day1" ? (
+                        <>
+                          <RiFlashlightLine className="text-sm shrink-0" />
+                          <span>DAY 1 • TECH</span>
+                        </>
+                      ) : (
+                        <>
+                          <RiSparklingFill className="text-sm shrink-0" />
+                          <span>DAY 2 • FINALS</span>
+                        </>
+                      )}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </Reveal>
 
-        {/* Schedule List */}
+        {/* ─── Schedule List with Laser Wave Rail ─── */}
         <div className="relative border-l-2 border-arc-cyan/30 ml-3 sm:ml-4 md:ml-6 pl-5 sm:pl-6 md:pl-8 space-y-4 sm:space-y-5">
-          {/* Animated scan line */}
+          {/* Animated Laser Beam pulsing along the rail */}
           <motion.div
-            className="absolute left-0 w-0.5 h-16 bg-gradient-to-b from-transparent via-arc-cyan to-transparent"
-            animate={{ y: ["0%", "calc(100% - 64px)", "0%"] }}
-            transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -left-[2px] w-[3px] h-24 bg-gradient-to-b from-transparent via-arc-cyan to-transparent shadow-[0_0_12px_#00D4FF]"
+            animate={{ top: ["-5%", "95%", "-5%"] }}
+            transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
           />
 
           <AnimatePresence mode="wait">
             <motion.div
               key={activeDay}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-              className="space-y-5"
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -15 }}
+              transition={{ duration: 0.25 }}
+              className="space-y-4 sm:space-y-5"
             >
               {defaultScheduleData[activeDay].map((slot, idx) => (
-                <ScheduleCard key={idx} slot={slot} idx={idx} />
+                <ScheduleCard key={`${activeDay}-${idx}`} slot={slot} idx={idx} />
               ))}
             </motion.div>
           </AnimatePresence>
         </div>
 
+        {/* ─── CTA Button ─── */}
         <motion.div
-          className="text-center mt-10"
+          className="text-center mt-12"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.2 }}
         >
-          <motion.div whileHover={{ scale: 1.05, y: -3 }} whileTap={{ scale: 0.97 }}>
+          <motion.div whileHover={{ scale: 1.05, y: -3 }} whileTap={{ scale: 0.96 }}>
             <Link
               href="/schedule"
-              className="btn-primary px-8 py-3 text-xs tracking-[0.16em] uppercase inline-flex items-center gap-2 shadow-[0_0_25px_#ED1D24] font-excon-bold"
+              className="btn-primary group px-8 py-3.5 text-xs tracking-[0.2em] uppercase inline-flex items-center gap-3 shadow-[0_0_30px_rgba(237,29,36,0.6)] hover:shadow-[0_0_40px_rgba(237,29,36,0.9)] font-excon-bold rounded-full transition-all duration-300 border border-marvel-red/50"
             >
               <span className="font-black">View Full Interactive Schedule</span>
-              <RiArrowRightLine className="text-sm" />
+              <RiArrowRightLine className="text-base group-hover:translate-x-1.5 transition-transform duration-300" />
             </Link>
           </motion.div>
         </motion.div>

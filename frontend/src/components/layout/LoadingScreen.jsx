@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useLoading } from "../../providers/LoadingProvider";
 import { motion, AnimatePresence } from "framer-motion";
+import { startBackgroundPreload } from "../../utils/framePreloader";
 
 // ─── Gold palette ─────────────────────────────────────────────────────────────
 const GOLD = ["#D4AF37", "#F5D76E", "#FFE680", "#C8960C", "#FFC200", "#FFFFFF"];
@@ -37,8 +38,11 @@ export default function LoadingScreen({ skip = false }) {
   const burstRef = useRef([]);
   const burstFiredRef = useRef(false);
 
-  // ── Mount ────────────────────────────────────────────────────────────────
-  useEffect(() => setIsMounted(true), []);
+  // ── Mount: activate background preloading immediately ────────────────────
+  useEffect(() => {
+    setIsMounted(true);
+    startBackgroundPreload("frames");
+  }, []);
 
   // ── Canvas: ambient dust + burst particles ───────────────────────────────
   useEffect(() => {
@@ -141,26 +145,22 @@ export default function LoadingScreen({ skip = false }) {
     // Brief pause then show logo
     const t1 = setTimeout(() => setPhase("reveal"), 300);
 
-    // Progress bar fills to 100% and auto-enters seamlessly or on click
+    // Progress bar fills to 100% and holds — DO NOT auto-enter site
     const pInt = setInterval(() => {
       setProgress((p) => {
         if (p >= 100) {
           clearInterval(pInt);
-          setTimeout(() => {
-            setIsDismissed(true);
-            markDone();
-          }, 300);
           return 100;
         }
         return Math.min(100, p + Math.floor(Math.random() * 12) + 8);
       });
-    }, 90);
+    }, 80);
 
     return () => {
       clearTimeout(t1);
       clearInterval(pInt);
     };
-  }, [isMounted, skip, isDone, markDone]);
+  }, [isMounted, skip, isDone]);
 
   // ── Fire burst when logo reveals ─────────────────────────────────────────
   useEffect(() => {
@@ -248,20 +248,20 @@ export default function LoadingScreen({ skip = false }) {
           />
 
           {/* ── Main content ───────────────────────────────────────────── */}
-          <div className="relative z-10 flex flex-col items-center gap-8 sm:gap-10 px-6">
-            {/* Logo */}
+          <div className="relative z-10 flex flex-col items-center gap-4 sm:gap-6 px-6">
+            {/* Logo & Wordmark Group */}
             <motion.div
               variants={logoVariants}
               initial="hidden"
               animate={phase === "intro" ? "hidden" : "visible"}
-              className="flex flex-col items-center gap-5"
+              className="flex flex-col items-center gap-1 sm:gap-2"
             >
               <div className="relative flex items-center justify-center">
                 {/* Pulsing ambient ring */}
                 <motion.div
                   animate={{ opacity: [0.25, 0.65, 0.25], scale: [0.94, 1.06, 0.94] }}
                   transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                  className="absolute w-72 h-72 sm:w-96 sm:h-96 rounded-full"
+                  className="absolute w-72 h-72 sm:w-96 sm:h-96 rounded-full pointer-events-none"
                   style={{
                     background: "radial-gradient(circle, rgba(212,175,55,0.18) 0%, transparent 70%)",
                   }}
@@ -279,7 +279,7 @@ export default function LoadingScreen({ skip = false }) {
                     ],
                   }}
                   transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-                  className="w-52 sm:w-72 md:w-80 relative z-10 object-contain"
+                  className="w-56 sm:w-72 md:w-80 relative z-10 object-contain"
                 />
               </div>
 
@@ -288,7 +288,7 @@ export default function LoadingScreen({ skip = false }) {
                 variants={wordmarkVariants}
                 initial="hidden"
                 animate={phase === "intro" ? "hidden" : "visible"}
-                className="flex flex-col items-center gap-2 text-center"
+                className="flex flex-col items-center gap-1.5 text-center -mt-1 sm:-mt-2"
               >
                 <span
                   className="text-2xl sm:text-4xl font-black tracking-[0.2em] uppercase font-excon-black"
@@ -309,14 +309,14 @@ export default function LoadingScreen({ skip = false }) {
                   variants={lineVariants}
                   initial="hidden"
                   animate={phase === "intro" ? "hidden" : "visible"}
-                  className="h-px w-48 sm:w-64"
+                  className="h-px w-48 sm:w-64 my-0.5"
                   style={{
                     background: "linear-gradient(90deg, transparent, #D4AF37, transparent)",
                     originX: 0.5,
                   }}
                 />
 
-                <span className="text-[10px] sm:text-xs tracking-[0.42em] uppercase text-white/60 font-excon-bold">
+                <span className="text-[10px] sm:text-xs tracking-[0.42em] uppercase text-white/70 font-excon-bold">
                   UNITED TO EXCEL
                 </span>
               </motion.div>
@@ -327,7 +327,7 @@ export default function LoadingScreen({ skip = false }) {
               variants={barVariants}
               initial="hidden"
               animate={phase === "intro" ? "hidden" : "visible"}
-              className="w-64 sm:w-80 flex flex-col items-center gap-3"
+              className="w-64 sm:w-80 flex flex-col items-center gap-3 mt-1"
             >
               {/* Track */}
               <div className="w-full h-[3px] rounded-full bg-white/10 overflow-hidden relative">
@@ -352,16 +352,14 @@ export default function LoadingScreen({ skip = false }) {
                 />
               </div>
 
-              {/* Enter button — optional instant enter */}
+              {/* Enter button — user must click to enter */}
               <button
                 onClick={() => {
                   setProgress(100);
-                  setTimeout(() => {
-                    setIsDismissed(true);
-                    markDone();
-                  }, 150);
+                  setIsDismissed(true);
+                  markDone();
                 }}
-                className="text-[11px] tracking-[0.3em] uppercase text-white/50 hover:text-[#D4AF37] border border-white/15 hover:border-[#D4AF37]/60 px-5 py-2 rounded-full transition-all duration-300 cursor-pointer mt-1 hover:shadow-[0_0_18px_rgba(212,175,55,0.35)]"
+                className="text-[12px] sm:text-[13px] tracking-[0.25em] uppercase font-bold text-black bg-gradient-to-r from-[#F5D76E] via-[#D4AF37] to-[#FFE680] hover:brightness-110 active:scale-95 px-7 py-2.5 rounded-full transition-all duration-300 cursor-pointer mt-1 shadow-[0_0_20px_rgba(212,175,55,0.45)] hover:shadow-[0_0_30px_rgba(212,175,55,0.75)]"
                 style={{ fontFamily: "var(--font-orbitron, 'Orbitron', sans-serif)" }}
               >
                 ENTER SITE →

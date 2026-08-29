@@ -5,6 +5,7 @@ Production reads configuration from environment variables.
 """
 
 import os
+from decimal import Decimal as _Decimal
 from pathlib import Path
 
 import dj_database_url
@@ -77,8 +78,8 @@ REST_FRAMEWORK = {
     },
 }
 
-DATA_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
-FILE_UPLOAD_MAX_MEMORY_SIZE = 6 * 1024 * 1024
+DATA_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 50 * 1024 * 1024
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
@@ -88,20 +89,7 @@ SERVE_MEDIA = env_bool("SERVE_MEDIA", True)
 # Frontend origin for password-reset links (e.g. https://macfiesta-pro.vercel.app)
 FRONTEND_BASE_URL = os.environ.get("FRONTEND_BASE_URL", "").rstrip("/")
 
-EMAIL_BACKEND = os.environ.get(
-    "EMAIL_BACKEND",
-    "django.core.mail.backends.console.EmailBackend" if DEBUG else "django.core.mail.backends.smtp.EmailBackend",
-)
-EMAIL_HOST = os.environ.get("EMAIL_HOST", "")
-EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
-EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
-EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", False)
-DEFAULT_FROM_EMAIL = os.environ.get("DEFAULT_FROM_EMAIL", "MacFiesta Pro <noreply@macfiesta.local>")
-
 # --- Fest payment + add-on fees (from .env — never hardcode live UPI/bank in source) ---
-from decimal import Decimal as _Decimal
 
 PAYMENT_ACCOUNT_NAME = os.environ.get("PAYMENT_ACCOUNT_NAME", "MacFiesta / MACFAST")
 PAYMENT_UPI_ID = os.environ.get("PAYMENT_UPI_ID", "")

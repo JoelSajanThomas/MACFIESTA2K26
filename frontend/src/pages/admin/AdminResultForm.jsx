@@ -51,6 +51,7 @@ export default function AdminResultForm() {
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((p) => ({ ...p, [name]: value }));
+    if (error) setError("");
   }
 
   async function handleSubmit(e) {
@@ -101,6 +102,7 @@ export default function AdminResultForm() {
             const f = e.target.files?.[0];
             setPhotoFile(f || null);
             if (f) setPhotoPreview(URL.createObjectURL(f));
+            if (error) setError("");
           }}
         />
       </AdminFormLayout>

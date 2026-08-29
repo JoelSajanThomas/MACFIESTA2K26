@@ -22,7 +22,7 @@ const TYPE_OPTIONS = [
 export default function AdminGalleryForm() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const isEdit = id !== "new";
+  const isEdit = Boolean(id && id !== "new");
 
   const [type, setType] = useState("image");
   const [category, setCategory] = useState("general");
@@ -33,6 +33,7 @@ export default function AdminGalleryForm() {
   const [loading, setLoading] = useState(isEdit);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [infoNotice, setInfoNotice] = useState("");
 
   useEffect(() => {
     if (!isEdit) return;
@@ -43,23 +44,28 @@ export default function AdminGalleryForm() {
         setTitle(res.data.title || "");
         setPreview(mediaUrl(res.data.image) || "");
         setType("image");
+        setError("");
+        setInfoNotice("");
       })
       .catch(() => {
         // Fallback to local galleryStore
         const localItems = getGalleryItems();
         const found = localItems.find((i) => String(i.id) === String(id));
         if (found) {
-          setTitle(found.title);
+          setTitle(found.title || "");
           setType(found.type || "image");
           setCategory(found.category || "general");
           if (found.type === "video") {
-            setVideoUrl(found.url);
+            setVideoUrl(found.url || "");
             setPreview(found.thumbnailUrl || "");
           } else {
-            setPreview(found.url);
+            setPreview(found.url || "");
           }
+          setError("");
+          setInfoNotice("");
         } else {
-          setError("Item not found. You can create a new gallery item below.");
+          // Non-blocking info notice
+          setInfoNotice("Item was not found in database. You can save your new media below.");
         }
       })
       .finally(() => setLoading(false));
@@ -70,6 +76,28 @@ export default function AdminGalleryForm() {
     if (!file) return;
     setImageFile(file);
     setPreview(URL.createObjectURL(file));
+    setError("");
+    setInfoNotice("");
+  }
+
+  function handleTitleChange(e) {
+    setTitle(e.target.value);
+    if (error) setError("");
+  }
+
+  function handleCategoryChange(e) {
+    setCategory(e.target.value);
+    if (error) setError("");
+  }
+
+  function handleTypeChange(e) {
+    setType(e.target.value);
+    if (error) setError("");
+  }
+
+  function handleVideoUrlChange(e) {
+    setVideoUrl(e.target.value);
+    if (error) setError("");
   }
 
   async function handleSubmit(e) {
@@ -82,32 +110,31 @@ export default function AdminGalleryForm() {
       setError("Please select an image to upload.");
       return;
     }
-    if (type === "video" && !videoUrl.trim() && !imageFile) {
+    if (type === "video" && !videoUrl.trim() && !imageFile && !preview) {
       setError("Please enter a video link or upload a video file.");
       return;
     }
 
     setSubmitting(true);
     setError("");
+    setInfoNotice("");
 
     try {
       if (type === "image") {
         const payload = new FormData();
         payload.append("title", title);
+        payload.append("type", "image");
+        payload.append("category", category);
+        payload.append("featured", "false");
         if (imageFile) payload.append("image", imageFile);
 
-        try {
-          if (isEdit && !isNaN(Number(id))) {
-            await updateGalleryImage(id, payload);
-          } else {
-            await createGalleryImage(payload);
-          }
-        } catch (apiErr) {
-          // If backend fails, fallback gracefully to frontend galleryStore
-          console.warn("Backend API upload fallback:", apiErr);
+        if (isEdit && !isNaN(Number(id))) {
+          await updateGalleryImage(id, payload);
+        } else {
+          await createGalleryImage(payload);
         }
 
-        // Sync with frontend gallery store
+        // Also sync with frontend gallery store for offline resilience
         const imgUrl = preview || (imageFile ? URL.createObjectURL(imageFile) : "");
         if (isEdit) {
           updateStoreGalleryItem({
@@ -120,19 +147,31 @@ export default function AdminGalleryForm() {
             featured: true,
           });
         } else {
-          addGalleryItem({
-            type: "image",
-            title,
-            category,
-            url: imgUrl,
-            featured: true,
-          });
+          addGalleryItem({ type: "image", title, category, url: imgUrl, featured: true });
         }
       } else {
-        // Video item
+        // Video item — send to backend with video_url + optional thumbnail
+        const payload = new FormData();
+        payload.append("title", title);
+        payload.append("type", "video");
+        payload.append("category", category);
+        payload.append("video_url", videoUrl.trim());
+        payload.append("featured", "false");
+        if (imageFile) payload.append("thumbnail", imageFile);
+
+        try {
+          if (isEdit && !isNaN(Number(id))) {
+            await updateGalleryImage(id, payload);
+          } else {
+            await createGalleryImage(payload);
+          }
+        } catch (apiErr) {
+          console.warn("Backend video upload fallback:", apiErr);
+        }
+
+        // Also sync with frontend gallery store
         const finalVideoUrl = videoUrl.trim();
         const finalThumbUrl = preview || "";
-
         if (isEdit) {
           updateStoreGalleryItem({
             id: String(id),
@@ -164,6 +203,7 @@ export default function AdminGalleryForm() {
     }
   }
 
+
   if (loading) return <LoadingState message="Loading gallery item…" />;
 
   return (
@@ -176,19 +216,32 @@ export default function AdminGalleryForm() {
         submitting={submitting}
         error={error}
       >
+        {infoNotice && (
+          <div className="p-3 mb-2 rounded-xl bg-arc-cyan/10 border border-arc-cyan/30 text-arc-cyan text-xs flex items-center justify-between">
+            <span>ℹ️ {infoNotice}</span>
+            <button
+              type="button"
+              onClick={() => setInfoNotice("")}
+              className="text-white/60 hover:text-white ml-2 text-xs font-bold"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
         <div className="admin-form-row">
           <FormSelect
             label="Media Type *"
             name="type"
             value={type}
-            onChange={(e) => setType(e.target.value)}
+            onChange={handleTypeChange}
             options={TYPE_OPTIONS}
           />
           <FormSelect
             label="Category *"
             name="category"
             value={category}
-            onChange={(e) => setCategory(e.target.value)}
+            onChange={handleCategoryChange}
             options={CATEGORY_OPTIONS}
           />
         </div>
@@ -197,7 +250,7 @@ export default function AdminGalleryForm() {
           label="Title *"
           name="title"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={handleTitleChange}
           placeholder="e.g. Pro-Show Multiverse Night 2K26"
           required
         />
@@ -208,7 +261,7 @@ export default function AdminGalleryForm() {
               label="Video URL / Embed Link *"
               name="videoUrl"
               value={videoUrl}
-              onChange={(e) => setVideoUrl(e.target.value)}
+              onChange={handleVideoUrlChange}
               placeholder="e.g. https://www.youtube.com/watch?v=... or /MARVEL/Video Project 4.mp4"
               required
             />

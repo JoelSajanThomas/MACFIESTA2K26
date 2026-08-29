@@ -85,13 +85,13 @@ function normalizeApiUrl(url: string): string {
 }
 
 const rawApiUrl =
-  (typeof process !== "undefined" && process.env && process.env.NEXT_PUBLIC_API_URL) ||
+  (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_API_BASE_URL) ||
   (typeof window !== "undefined" && (window as any).__API_URL__) ||
   "/api";
 export const API_BASE_URL = normalizeApiUrl(rawApiUrl);
 
 /** Socket.io URL */
 export const SOCKET_URL =
-  (typeof process !== "undefined" && process.env && process.env.NEXT_PUBLIC_SOCKET_URL) ||
+  (typeof import.meta !== "undefined" && import.meta.env && import.meta.env.VITE_SOCKET_URL) ||
   PRODUCTION_SOCKET_URL;
 

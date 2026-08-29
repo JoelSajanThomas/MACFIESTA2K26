@@ -107,11 +107,13 @@ export default function AdminEventForm() {
       if (name === "title" && !slugEdited) next.slug = slugify(value);
       return next;
     });
+    if (error) setError("");
   }
 
   function handleSlugChange(e) {
     setSlugEdited(true);
     setForm((p) => ({ ...p, slug: e.target.value }));
+    if (error) setError("");
   }
 
   function handleImage(e, kind) {
@@ -128,6 +130,7 @@ export default function AdminEventForm() {
       setPosterFile(file);
       setPosterPreview(url);
     }
+    if (error) setError("");
   }
 
   async function handleSubmit(e) {

@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 
-const TOTAL_FRAMES = 169;
+const TOTAL_FRAMES = 61;
 
 function framePath(index) {
-  return `/MARVEL/frames/frame_${String(index).padStart(4, "0")}.jpg`;
+  return `/MARVEL/frames1/frame-${String(index).padStart(3, "0")}.jpg`;
 }
 
 /**

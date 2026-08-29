@@ -46,6 +46,13 @@ export function BackgroundVideo({
     }
   }, [src]);
 
+  const getMimeType = (url: string) => {
+    const clean = url.split("?")[0].toLowerCase();
+    if (clean.endsWith(".webm")) return "video/webm";
+    if (clean.endsWith(".ogg") || clean.endsWith(".ogv")) return "video/ogg";
+    return "video/mp4";
+  };
+
   return (
     <div className={`absolute inset-0 z-0 overflow-hidden pointer-events-none ${opacity} ${className}`}>
       <video
@@ -64,9 +71,9 @@ export function BackgroundVideo({
           backfaceVisibility: "hidden",
         }}
       >
-        <source src={encodeURI(src)} type="video/mp4" />
+        <source src={encodeURI(src)} type={getMimeType(src)} />
         {fallbackSrc && fallbackSrc !== src && (
-          <source src={encodeURI(fallbackSrc)} type="video/mp4" />
+          <source src={encodeURI(fallbackSrc)} type={getMimeType(fallbackSrc)} />
         )}
       </video>
 

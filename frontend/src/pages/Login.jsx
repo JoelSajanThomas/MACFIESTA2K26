@@ -99,7 +99,7 @@ export default function Login() {
 
       <div className="max-w-md w-full mx-auto px-4 relative z-10">
         <div className="marvel-card p-6 sm:p-8 rounded-3xl border border-arc-cyan/40 bg-[#0A0D1A]/95 shadow-2xl relative space-y-6">
-          
+
           {/* Header */}
           <div className="flex items-center justify-between">
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-arc-cyan/30 bg-arc-cyan/10 text-arc-cyan text-[10px] font-bold uppercase tracking-widest font-mono">
@@ -157,7 +157,7 @@ export default function Login() {
                   autoCorrect="off"
                   value={form.username}
                   onChange={handleChange}
-                  placeholder="admin or name@example.com"
+                  placeholder="name@example.com"
                   className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-arc-cyan focus:outline-none text-white text-xs font-excon"
                 />
               </div>

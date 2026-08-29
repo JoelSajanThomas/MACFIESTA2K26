@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Outlet, Link, useLocation } from "react-router-dom";
+import { RiMenuLine, RiCloseLine } from "react-icons/ri";
 import AdminSidebar from "./AdminSidebar";
 import AdminBottomNav from "./AdminBottomNav";
 import { AdminStaffContext } from "./AdminStaffContext";
@@ -68,11 +69,16 @@ export default function AdminLayout({ user }) {
           <header className="admin-shell-top">
             <button
               type="button"
-              className="admin-menu-toggle btn btn-outline btn-sm lg:hidden"
-              aria-label="Open menu"
-              onClick={() => setMobileOpen(true)}
+              className="admin-menu-toggle"
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              onClick={() => setMobileOpen((prev) => !prev)}
             >
-              Menu
+              {mobileOpen ? (
+                <RiCloseLine className="text-base text-arc-cyan" />
+              ) : (
+                <RiMenuLine className="text-base text-arc-cyan" />
+              )}
+              <span>Menu</span>
             </button>
             <div className="hidden sm:inline-flex items-center gap-2 px-3 py-1 rounded-full border border-metallic-gold/30 bg-metallic-gold/10 text-metallic-gold text-xs font-bold uppercase tracking-wider shadow-[0_0_10px_rgba(212,175,55,0.2)]">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />

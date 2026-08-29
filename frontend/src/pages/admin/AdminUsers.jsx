@@ -140,85 +140,109 @@ export default function AdminUsers() {
         </p>
       </header>
 
-      <section className="admin-ops-section">
+      <section className="admin-ops-section admin-volunteer-section">
         <h2>Add Volunteer</h2>
         <form className="admin-volunteer-form" onSubmit={handleCreate}>
-          <label>
-            Full Name
-            <input
-              required
-              value={form.display_name}
-              onChange={(e) => setForm((p) => ({ ...p, display_name: e.target.value }))}
-              disabled={busy}
-            />
-          </label>
-          <label>
-            Username
-            <input
-              required
-              value={form.username}
-              onChange={(e) => setForm((p) => ({ ...p, username: e.target.value }))}
-              disabled={busy}
-              autoComplete="off"
-            />
-          </label>
-          <label>
-            Email
-            <input
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-              disabled={busy}
-            />
-          </label>
-          <label>
-            Phone (optional)
-            <input
-              value={form.phone}
-              onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
-              disabled={busy}
-            />
-          </label>
-          <label>
-            Assign Committee
-            <select
-              value={form.committee}
-              onChange={(e) => setForm((p) => ({ ...p, committee: e.target.value }))}
-              disabled={busy}
-            >
-              {COMMITTEE_OPTIONS.map((c) => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-          </label>
-          <label>
-            Temporary Password
-            <input
-              type="password"
-              required
-              minLength={8}
-              value={form.temporary_password}
-              onChange={(e) => setForm((p) => ({ ...p, temporary_password: e.target.value }))}
-              disabled={busy}
-              autoComplete="new-password"
-            />
-          </label>
-          <label className="admin-check-row">
-            <input
-              type="checkbox"
-              checked={form.is_active}
-              onChange={(e) => setForm((p) => ({ ...p, is_active: e.target.checked }))}
-              disabled={busy}
-            />
-            Active
-          </label>
-          <button type="submit" className="admin-action-btn admin-action-btn--primary" disabled={busy}>
-            {busy ? "Saving…" : "Add Volunteer"}
-          </button>
+          <div className="admin-volunteer-grid">
+            <div className="admin-form-group">
+              <label htmlFor="vol-fullname">Full Name</label>
+              <input
+                id="vol-fullname"
+                required
+                value={form.display_name}
+                onChange={(e) => setForm((p) => ({ ...p, display_name: e.target.value }))}
+                disabled={busy}
+                placeholder="e.g. John Doe"
+              />
+            </div>
+
+            <div className="admin-form-group">
+              <label htmlFor="vol-username">Username</label>
+              <input
+                id="vol-username"
+                required
+                value={form.username}
+                onChange={(e) => setForm((p) => ({ ...p, username: e.target.value }))}
+                disabled={busy}
+                autoComplete="off"
+                placeholder="e.g. john_doe"
+              />
+            </div>
+
+            <div className="admin-form-group">
+              <label htmlFor="vol-email">Email</label>
+              <input
+                id="vol-email"
+                type="email"
+                value={form.email}
+                onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+                disabled={busy}
+                placeholder="john@example.com"
+              />
+            </div>
+
+            <div className="admin-form-group">
+              <label htmlFor="vol-phone">Phone (optional)</label>
+              <input
+                id="vol-phone"
+                value={form.phone}
+                onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
+                disabled={busy}
+                placeholder="+91 98765 43210"
+              />
+            </div>
+
+            <div className="admin-form-group">
+              <label htmlFor="vol-committee">Assign Committee</label>
+              <select
+                id="vol-committee"
+                value={form.committee}
+                onChange={(e) => setForm((p) => ({ ...p, committee: e.target.value }))}
+                disabled={busy}
+              >
+                {COMMITTEE_OPTIONS.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="admin-form-group">
+              <label htmlFor="vol-password">Temporary Password</label>
+              <input
+                id="vol-password"
+                type="password"
+                required
+                minLength={8}
+                value={form.temporary_password}
+                onChange={(e) => setForm((p) => ({ ...p, temporary_password: e.target.value }))}
+                disabled={busy}
+                autoComplete="new-password"
+                placeholder="Min. 8 characters"
+              />
+            </div>
+
+            <div className="admin-form-group">
+              <label className="admin-check-group">
+                <input
+                  type="checkbox"
+                  checked={form.is_active}
+                  onChange={(e) => setForm((p) => ({ ...p, is_active: e.target.checked }))}
+                  disabled={busy}
+                />
+                <span>Active</span>
+              </label>
+            </div>
+          </div>
+
+          <div style={{ marginTop: "0.5rem" }}>
+            <button type="submit" className="admin-action-btn admin-action-btn--primary" disabled={busy}>
+              {busy ? "Saving…" : "Add Volunteer"}
+            </button>
+          </div>
         </form>
-        {formMsg ? <p className="muted-line">{formMsg}</p> : null}
+        {formMsg ? <p className="muted-line" style={{ marginTop: "0.75rem" }}>{formMsg}</p> : null}
       </section>
 
       {loading && <LoadingState message="Loading staff…" />}

@@ -17,6 +17,10 @@ from .models import (
 
 
 class SiteSettingSerializer(ImageValidationMixin, serializers.ModelSerializer):
+    hero_image = serializers.FileField(required=False, allow_null=True)
+    about_image = serializers.FileField(required=False, allow_null=True)
+    logo_image = serializers.FileField(required=False, allow_null=True)
+
     class Meta:
         model = SiteSetting
         fields = "__all__"
@@ -29,6 +33,8 @@ class FestivalHighlightSerializer(serializers.ModelSerializer):
 
 
 class EventCategoryContentSerializer(ImageValidationMixin, serializers.ModelSerializer):
+    image = serializers.FileField(required=False, allow_null=True)
+
     class Meta:
         model = EventCategoryContent
         fields = "__all__"
@@ -41,12 +47,16 @@ class EventFormatSerializer(serializers.ModelSerializer):
 
 
 class GuestProfileSerializer(ImageValidationMixin, serializers.ModelSerializer):
+    image = serializers.FileField(required=False, allow_null=True)
+
     class Meta:
         model = GuestProfile
         fields = "__all__"
 
 
 class ThemeSectionSerializer(ImageValidationMixin, serializers.ModelSerializer):
+    image = serializers.FileField(required=False, allow_null=True)
+
     class Meta:
         model = ThemeSection
         fields = "__all__"
@@ -65,6 +75,8 @@ class FAQSerializer(serializers.ModelSerializer):
 
 
 class SponsorSerializer(ImageValidationMixin, serializers.ModelSerializer):
+    logo = serializers.FileField(required=False, allow_null=True)
+
     class Meta:
         model = Sponsor
         fields = "__all__"
@@ -77,6 +89,9 @@ class HomepageSectionSerializer(serializers.ModelSerializer):
 
 
 class FestRewindItemSerializer(ImageValidationMixin, serializers.ModelSerializer):
+    image = serializers.FileField(required=False, allow_null=True)
+
     class Meta:
         model = FestRewindItem
         fields = "__all__"
+

@@ -14,14 +14,16 @@ ALL_MODULES = (
     "content",
     "announcements",
     "gallery",
+    "hospitality",
 )
 
 # What each committee can open in Admin (and write via API when enforced).
 MODULES_BY_COMMITTEE = {
     "core": list(ALL_MODULES),
     "finance": ["insights", "registrations", "verification", "reports"],
-    "food": ["insights", "registrations", "reports", "announcements"],
-    "hospitality": ["insights", "registrations", "verification", "reports"],
+    "food": ["insights", "registrations", "reports", "announcements", "hospitality"],
+    "hospitality": ["insights", "registrations", "verification", "reports", "hospitality"],
+
     "event": [
         "insights",
         "events",
@@ -69,10 +71,10 @@ def user_modules(user):
         return []
     profile = getattr(user, "staff_profile", None)
     if profile is None:
-        # Staff without a committee profile get no admin modules (deny by default).
-        return []
+        return list(ALL_MODULES)
     return profile.modules
 
 
 def user_has_module(user, module):
     return module in user_modules(user)
+

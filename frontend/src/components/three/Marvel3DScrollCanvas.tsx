@@ -2,9 +2,13 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { RiMovie2Line, RiCompass3Line, RiEyeLine, RiEyeOffLine } from "react-icons/ri";
-
-const TOTAL_FRAMES = 169;
+import { RiMovie2Line, RiEyeLine, RiEyeOffLine } from "react-icons/ri";
+import {
+  TOTAL_FRAMES,
+  startBackgroundPreload,
+  getNearestLoadedFrame,
+  subscribeToPreload,
+} from "../../utils/framePreloader";
 
 interface Marvel3DScrollCanvasProps {
   initialSequence?: "frames" | "frames2";
@@ -17,8 +21,6 @@ export function Marvel3DScrollCanvas({
 }: Marvel3DScrollCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const [sequence, setSequence] = useState<"frames" | "frames2">(initialSequence);
-  const [loadedCount, setLoadedCount] = useState(0);
-  const [isReady, setIsReady] = useState(false);
   const [currentFrameIndex, setCurrentFrameIndex] = useState(1);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [hudVisible, setHudVisible] = useState(true);
@@ -27,179 +29,72 @@ export function Marvel3DScrollCanvas({
   const mouseTiltRef = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 });
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // Frame cache for active sequence
-  const imagesRef = useRef<HTMLImageElement[]>([]);
   const currentFrameRef = useRef(1);
   const targetFrameRef = useRef(1);
   const rafRef = useRef<number | null>(null);
-
-  // Generate frame path
-  const getFramePath = useCallback((seq: string, index: number) => {
-    const padded = String(index).padStart(4, "0");
-    return `/MARVEL/${seq}/frame_${padded}.jpg`;
-  }, []);
+  const isReadyRef = useRef(false);
 
   // Draw frame to canvas with object-fit: cover and high clarity
-  const drawFrame = useCallback((frameIdx: number) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d", { alpha: false });
-    if (!ctx) return;
+  const drawFrame = useCallback(
+    (frameIdx: number) => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d", { alpha: false });
+      if (!ctx) return;
 
-    // Fallback search if current frame isn't loaded yet: search nearest loaded frame
-    let imgToDraw = imagesRef.current[frameIdx];
-    if (!imgToDraw || !imgToDraw.complete || imgToDraw.naturalWidth === 0) {
-      // Find nearest loaded frame
-      for (let offset = 1; offset < TOTAL_FRAMES; offset++) {
-        const prev = imagesRef.current[frameIdx - offset];
-        if (prev && prev.complete && prev.naturalWidth > 0) {
-          imgToDraw = prev;
-          break;
-        }
-        const next = imagesRef.current[frameIdx + offset];
-        if (next && next.complete && next.naturalWidth > 0) {
-          imgToDraw = next;
-          break;
-        }
+      const imgToDraw = getNearestLoadedFrame(sequence, frameIdx, TOTAL_FRAMES);
+      if (!imgToDraw || !imgToDraw.complete || imgToDraw.naturalWidth === 0) return;
+
+      const width = canvas.width;
+      const height = canvas.height;
+
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
+
+      // Calculate aspect ratio cover
+      const imgWidth = imgToDraw.naturalWidth;
+      const imgHeight = imgToDraw.naturalHeight;
+      const imgAspect = imgWidth / imgHeight;
+      const canvasAspect = width / height;
+
+      let renderWidth = width;
+      let renderHeight = height;
+      let offsetX = 0;
+      let offsetY = 0;
+
+      if (canvasAspect > imgAspect) {
+        // Canvas is wider than image
+        renderHeight = width / imgAspect;
+        offsetY = (height - renderHeight) / 2;
+      } else {
+        // Canvas is taller than image
+        renderWidth = height * imgAspect;
+        offsetX = (width - renderWidth) / 2;
       }
-    }
 
-    if (!imgToDraw || !imgToDraw.complete || imgToDraw.naturalWidth === 0) return;
+      ctx.drawImage(imgToDraw, offsetX, offsetY, renderWidth, renderHeight);
+      isReadyRef.current = true;
+    },
+    [sequence]
+  );
 
-    const width = canvas.width;
-    const height = canvas.height;
-
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
-
-    // Calculate aspect ratio cover
-    const imgWidth = imgToDraw.naturalWidth;
-    const imgHeight = imgToDraw.naturalHeight;
-    const imgAspect = imgWidth / imgHeight;
-    const canvasAspect = width / height;
-
-    let renderWidth = width;
-    let renderHeight = height;
-    let offsetX = 0;
-    let offsetY = 0;
-
-    if (canvasAspect > imgAspect) {
-      // Canvas is wider than image
-      renderHeight = width / imgAspect;
-      offsetY = (height - renderHeight) / 2;
-    } else {
-      // Canvas is taller than image
-      renderWidth = height * imgAspect;
-      offsetX = (width - renderWidth) / 2;
-    }
-
-    ctx.drawImage(imgToDraw, offsetX, offsetY, renderWidth, renderHeight);
-  }, []);
-
-  // High-performance Stratified Multi-Pass Preload
+  // Initialize and ensure background preload is active
   useEffect(() => {
-    let isCancelled = false;
-    imagesRef.current = new Array(TOTAL_FRAMES + 1);
-    setLoadedCount(0);
-    setIsReady(false);
+    startBackgroundPreload(sequence);
 
-    let count = 0;
+    // Initial instant draw
+    drawFrame(1);
 
-    const loadSingleFrame = (idx: number): Promise<void> => {
-      if (imagesRef.current[idx] || isCancelled) return Promise.resolve();
-
-      return new Promise((resolve) => {
-        const img = new Image();
-        img.src = getFramePath(sequence, idx);
-
-        let finished = false;
-        const onFinish = () => {
-          if (finished || isCancelled) return resolve();
-          finished = true;
-          imagesRef.current[idx] = img;
-          count++;
-          setLoadedCount(count);
-
-          if (idx === 1 || !isReady) {
-            setIsReady(true);
-          }
-
-          // If this frame is the current or nearest active frame, draw immediately
-          const currentTarget = Math.round(targetFrameRef.current);
-          if (Math.abs(currentTarget - idx) <= 2) {
-            drawFrame(idx);
-          }
-
-          resolve();
-        };
-
-        img.onload = onFinish;
-        img.onerror = onFinish;
-
-        if (typeof img.decode === "function") {
-          img.decode().then(onFinish).catch(() => {
-            // Handled via fallback onload/onerror
-          });
-        }
-      });
-    };
-
-    // Load Frame 1 immediately
-    loadSingleFrame(1).then(() => {
-      if (isCancelled) return;
-
-      // Pass 1: Stride 8 keyframes (spans the entire webpage in ~20 frames)
-      const pass1: number[] = [];
-      for (let i = 9; i <= TOTAL_FRAMES; i += 8) pass1.push(i);
-      if (pass1[pass1.length - 1] !== TOTAL_FRAMES) pass1.push(TOTAL_FRAMES);
-
-      // Pass 2: Stride 4 intermediate keyframes
-      const pass2: number[] = [];
-      for (let i = 5; i <= TOTAL_FRAMES; i += 4) {
-        if (!pass1.includes(i)) pass2.push(i);
-      }
-
-      // Pass 3: Stride 2 frames
-      const pass3: number[] = [];
-      for (let i = 3; i <= TOTAL_FRAMES; i += 2) {
-        if (!pass1.includes(i) && !pass2.includes(i)) pass3.push(i);
-      }
-
-      // Pass 4: All remaining frames for full 60fps density
-      const pass4: number[] = [];
-      for (let i = 2; i <= TOTAL_FRAMES; i++) {
-        if (!pass1.includes(i) && !pass2.includes(i) && !pass3.includes(i)) {
-          pass4.push(i);
-        }
-      }
-
-      const loadPassQueue = async (queue: number[], concurrency = 6) => {
-        let index = 0;
-        const workers = new Array(concurrency).fill(null).map(async () => {
-          while (index < queue.length && !isCancelled) {
-            const frameIdx = queue[index++];
-            await loadSingleFrame(frameIdx);
-          }
-        });
-        await Promise.all(workers);
-      };
-
-      // Execute passes in priority sequence
-      (async () => {
-        await loadPassQueue(pass1, 8);
-        if (isCancelled) return;
-        await loadPassQueue(pass2, 6);
-        if (isCancelled) return;
-        await loadPassQueue(pass3, 4);
-        if (isCancelled) return;
-        await loadPassQueue(pass4, 4);
-      })();
+    // Subscribe to incoming loaded frames to update frame 1 or current frame instantly
+    const unsubscribe = subscribeToPreload(() => {
+      const target = Math.round(targetFrameRef.current);
+      drawFrame(target);
     });
 
     return () => {
-      isCancelled = true;
+      unsubscribe();
     };
-  }, [sequence, getFramePath, drawFrame]);
+  }, [sequence, drawFrame]);
 
   // Resize handler
   useEffect(() => {
@@ -280,7 +175,7 @@ export function Marvel3DScrollCanvas({
 
       const diff = targetFrameRef.current - currentFrameRef.current;
       if (Math.abs(diff) > 0.005) {
-        currentFrameRef.current += diff * 0.28;
+        currentFrameRef.current += diff * 0.32;
         const frameToDraw = Math.max(1, Math.min(TOTAL_FRAMES, Math.round(currentFrameRef.current)));
         if (showHudRef.current) {
           setCurrentFrameIndex(frameToDraw);
@@ -321,10 +216,7 @@ export function Marvel3DScrollCanvas({
       {/* ─── 3D Fixed Viewport Canvas Container ─── */}
       <div className="fixed inset-0 w-full h-full z-0 overflow-hidden pointer-events-none bg-[#05050A]">
         {/* Animated Perspective Wrapper */}
-        <div
-          ref={containerRef}
-          className="relative w-full h-full will-change-transform"
-        >
+        <div ref={containerRef} className="relative w-full h-full will-change-transform">
           <canvas
             ref={canvasRef}
             className="w-full h-full block object-cover filter brightness-105 contrast-110 saturate-110"

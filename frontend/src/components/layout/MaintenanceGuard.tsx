@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
-import { useLocation, Link } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useFestivalControl } from "../../lib/festivalStore";
-import { RiShieldFlashLine, RiPulseLine, RiFlashlightLine, RiLockPasswordLine } from "react-icons/ri";
+import { RiShieldFlashLine, RiPulseLine, RiFlashlightLine } from "react-icons/ri";
 
 export function MaintenanceGuard({ children }: { children: React.ReactNode }) {
   const { settings } = useFestivalControl();
@@ -340,13 +340,6 @@ export function MaintenanceGuard({ children }: { children: React.ReactNode }) {
                 <span>LOCATION HEADQUARTERS</span>
                 <span className="text-white font-bold">MACFAST CAMPUS, TIRUVALLA</span>
               </div>
-            </div>
-
-            <div className="pt-1 text-center">
-              <Link to="/login" className="inline-flex items-center gap-1.5 text-xs text-white/50 hover:text-arc-cyan transition-colors underline font-mono">
-                <RiLockPasswordLine />
-                <span>Authorized Staff &amp; Operator Access</span>
-              </Link>
             </div>
           </div>
         </div>

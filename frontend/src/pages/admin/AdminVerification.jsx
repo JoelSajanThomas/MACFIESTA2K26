@@ -291,72 +291,84 @@ export default function AdminVerification() {
 
 
       <div className="detail-panel verify-panel">
-
-        <div className="verify-hero-scan">
-
+        <div className="verify-hero-scan" style={{ marginBottom: "1.5rem" }}>
           {!scanning ? (
-
             <button type="button" className="btn btn-gold" onClick={startScanner}>
-
               SCAN QR
-
             </button>
-
           ) : (
-
             <button type="button" className="btn btn-outline" onClick={stopScanner}>
-
               Stop scanner
-
             </button>
-
           )}
-
         </div>
 
-
-
-        <label htmlFor="reg-search">Search registration number</label>
-
-        <input
-
-          id="reg-search"
-
-          type="search"
-
-          placeholder="MCF26-…"
-
-          value={query}
-
-          onChange={(e) => setQuery(e.target.value)}
-
-          autoComplete="off"
-
-        />
-
-        <div className="admin-ops-actions" style={{ marginTop: "0.75rem" }}>
-
-          <button
-
-            type="button"
-
-            className="btn btn-outline"
-
-            onClick={() => lookup(query)}
-
-            disabled={query.trim().length < 3}
-
+        <form
+          className="verify-search-form"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (query.trim().length >= 3) lookup(query);
+          }}
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            gap: "0.6rem",
+            marginTop: "1.25rem",
+            paddingTop: "1.25rem",
+            borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+          }}
+        >
+          <label
+            htmlFor="reg-search"
+            style={{
+              display: "block",
+              fontSize: "0.9rem",
+              fontWeight: 600,
+              color: "rgba(255, 255, 255, 0.85)",
+              letterSpacing: "0.02em",
+            }}
           >
+            Search registration number
+          </label>
 
-            Search
+          <div
+            style={{
+              display: "flex",
+              gap: "0.75rem",
+              alignItems: "center",
+              flexWrap: "wrap",
+            }}
+          >
+            <input
+              id="reg-search"
+              type="search"
+              placeholder="MCF26-…"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              autoComplete="off"
+              style={{
+                flex: "1 1 240px",
+                minWidth: "220px",
+                padding: "0.65rem 1rem",
+                borderRadius: "8px",
+                border: "1px solid rgba(255, 255, 255, 0.2)",
+                background: "rgba(0, 0, 0, 0.4)",
+                color: "#ffffff",
+                fontSize: "0.95rem",
+              }}
+            />
+            <button
+              type="submit"
+              className="btn btn-outline"
+              disabled={query.trim().length < 3}
+              style={{ minHeight: "42px", padding: "0 1.25rem" }}
+            >
+              Search
+            </button>
+          </div>
+        </form>
 
-          </button>
-
-        </div>
-
-
-
-        {scanError ? <p className="form-error" role="alert">{scanError}</p> : null}
+        {scanError ? <p className="form-error" role="alert" style={{ marginTop: "1rem" }}>{scanError}</p> : null}
 
         <div
 

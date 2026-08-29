@@ -33,7 +33,6 @@ const SERVER_BASE = API_BASE.startsWith("http")
 
 const api = axios.create({
   baseURL: API_BASE,
-  headers: { "Content-Type": "application/json" },
 });
 
 /** Short-lived in-memory cache for public GETs (navigation / remount). */
@@ -247,23 +246,8 @@ export function storeAuthTokens({ access, refresh }) {
   notifyAuthChange();
 }
 
-function adminConfig(data) {
-  const headers = { ...authHeaders() };
-  if (data instanceof FormData) {
-    return {
-      headers,
-      transformRequest: [
-        (body, hdrs) => {
-          if (typeof FormData !== "undefined" && body instanceof FormData) {
-            delete hdrs["Content-Type"];
-            delete hdrs["content-type"];
-          }
-          return body;
-        },
-      ],
-    };
-  }
-  return { headers };
+function adminConfig() {
+  return { headers: authHeaders() };
 }
 
 export function createEvent(data) {
@@ -389,7 +373,7 @@ export function deleteHighlight(id) {
 }
 
 export function getHighlight(id) {
-  return api.get(`/cms/highlights/${id}/`);
+  return api.get(`/cms/highlights/${id}/`, { headers: authHeaders() });
 }
 
 export function getCategoryContents(asAdmin = false) {
@@ -410,7 +394,7 @@ export function deleteCategoryContent(id) {
 }
 
 export function getCategoryContent(id) {
-  return api.get(`/cms/categories/${id}/`);
+  return api.get(`/cms/categories/${id}/`, { headers: authHeaders() });
 }
 
 export function getEventFormats(asAdmin = false) {
@@ -431,7 +415,7 @@ export function deleteEventFormat(id) {
 }
 
 export function getEventFormat(id) {
-  return api.get(`/cms/formats/${id}/`);
+  return api.get(`/cms/formats/${id}/`, { headers: authHeaders() });
 }
 
 export function getGuestProfiles(asAdmin = false) {
@@ -452,7 +436,7 @@ export function deleteGuestProfile(id) {
 }
 
 export function getGuestProfile(id) {
-  return api.get(`/cms/guests/${id}/`);
+  return api.get(`/cms/guests/${id}/`, { headers: authHeaders() });
 }
 
 export function getThemeSections(asAdmin = false) {
@@ -473,7 +457,7 @@ export function deleteThemeSection(id) {
 }
 
 export function getThemeSection(id) {
-  return api.get(`/cms/theme/${id}/`);
+  return api.get(`/cms/theme/${id}/`, { headers: authHeaders() });
 }
 
 export function getTestimonials(asAdmin = false) {
@@ -494,7 +478,7 @@ export function deleteTestimonial(id) {
 }
 
 export function getTestimonial(id) {
-  return api.get(`/cms/testimonials/${id}/`);
+  return api.get(`/cms/testimonials/${id}/`, { headers: authHeaders() });
 }
 
 export function getFAQs(asAdmin = false) {
@@ -516,7 +500,7 @@ export function deleteFAQ(id) {
 }
 
 export function getFAQ(id) {
-  return api.get(`/cms/faqs/${id}/`);
+  return api.get(`/cms/faqs/${id}/`, { headers: authHeaders() });
 }
 
 export function getSponsors(asAdmin = false) {
@@ -537,7 +521,7 @@ export function deleteSponsor(id) {
 }
 
 export function getSponsor(id) {
-  return api.get(`/cms/sponsors/${id}/`);
+  return api.get(`/cms/sponsors/${id}/`, { headers: authHeaders() });
 }
 
 export function getFestRewindItems(asAdmin = false) {
@@ -558,7 +542,7 @@ export function deleteFestRewindItem(id) {
 }
 
 export function getFestRewindItem(id) {
-  return api.get(`/cms/rewind/${id}/`);
+  return api.get(`/cms/rewind/${id}/`, { headers: authHeaders() });
 }
 
 export function getHomepageSections(asAdmin = false) {

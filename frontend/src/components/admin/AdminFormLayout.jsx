@@ -63,7 +63,7 @@ import { useState } from "react";
 import ImageCropAdjustModal from "./ImageCropAdjustModal";
 import { RiCropLine } from "react-icons/ri";
 
-export function ImageUploadPreview({ label, preview, onChange, accept = "image/*" }) {
+export function ImageUploadPreview({ label, preview, onChange, accept = "image/*,.svg,.png,.jpg,.jpeg,.webp,.gif,.bmp,.avif,.tiff,.ico,.heic" }) {
   const [cropModalOpen, setCropModalOpen] = useState(false);
   const [currentPreview, setCurrentPreview] = useState(preview || "");
   const [originalFileName, setOriginalFileName] = useState("image.png");

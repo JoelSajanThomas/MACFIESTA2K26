@@ -1,3 +1,6 @@
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
+
 export const EVENT_CATEGORY_OPTIONS = [
   { value: "tech", label: "Tech" },
   { value: "arts", label: "Arts" },
@@ -103,4 +106,28 @@ export function exportExcel(filename, rows) {
   link.download = `${base}.xls`;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+export function exportPdf(filename, rows, title = "MacFiesta Report") {
+  if (!rows || rows.length === 0) return;
+  const doc = new jsPDF({ orientation: "landscape" });
+
+  doc.setFontSize(14);
+  doc.text(title, 14, 15);
+  doc.setFontSize(9);
+  doc.setTextColor(120, 120, 120);
+  doc.text(`Generated on: ${new Date().toLocaleString()}`, 14, 21);
+
+  const [header, ...body] = rows;
+  autoTable(doc, {
+    startY: 25,
+    head: [header || []],
+    body: body || [],
+    theme: "striped",
+    styles: { fontSize: 7, cellPadding: 2.5 },
+    headStyles: { fillColor: [15, 23, 42], textColor: [255, 255, 255], fontStyle: "bold" },
+  });
+
+  const base = filename.replace(/\.(csv|xls|xlsx|pdf)$/i, "");
+  doc.save(`${base}.pdf`);
 }

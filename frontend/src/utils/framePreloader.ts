@@ -1,0 +1,170 @@
+// Global High-Speed Frame Cache & Preload Manager
+export const TOTAL_FRAMES = 61;
+
+export function getFramePath(seq = "frames1", index: number): string {
+  const padded = String(index).padStart(3, "0");
+  return `/MARVEL/${seq}/frame-${padded}.jpg`;
+}
+
+// In-memory global cache across component mounts/unmounts
+const globalFrameCache: Record<string, (HTMLImageElement | null)[]> = {
+  frames1: new Array(TOTAL_FRAMES + 1).fill(null),
+};
+
+const preloadingPromises: Record<string, Promise<void> | null> = {
+  frames1: null,
+};
+
+const listeners: Set<() => void> = new Set();
+
+function notifyListeners() {
+  listeners.forEach((cb) => {
+    try {
+      cb();
+    } catch {
+      // ignore
+    }
+  });
+}
+
+export function subscribeToPreload(callback: () => void): () => void {
+  listeners.add(callback);
+  return () => listeners.delete(callback);
+}
+
+export function getLoadedFrame(seq = "frames1", index: number): HTMLImageElement | null {
+  const cache = globalFrameCache[seq];
+  if (!cache) return null;
+  const img = cache[index];
+  if (img && img.complete && img.naturalWidth > 0) {
+    return img;
+  }
+  return null;
+}
+
+export function getNearestLoadedFrame(
+  seq = "frames1",
+  targetIndex: number,
+  totalFrames = TOTAL_FRAMES
+): HTMLImageElement | null {
+  const cache = globalFrameCache[seq];
+  if (!cache) return null;
+
+  const direct = cache[targetIndex];
+  if (direct && direct.complete && direct.naturalWidth > 0) {
+    return direct;
+  }
+
+  // Search outward for nearest loaded frame
+  for (let offset = 1; offset < totalFrames; offset++) {
+    const prev = cache[targetIndex - offset];
+    if (prev && prev.complete && prev.naturalWidth > 0) return prev;
+    const next = cache[targetIndex + offset];
+    if (next && next.complete && next.naturalWidth > 0) return next;
+  }
+
+  return null;
+}
+
+export function loadSingleFrame(seq = "frames1", idx: number, highPriority = false): Promise<HTMLImageElement> {
+  if (!globalFrameCache[seq]) {
+    globalFrameCache[seq] = new Array(TOTAL_FRAMES + 1).fill(null);
+  }
+
+  const existing = globalFrameCache[seq][idx];
+  if (existing && existing.complete && existing.naturalWidth > 0) {
+    return Promise.resolve(existing);
+  }
+
+  return new Promise((resolve) => {
+    const img = new Image();
+    if (highPriority && "fetchPriority" in img) {
+      (img as any).fetchPriority = "high";
+    }
+    img.src = getFramePath(seq, idx);
+
+    let finished = false;
+    const onFinish = () => {
+      if (finished) return;
+      finished = true;
+      globalFrameCache[seq][idx] = img;
+      notifyListeners();
+      resolve(img);
+    };
+
+    img.onload = onFinish;
+    img.onerror = onFinish;
+
+    if (typeof img.decode === "function") {
+      img.decode().then(onFinish).catch(onFinish);
+    }
+  });
+}
+
+// Concurrency queue processor
+async function processQueue(seq: string, queue: number[], concurrency: number) {
+  let index = 0;
+  const workers = new Array(concurrency).fill(null).map(async () => {
+    while (index < queue.length) {
+      const frameIdx = queue[index++];
+      if (frameIdx !== undefined) {
+        await loadSingleFrame(seq, frameIdx);
+      }
+    }
+  });
+  await Promise.all(workers);
+}
+
+/**
+ * Start aggressive background preloading immediately.
+ * This runs while user is on LoadingScreen or browsing.
+ */
+export function startBackgroundPreload(seq = "frames1"): Promise<void> {
+  if (preloadingPromises[seq]) {
+    return preloadingPromises[seq]!;
+  }
+
+  preloadingPromises[seq] = (async () => {
+    // 1. Load Frame 1 with maximum priority
+    await loadSingleFrame(seq, 1, true);
+
+    // 2. Priority Batch: Hero frames (1 to 25) with high concurrency
+    const heroFrames: number[] = [];
+    for (let i = 2; i <= Math.min(25, TOTAL_FRAMES); i++) {
+      heroFrames.push(i);
+    }
+    await processQueue(seq, heroFrames, 12);
+
+    // 3. Keyframes stride 4 (evenly covers full page length)
+    const keyframes: number[] = [];
+    for (let i = 28; i <= TOTAL_FRAMES; i += 4) {
+      keyframes.push(i);
+    }
+    if (keyframes[keyframes.length - 1] !== TOTAL_FRAMES) {
+      keyframes.push(TOTAL_FRAMES);
+    }
+    await processQueue(seq, keyframes, 8);
+
+    // 4. Fill all remaining frames
+    const remaining: number[] = [];
+    const cache = globalFrameCache[seq];
+    for (let i = 1; i <= TOTAL_FRAMES; i++) {
+      if (!cache || !cache[i] || !cache[i]?.complete) {
+        remaining.push(i);
+      }
+    }
+    await processQueue(seq, remaining, 6);
+  })();
+
+  return preloadingPromises[seq]!;
+}
+
+// Automatically start preloading when this module is evaluated in the browser
+if (typeof window !== "undefined") {
+  // Use requestIdleCallback or immediate setTimeout to avoid blocking initial parse
+  if ("requestIdleCallback" in window) {
+    (window as any).requestIdleCallback(() => startBackgroundPreload("frames1"));
+  } else {
+    setTimeout(() => startBackgroundPreload("frames1"), 100);
+  }
+}

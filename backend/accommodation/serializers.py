@@ -74,20 +74,26 @@ class AccommodationBookingSerializer(serializers.ModelSerializer):
             "id",
             "booking_id",
             "user",
+            "status",
             "allocated_hostel",
+            "allocated_room",
+            "admin_notes",
             "created_at",
             "updated_at",
         ]
 
     def validate(self, attrs):
-        if "hostel" not in attrs:
+        if "hostel" not in attrs and not self.instance:
             raise serializers.ValidationError({"hostel": "Please select a valid hostel."})
         return attrs
 
 
 class AdminAccommodationBookingSerializer(serializers.ModelSerializer):
     hostel_name = serializers.ReadOnlyField(source="hostel.name")
+    hostel_details = HostelSerializer(source="hostel", read_only=True)
 
     class Meta:
         model = AccommodationBooking
         fields = "__all__"
+        read_only_fields = ["id", "booking_id", "created_at", "updated_at"]
+

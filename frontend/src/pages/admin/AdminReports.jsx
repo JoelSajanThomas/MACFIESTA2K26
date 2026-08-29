@@ -1,13 +1,18 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import LoadingState from "../../components/ui/LoadingState";
 import ErrorState from "../../components/ui/ErrorState";
+import AdminTableToolbar from "../../components/admin/AdminTableToolbar";
 import { getAttendanceReport } from "../../services/api";
-import { exportCsv, exportExcel } from "../../utils/adminUtils";
+import { exportExcel, exportPdf } from "../../utils/adminUtils";
 
 export default function AdminReports() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [search, setSearch] = useState("");
+  const [attendanceFilter, setAttendanceFilter] = useState("all");
+  const [paymentFilter, setPaymentFilter] = useState("all");
+  const [foodFilter, setFoodFilter] = useState("all");
 
   useEffect(() => {
     let mounted = true;
@@ -26,6 +31,35 @@ export default function AdminReports() {
     };
   }, []);
 
+  const summary = useMemo(() => {
+    const total = rows.length;
+    const attended = rows.filter((r) => r.attendance_marked).length;
+    const food = rows.filter((r) => r.food_preference && r.food_preference.toLowerCase() !== "none").length;
+    const stay = rows.filter((r) => r.needs_accommodation).length;
+    const paid = rows.filter((r) => r.payment_status === "paid").length;
+    return { total, attended, food, stay, paid };
+  }, [rows]);
+
+  const filteredRows = useMemo(() => {
+    return rows.filter((r) => {
+      if (attendanceFilter === "marked" && !r.attendance_marked) return false;
+      if (attendanceFilter === "unmarked" && r.attendance_marked) return false;
+      if (paymentFilter !== "all" && (r.payment_status || "").toLowerCase() !== paymentFilter.toLowerCase()) return false;
+      if (foodFilter === "required" && (!r.food_preference || r.food_preference.toLowerCase() === "none")) return false;
+      if (foodFilter === "none" && r.food_preference && r.food_preference.toLowerCase() !== "none") return false;
+
+      if (!search.trim()) return true;
+      const q = search.toLowerCase();
+      return (
+        (r.participant_name || "").toLowerCase().includes(q) ||
+        (r.registration_number || "").toLowerCase().includes(q) ||
+        (r.college_name || "").toLowerCase().includes(q) ||
+        (r.event || "").toLowerCase().includes(q) ||
+        (r.food_preference || "").toLowerCase().includes(q)
+      );
+    });
+  }, [rows, search, attendanceFilter, paymentFilter, foodFilter]);
+
   const exportRows = [
     [
       "Reg #",
@@ -41,7 +75,7 @@ export default function AdminReports() {
       "Stay Count",
       "Stay Notes",
     ],
-    ...rows.map((r) => [
+    ...filteredRows.map((r) => [
       r.registration_number,
       r.participant_name,
       r.college_name,
@@ -57,38 +91,95 @@ export default function AdminReports() {
     ]),
   ];
 
-  if (loading) return <LoadingState message="Loading reports…" />;
+  if (loading) return <LoadingState message="Loading operational reports…" />;
   if (error) return <ErrorState message={error} />;
 
   return (
-    <div className="admin-page">
-      <header className="admin-page-head">
-        <div>
-          <p className="section-eyebrow">Operations</p>
-          <h1>Reports</h1>
-          <p>Attendance, food, and accommodation preferences.</p>
-        </div>
-        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+    <div className="admin-ops-page admin-reports-page">
+      <header className="admin-ops-header">
+        <p className="section-eyebrow">Operations & Analytics</p>
+        <h1>Reports & Logistics</h1>
+        <p>Export and monitor verified attendance records, dining preferences, and accommodation requirements.</p>
+
+        <div className="admin-action-grid" style={{ marginTop: "1.25rem" }}>
           <button
             type="button"
-            className="btn btn-outline"
-            onClick={() => exportCsv("macfiesta-attendance-report.csv", exportRows)}
-            disabled={!rows.length}
+            className="admin-action-btn admin-action-btn--primary"
+            onClick={() => exportExcel("macfiesta-attendance-report.xls", exportRows)}
+            disabled={!filteredRows.length}
           >
-            Export CSV
+            Export Excel Sheet
           </button>
           <button
             type="button"
-            className="btn btn-gold"
-            onClick={() => exportExcel("macfiesta-attendance-report.xls", exportRows)}
-            disabled={!rows.length}
+            className="admin-action-btn"
+            onClick={() => exportPdf("macfiesta-attendance-report.pdf", exportRows, "MacFiesta Attendance & Logistics Report")}
+            disabled={!filteredRows.length}
           >
-            Export Excel
+            Export PDF Document
           </button>
         </div>
       </header>
 
-      <div className="admin-table-wrap">
+      <div className="admin-kpi-grid">
+        <article className="admin-kpi-card">
+          <strong>{summary.total}</strong>
+          <span>Total Records</span>
+        </article>
+        <article className="admin-kpi-card">
+          <strong>{summary.attended}</strong>
+          <span>Attendance Verified</span>
+        </article>
+        <article className="admin-kpi-card">
+          <strong>{summary.paid}</strong>
+          <span>Payments Confirmed</span>
+        </article>
+        <article className="admin-kpi-card">
+          <strong>{summary.food}</strong>
+          <span>Food Preferences</span>
+        </article>
+        <article className="admin-kpi-card">
+          <strong>{summary.stay}</strong>
+          <span>Stay Requested</span>
+        </article>
+      </div>
+
+      <AdminTableToolbar search={search} onSearchChange={setSearch} searchPlaceholder="Search reg #, participant, college, event…">
+        <select
+          className="admin-select"
+          value={attendanceFilter}
+          onChange={(e) => setAttendanceFilter(e.target.value)}
+          aria-label="Filter by attendance"
+        >
+          <option value="all">All Attendance</option>
+          <option value="marked">Marked / Present</option>
+          <option value="unmarked">Unmarked / Absent</option>
+        </select>
+
+        <select
+          className="admin-select"
+          value={paymentFilter}
+          onChange={(e) => setPaymentFilter(e.target.value)}
+          aria-label="Filter by payment"
+        >
+          <option value="all">All Payments</option>
+          <option value="paid">Verified Paid</option>
+          <option value="pending">Pending</option>
+        </select>
+
+        <select
+          className="admin-select"
+          value={foodFilter}
+          onChange={(e) => setFoodFilter(e.target.value)}
+          aria-label="Filter by food"
+        >
+          <option value="all">All Food Plans</option>
+          <option value="required">Food Requested</option>
+          <option value="none">No Food Needed</option>
+        </select>
+      </AdminTableToolbar>
+
+      <div className="admin-table-wrap" style={{ marginTop: "1rem" }}>
         <table className="admin-table">
           <thead>
             <tr>
@@ -97,22 +188,79 @@ export default function AdminReports() {
               <th>Event</th>
               <th>Payment</th>
               <th>Attendance</th>
-              <th>Food</th>
+              <th>Food Plan</th>
               <th>Stay</th>
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => (
-              <tr key={r.registration_number}>
-                <td>{r.registration_number}</td>
-                <td>{r.participant_name}</td>
-                <td>{r.event}</td>
-                <td>{r.payment_status}</td>
-                <td>{r.attendance_marked ? "Yes" : "No"}</td>
-                <td>{r.food_preference}</td>
-                <td>{r.needs_accommodation ? `Yes (${r.accommodation_count || 1})` : "No"}</td>
+            {filteredRows.length === 0 ? (
+              <tr>
+                <td colSpan="7" style={{ textAlign: "center", padding: "2.5rem 1rem", color: "rgba(255, 255, 255, 0.5)" }}>
+                  No report records found matching your filters.
+                </td>
               </tr>
-            ))}
+            ) : (
+              filteredRows.map((r) => (
+                <tr key={r.registration_number}>
+                  <td>
+                    <strong style={{ fontFamily: "Space Grotesk, sans-serif", color: "#FFD700", letterSpacing: "0.05em" }}>
+                      {r.registration_number}
+                    </strong>
+                  </td>
+                  <td>
+                    <div style={{ fontWeight: 600, color: "#FFFFFF" }}>{r.participant_name}</div>
+                    {r.college_name && (
+                      <div style={{ fontSize: "11px", color: "rgba(255, 255, 255, 0.5)", marginTop: "2px" }}>
+                        {r.college_name}
+                      </div>
+                    )}
+                  </td>
+                  <td>
+                    <span style={{ fontWeight: 600, color: "#E2E8F0" }}>{r.event}</span>
+                  </td>
+                  <td>
+                    <span
+                      className={`status-chip ${
+                        (r.payment_status || "").toLowerCase() === "paid"
+                          ? "status-chip--confirmed"
+                          : "status-chip--pending"
+                      }`}
+                    >
+                      {r.payment_status || "Pending"}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      className={`status-chip ${
+                        r.attendance_marked ? "status-chip--confirmed" : "status-chip--pending"
+                      }`}
+                    >
+                      {r.attendance_marked ? "Verified" : "Unmarked"}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      className={`status-chip ${
+                        r.food_preference && r.food_preference.toLowerCase() !== "none"
+                          ? "status-chip--confirmed"
+                          : "status-chip--muted"
+                      }`}
+                    >
+                      {r.food_preference || "Standard"}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      className={`status-chip ${
+                        r.needs_accommodation ? "status-chip--warning" : "status-chip--muted"
+                      }`}
+                    >
+                      {r.needs_accommodation ? `Required (${r.accommodation_count || 1})` : "None"}
+                    </span>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

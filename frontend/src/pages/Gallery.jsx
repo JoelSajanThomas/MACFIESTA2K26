@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   RiCloseLine,
@@ -13,11 +13,13 @@ import {
   RiFullscreenExitLine,
   RiShieldFlashLine,
 } from "react-icons/ri";
-import { useGalleryItems } from "../lib/galleryStore";
+import { DEFAULT_GALLERY, normalizeMediaPath } from "../lib/galleryStore";
+import { getGallery, mediaUrl } from "../services/api";
 import { usePageSeo } from "../hooks/usePageSeo";
 
 export default function Gallery() {
-  const { items } = useGalleryItems();
+  const [items, setItems] = useState(DEFAULT_GALLERY);
+  const [loadingItems, setLoadingItems] = useState(true);
   const [filterType, setFilterType] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
   const [selectedIndex, setSelectedIndex] = useState(null);
@@ -27,6 +29,38 @@ export default function Gallery() {
     title: "Marvel Archives & Gallery · MacFiesta 2026",
     description: "Browse high-resolution photographs, pro-show reels, and highlight memories from previous MacFiesta editions.",
   });
+
+  // Fetch gallery items from backend; fall back to defaults on error
+  useEffect(() => {
+    setLoadingItems(true);
+    getGallery()
+      .then((res) => {
+        const raw = Array.isArray(res.data) ? res.data : res.data?.results || [];
+        if (raw.length === 0) {
+          setItems(DEFAULT_GALLERY);
+          return;
+        }
+        const mapped = raw.map((b) => ({
+          id: String(b.id),
+          type: b.type || "image",
+          category: b.category || "general",
+          title: b.title || "",
+          // b.url is the serializer's computed field (absolute image URL or video_url)
+          url: b.type === "video"
+            ? normalizeMediaPath(b.url || b.video_url || "")
+            : (b.url ? b.url : mediaUrl(b.image) || ""),
+          thumbnailUrl: b.thumbnail ? mediaUrl(b.thumbnail) : undefined,
+          date: b.uploaded_at ? b.uploaded_at.split("T")[0] : "",
+          featured: Boolean(b.featured),
+        }));
+        setItems(mapped);
+      })
+      .catch(() => {
+        // Backend unreachable — use hardcoded defaults
+        setItems(DEFAULT_GALLERY);
+      })
+      .finally(() => setLoadingItems(false));
+  }, []);
 
   const imagesCount = items.filter((i) => i.type === "image").length;
   const videosCount = items.filter((i) => i.type === "video").length;
@@ -67,10 +101,17 @@ export default function Gallery() {
 
   return (
     <div className="bg-[#05050A] min-h-screen pt-28 pb-16 text-white font-excon relative overflow-hidden">
-      {/* Background Marvel Ambient Blending */}
-      <div className="absolute top-1/4 left-1/4 w-[600px] h-[400px] bg-arc-cyan/15 rounded-full blur-[140px] pointer-events-none z-0" />
-      <div className="absolute bottom-1/4 right-1/4 w-[600px] h-[400px] bg-metallic-gold/15 rounded-full blur-[140px] pointer-events-none z-0" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_45%,rgba(5,5,10,0.85)_95%)] pointer-events-none z-0" />
+      {/* Background Marvel Image Backdrop */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <img
+          src="/MARVEL/MCU Multiverse Saga.jpg"
+          alt="Visual Archives Backdrop"
+          className="w-full h-full object-cover object-center opacity-85 contrast-[1.05] saturate-[1.1] brightness-[0.92]"
+        />
+        {/* Subtle cinematic gradient to preserve gallery cards and photo clarity */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#05050A]/40 via-black/25 to-[#05050A]/85 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_50%,rgba(5,5,10,0.6)_100%)] pointer-events-none" />
+      </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12 relative z-10">
 
@@ -151,68 +192,80 @@ export default function Gallery() {
         </div>
 
         {/* Media Grid Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 font-excon">
-          <AnimatePresence mode="popLayout">
-            {filteredMedia.map((item, idx) => (
-              <motion.div
-                key={item.id}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                transition={{ duration: 0.35, delay: idx * 0.03 }}
-                onClick={() => setSelectedIndex(idx)}
-                className="marvel-card group relative h-72 sm:h-80 rounded-2xl overflow-hidden cursor-pointer border border-white/10 hover:border-arc-cyan/60 transition-all duration-500 shadow-2xl bg-[#0A0D1A]"
-              >
-                <img
-                  src={encodeURI(item.thumbnailUrl || item.url)}
-                  alt={item.title}
-                  loading="lazy"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-
-                {/* Media Badges */}
-                <div className="absolute top-3 left-3 z-10 flex gap-2">
-                  <span
-                    className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase border font-excon-bold ${
-                      item.type === "image"
-                        ? "bg-arc-cyan/20 border-arc-cyan/40 text-arc-cyan"
-                        : "bg-marvel-red/20 border-marvel-red/40 text-marvel-red"
-                    }`}
-                  >
-                    {item.type === "image" ? "📷 PHOTO" : "🎬 VIDEO"}
-                  </span>
-                </div>
-
-                <div className="absolute inset-0 bg-gradient-to-t from-[#0A0D1A] via-black/30 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
-
-                <div className="absolute inset-0 p-5 flex flex-col justify-end">
-                  <div className="space-y-1 transform group-hover:-translate-y-1 transition-transform">
-                    <span className="text-[10px] text-metallic-gold font-bold uppercase tracking-wider font-excon-bold block">
-                      {item.category}
-                    </span>
-                    <h3 className="text-white text-base font-black uppercase tracking-tight font-excon-black block group-hover:text-metallic-gold transition-colors">
-                      {item.title}
-                    </h3>
-                  </div>
-                </div>
-
-                {/* Hover Play / Zoom Icon */}
-                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="p-4 bg-arc-cyan text-black rounded-full text-xl shadow-[0_0_20px_#00D4FF] transform scale-75 group-hover:scale-100 transition-transform">
-                    {item.type === "video" ? <RiPlayLine /> : <RiZoomInLine />}
-                  </span>
-                </div>
-              </motion.div>
+        {loadingItems ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
+            {Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-72 sm:h-80 rounded-2xl bg-white/5 border border-white/10 animate-pulse"
+              />
             ))}
-          </AnimatePresence>
-        </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 font-excon">
+            <AnimatePresence mode="popLayout">
+              {filteredMedia.map((item, idx) => (
+                <motion.div
+                  key={item.id}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  transition={{ duration: 0.35, delay: idx * 0.03 }}
+                  onClick={() => setSelectedIndex(idx)}
+                  className="marvel-card group relative h-72 sm:h-80 rounded-2xl overflow-hidden cursor-pointer border border-white/10 hover:border-arc-cyan/60 transition-all duration-500 shadow-2xl bg-[#0A0D1A]"
+                >
+                  <img
+                    src={encodeURI(item.thumbnailUrl || item.url)}
+                    alt={item.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
 
-        {filteredMedia.length === 0 && (
+                  {/* Media Badges */}
+                  <div className="absolute top-3 left-3 z-10 flex gap-2">
+                    <span
+                      className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase border font-excon-bold ${
+                        item.type === "image"
+                          ? "bg-arc-cyan/20 border-arc-cyan/40 text-arc-cyan"
+                          : "bg-marvel-red/20 border-marvel-red/40 text-marvel-red"
+                      }`}
+                    >
+                      {item.type === "image" ? "📷 PHOTO" : "🎬 VIDEO"}
+                    </span>
+                  </div>
+
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A0D1A] via-black/30 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
+
+                  <div className="absolute inset-0 p-5 flex flex-col justify-end">
+                    <div className="space-y-1 transform group-hover:-translate-y-1 transition-transform">
+                      <span className="text-[10px] text-metallic-gold font-bold uppercase tracking-wider font-excon-bold block">
+                        {item.category}
+                      </span>
+                      <h3 className="text-white text-base font-black uppercase tracking-tight font-excon-black block group-hover:text-metallic-gold transition-colors">
+                        {item.title}
+                      </h3>
+                    </div>
+                  </div>
+
+                  {/* Hover Play / Zoom Icon */}
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <span className="p-4 bg-arc-cyan text-black rounded-full text-xl shadow-[0_0_20px_#00D4FF] transform scale-75 group-hover:scale-100 transition-transform">
+                      {item.type === "video" ? <RiPlayLine /> : <RiZoomInLine />}
+                    </span>
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
+        )}
+
+        {!loadingItems && filteredMedia.length === 0 && (
           <div className="text-center py-12 text-white/50 font-excon text-xs uppercase tracking-wider">
             No media assets found in this category.
           </div>
         )}
+
       </div>
 
       {/* 100% IMMERSIVE FULL-SCREEN MEDIA THEATER */}

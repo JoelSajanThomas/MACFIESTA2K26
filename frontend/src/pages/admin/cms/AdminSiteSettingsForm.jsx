@@ -110,6 +110,8 @@ export default function AdminSiteSettingsForm() {
   function handleChange(e) {
     const { name, value } = e.target;
     setForm((p) => ({ ...p, [name]: name === "fest_year" ? Number(value) : value }));
+    if (error) setError("");
+    if (success) setSuccess("");
   }
 
   async function handleSubmit(e) {
@@ -247,6 +249,8 @@ export default function AdminSiteSettingsForm() {
               const f = e.target.files?.[0];
               setLogoFile(f || null);
               if (f) setLogoPreview(URL.createObjectURL(f));
+              if (error) setError("");
+              if (success) setSuccess("");
             }}
           />
           <ImageUploadPreview
@@ -256,6 +260,8 @@ export default function AdminSiteSettingsForm() {
               const f = e.target.files?.[0];
               setHeroFile(f || null);
               if (f) setHeroPreview(URL.createObjectURL(f));
+              if (error) setError("");
+              if (success) setSuccess("");
             }}
           />
           <ImageUploadPreview
@@ -265,6 +271,8 @@ export default function AdminSiteSettingsForm() {
               const f = e.target.files?.[0];
               setAboutFile(f || null);
               if (f) setAboutPreview(URL.createObjectURL(f));
+              if (error) setError("");
+              if (success) setSuccess("");
             }}
           />
         </SettingsSection>

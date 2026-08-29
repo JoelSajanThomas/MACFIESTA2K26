@@ -96,6 +96,13 @@ export function HeroSection() {
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   };
 
+  const handleNavigate = (path: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigate(path);
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  };
+
   useEffect(() => {
     getAnnouncements()
       .then((res: any) => {
@@ -433,39 +440,31 @@ export function HeroSection() {
               variants={heroCtaVariants}
               initial="hidden"
               animate="visible"
-              className="flex flex-row justify-center lg:justify-start items-center gap-2 sm:gap-3.5 pt-1.5 sm:pt-2 w-full max-w-[340px] sm:max-w-md mx-auto lg:mx-0"
+              className="flex flex-row justify-center lg:justify-start items-center gap-2 sm:gap-3.5 pt-1.5 sm:pt-2 w-full max-w-[340px] sm:max-w-md mx-auto lg:mx-0 relative z-30 pointer-events-auto"
             >
-              <motion.div
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                className="flex-1 min-w-0"
-              >
-                <Link
-                  to="/register"
-                  className="btn-urgency group font-space flex items-center justify-center gap-1 sm:gap-2 px-2.5 sm:px-5 py-2.5 sm:py-3 rounded-full shadow-[0_0_25px_rgba(237,29,36,0.5)] hover:shadow-[0_0_40px_rgba(237,29,36,0.8)] transition-shadow duration-300 w-full text-center"
+              <div className="flex-1 min-w-0">
+                <button
+                  type="button"
+                  onClick={handleNavigate("/register")}
+                  className="btn-urgency group font-space flex items-center justify-center gap-1 sm:gap-2 px-2.5 sm:px-5 py-2.5 sm:py-3 rounded-full shadow-[0_0_25px_rgba(237,29,36,0.5)] hover:shadow-[0_0_40px_rgba(237,29,36,0.8)] transition-all duration-300 w-full text-center cursor-pointer relative z-30 pointer-events-auto select-none hover:scale-[1.04] active:scale-[0.96]"
                 >
-                  <span className="relative z-10 font-bold tracking-[0.05em] sm:tracking-[0.14em] uppercase text-[11px] sm:text-xs md:text-sm whitespace-nowrap">
+                  <span className="relative z-10 font-bold tracking-[0.05em] sm:tracking-[0.14em] uppercase text-[11px] sm:text-xs md:text-sm whitespace-nowrap pointer-events-none">
                     {settings.registrationOpen ? "Register Now" : "Closed"}
                   </span>
-                  <RiPlayLine className="group-hover:translate-x-1 transition-transform relative z-10 shrink-0 text-xs sm:text-sm" />
-                </Link>
-              </motion.div>
+                  <RiPlayLine className="group-hover:translate-x-1 transition-transform relative z-10 shrink-0 text-xs sm:text-sm pointer-events-none" />
+                </button>
+              </div>
 
-              <motion.div
-                whileHover={{ scale: 1.04 }}
-                whileTap={{ scale: 0.96 }}
-                transition={{ type: "spring", stiffness: 400, damping: 17 }}
-                className="flex-1 min-w-0"
-              >
-                <Link
-                  to="/events"
-                  className="btn-outline border-arc-cyan text-white hover:bg-arc-cyan/20 font-space flex items-center justify-center gap-1 sm:gap-2 px-2.5 sm:px-5 py-2.5 sm:py-3 rounded-full shadow-[0_0_20px_rgba(0,212,255,0.25)] hover:shadow-[0_0_35px_rgba(0,212,255,0.6)] transition-shadow duration-300 w-full text-center"
+              <div className="flex-1 min-w-0">
+                <button
+                  type="button"
+                  onClick={handleNavigate("/events")}
+                  className="btn-outline border-arc-cyan text-white hover:bg-arc-cyan/20 font-space flex items-center justify-center gap-1 sm:gap-2 px-2.5 sm:px-5 py-2.5 sm:py-3 rounded-full shadow-[0_0_20px_rgba(0,212,255,0.25)] hover:shadow-[0_0_35px_rgba(0,212,255,0.6)] transition-all duration-300 w-full text-center cursor-pointer relative z-30 pointer-events-auto select-none hover:scale-[1.04] active:scale-[0.96]"
                 >
-                  <RiCompass3Line className="text-arc-cyan text-xs sm:text-base shrink-0" />
-                  <span className="font-bold tracking-[0.05em] sm:tracking-[0.14em] uppercase text-[11px] sm:text-xs md:text-sm whitespace-nowrap">View Events</span>
-                </Link>
-              </motion.div>
+                  <RiCompass3Line className="text-arc-cyan text-xs sm:text-base shrink-0 pointer-events-none" />
+                  <span className="font-bold tracking-[0.05em] sm:tracking-[0.14em] uppercase text-[11px] sm:text-xs md:text-sm whitespace-nowrap pointer-events-none">View Events</span>
+                </button>
+              </div>
             </motion.div>
           </div>
 

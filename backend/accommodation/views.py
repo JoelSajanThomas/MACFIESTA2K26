@@ -1,6 +1,7 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.response import Response
+from accounts.drf import HasModule
 from .models import Hostel, AccommodationBooking
 from .serializers import (
     HostelSerializer,
@@ -16,8 +17,18 @@ class HostelViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 class AccommodationBookingViewSet(viewsets.ModelViewSet):
-    serializer_class = AccommodationBookingSerializer
     permission_classes = [permissions.AllowAny]
+
+    def get_serializer_class(self):
+        user = self.request.user
+        if user.is_authenticated and (user.is_staff or user.is_superuser):
+            return AdminAccommodationBookingSerializer
+        return AccommodationBookingSerializer
+
+    def get_permissions(self):
+        if self.action in ["update", "partial_update", "destroy"]:
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
 
     def get_queryset(self):
         user = self.request.user
@@ -39,11 +50,8 @@ class AccommodationBookingViewSet(viewsets.ModelViewSet):
 
 
 @api_view(["GET"])
-@permission_classes([permissions.IsAuthenticated])
+@permission_classes([HasModule("hospitality")])
 def admin_hospitality_stats(request):
-    if not (request.user.is_staff or request.user.is_superuser):
-        return Response({"detail": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
-
     total_requests = AccommodationBooking.objects.count()
     pending = AccommodationBooking.objects.filter(status="pending").count()
     allocated = AccommodationBooking.objects.filter(status__in=["allocated", "confirmed"]).count()
@@ -59,3 +67,4 @@ def admin_hospitality_stats(request):
         "males": males,
         "females": females,
     })
+

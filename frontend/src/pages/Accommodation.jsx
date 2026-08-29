@@ -15,7 +15,6 @@ import {
   RiArrowRightLine,
   RiLockLine,
 } from "react-icons/ri";
-import { BackgroundVideo } from "../components/ui/BackgroundVideo";
 import { usePageSeo } from "../hooks/usePageSeo";
 import { getHostels } from "../services/api";
 
@@ -126,12 +125,17 @@ export default function Accommodation() {
 
   return (
     <div className="bg-[#05050A] min-h-screen pt-28 pb-16 text-white font-excon relative overflow-hidden">
-      {/* Background Marvel Video Loop */}
-      <BackgroundVideo
-        src="/MARVEL/Video Project 5.mp4"
-        fallbackSrc="/MARVEL/Video Project 4.mp4"
-        opacity="opacity-80"
-      />
+      {/* Background Marvel Image Backdrop */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <img
+          src="/MARVEL/wolverine.jpg"
+          alt="Accommodation Quarters Backdrop"
+          className="w-full h-full object-cover object-center opacity-85 contrast-[1.05] saturate-[1.1] brightness-[0.92]"
+        />
+        {/* Subtle cinematic gradient to preserve cards readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#05050A]/40 via-black/25 to-[#05050A]/85 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_50%,rgba(5,5,10,0.6)_100%)] pointer-events-none" />
+      </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10 sm:space-y-12 relative z-10">
 

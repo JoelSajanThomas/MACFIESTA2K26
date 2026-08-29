@@ -6,24 +6,33 @@ import Image from "next/image";
 import { RiAwardLine, RiGroupLine, RiFlashlightLine, RiShieldFlashLine } from "react-icons/ri";
 import { useFestivalControl } from "@/lib/festivalStore";
 
-/* ─── Counter hook ─── */
-function useCounter(target: number, duration = 1800, startCounting: boolean) {
+/* ─── Fast & Smooth Counter hook ─── */
+function useCounter(target: number, duration = 600, startCounting: boolean) {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
     if (!startCounting) return;
-    let start = 0;
-    const step = target / (duration / 16);
-    const timer = setInterval(() => {
-      start += step;
-      if (start >= target) {
-        setCount(target);
-        clearInterval(timer);
+    let startTime: number | null = null;
+    let rafId: number;
+
+    const animate = (currentTime: number) => {
+      if (startTime === null) startTime = currentTime;
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Ease-out cubic: rapid initial count that settles smoothly
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.round(eased * target));
+
+      if (progress < 1) {
+        rafId = requestAnimationFrame(animate);
       } else {
-        setCount(Math.floor(start));
+        setCount(target);
       }
-    }, 16);
-    return () => clearInterval(timer);
+    };
+
+    rafId = requestAnimationFrame(animate);
+    return () => cancelAnimationFrame(rafId);
   }, [target, duration, startCounting]);
 
   return count;
@@ -47,7 +56,7 @@ function StatCard({
   index: number;
   inView: boolean;
 }) {
-  const count = useCounter(rawValue, 1600 + index * 100, inView);
+  const count = useCounter(rawValue, 550 + index * 50, inView);
 
   return (
     <motion.div

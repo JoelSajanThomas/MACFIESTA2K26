@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 
-const TOTAL_FRAMES = 169;
+const TOTAL_FRAMES = 156;
 
 export default function Marvel3DScrollCanvas({ initialSequence = "frames", showHud = false }) {
   const canvasRef = useRef(null);
@@ -14,8 +14,8 @@ export default function Marvel3DScrollCanvas({ initialSequence = "frames", showH
   const rafRef = useRef(0);
 
   const getFramePath = useCallback((seq, index) => {
-    const padded = String(index).padStart(4, "0");
-    return `/MARVEL/${seq}/frame_${padded}.jpg`;
+    const padded = String(index).padStart(3, "0");
+    return `/MARVEL/${seq}/ezgif-frame-${padded}.jpg`;
   }, []);
 
   useEffect(() => {

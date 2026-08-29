@@ -33,18 +33,21 @@ export default function AdminSchedule() {
   const visible = day === "all" ? groups : groups.filter((g) => g.date === day);
 
   return (
-    <div className={`admin-page${printMode ? " admin-schedule-print" : ""}`}>
-      <header className="admin-page-head">
+    <div className={`admin-ops-page admin-schedule-page${printMode ? " admin-schedule-print" : ""}`}>
+      <header className="admin-ops-header">
+        <p className="section-eyebrow">Operations & Timetable</p>
         <h1>{printMode ? "Queue Sheet / Schedule" : "Event Schedule"}</h1>
         <p>
           {printMode
             ? "Printable day-wise queue from published events."
-            : "Day-wise timetable from published events. Edit times in Events."}
+            : "Day-wise timetable from published events. Edit event timings in Events Management."}
         </p>
         {printMode && (
-          <button type="button" className="btn btn-outline btn-sm no-print" onClick={() => window.print()}>
-            Print queue sheet
-          </button>
+          <div style={{ marginTop: "1rem" }}>
+            <button type="button" className="btn btn-outline btn-sm no-print" onClick={() => window.print()}>
+              Print queue sheet
+            </button>
+          </div>
         )}
       </header>
 

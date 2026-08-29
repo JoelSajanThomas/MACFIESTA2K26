@@ -35,14 +35,15 @@ export default function Contact() {
   return (
     <div className="bg-[#05050A] min-h-screen pt-28 pb-16 text-white font-excon relative overflow-hidden">
       {/* Background Marvel Wallpaper */}
-      <div className="absolute inset-0 z-0 opacity-85 pointer-events-none">
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <img
-          src="/MARVEL/peakpx.png"
+          src="/MARVEL/Deadpool art wallpaper.jpg"
           alt="Contact Page Marvel Background"
-          className="w-full h-full object-cover object-center filter brightness-110 contrast-125"
+          className="w-full h-full object-cover object-center opacity-85 contrast-[1.05] saturate-[1.1] brightness-[0.92]"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#05050A]/40 via-[#05050A]/65 to-[#05050A]/95 z-[1]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_45%,rgba(5,5,10,0.85)_95%)] z-[1]" />
+        {/* Subtle cinematic gradient to preserve contact form and FAQ readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#05050A]/40 via-black/25 to-[#05050A]/85 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_50%,rgba(5,5,10,0.6)_100%)] pointer-events-none" />
       </div>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16 relative z-10">

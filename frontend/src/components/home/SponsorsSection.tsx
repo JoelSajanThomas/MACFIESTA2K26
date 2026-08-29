@@ -57,14 +57,17 @@ const tierConfig: Record<string, {
   },
 };
 
+interface Partner {
+  name: string;
+  tier: string;
+  displayTier?: string;
+  logo: string;
+  tagline: string;
+  isImage?: boolean;
+}
+
 interface SponsorCardProps {
-  partner: {
-    name: string;
-    tier: string;
-    logo: string;
-    tagline: string;
-    isImage?: boolean;
-  };
+  partner: Partner;
   index: number;
 }
 
@@ -108,7 +111,7 @@ function SponsorCard({ partner, index }: SponsorCardProps) {
       }}
       whileHover={{ scale: 1.05, y: -6 }}
       transition={{ duration: 0.25 }}
-      className={`relative rounded-2xl p-4 sm:p-5 flex flex-col items-center justify-between gap-3 sm:gap-4 bg-gradient-to-b ${cfg.gradient} border ${cfg.border} backdrop-blur-xl group cursor-pointer overflow-hidden min-h-[160px] sm:min-h-[190px]`}
+      className={`relative rounded-2xl p-4 sm:p-5 flex flex-col items-center justify-between gap-3 sm:gap-4 bg-gradient-to-b ${cfg.gradient} border ${cfg.border} backdrop-blur-xl group cursor-pointer overflow-hidden min-h-[190px] sm:min-h-[220px]`}
     >
       {/* Dynamic Cursor Light-Follower */}
       <motion.div
@@ -160,24 +163,24 @@ function SponsorCard({ partner, index }: SponsorCardProps) {
 
       {/* Logo — floats in 3D space */}
       <motion.div
-        className="drop-shadow-[0_0_20px_rgba(255,255,255,0.3)] pt-2 flex items-center justify-center min-h-[64px]"
+        className="drop-shadow-[0_0_25px_rgba(255,255,255,0.35)] pt-4 sm:pt-5 pb-1 flex items-center justify-center min-h-[90px] sm:min-h-[105px] w-full"
         style={{ transform: "translateZ(25px)" }}
-        animate={{ y: [-2, 2, -2] }}
+        animate={{ y: [-3, 3, -3] }}
         transition={{ duration: 3 + index * 0.4, repeat: Infinity, ease: "easeInOut" }}
       >
         {partner.isImage ? (
-          <div className="relative w-28 h-14 rounded-xl overflow-hidden bg-white/95 border border-white/40 p-2 flex items-center justify-center shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+          <div className="relative w-full max-w-[160px] sm:max-w-[190px] h-20 sm:h-24 rounded-2xl overflow-hidden bg-white/95 border border-white/50 p-2 sm:p-2.5 flex items-center justify-center shadow-[0_0_25px_rgba(255,255,255,0.3)] transition-transform duration-300 group-hover:scale-105">
             <img
               src={partner.logo}
               alt={partner.name}
-              className="max-w-full max-h-full object-contain filter drop-shadow-sm"
+              className="w-full h-full max-h-full max-w-full object-contain filter drop-shadow-sm transition-transform duration-300 group-hover:scale-105"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = "/logo.png";
               }}
             />
           </div>
         ) : (
-          <span className="text-4xl sm:text-5xl">{partner.logo}</span>
+          <span className="text-5xl sm:text-6xl">{partner.logo}</span>
         )}
       </motion.div>
 
@@ -316,7 +319,17 @@ export function SponsorsSection() {
         </motion.div>
 
         {/* ─── 3D Cards Grid with Staggered Scroll Reveal ─── */}
-        <RevealGroup stagger={0.1} margin="-80px" className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-5 mb-12 sm:mb-16">
+        <RevealGroup
+          stagger={0.1}
+          margin="-80px"
+          className={`grid grid-cols-2 sm:grid-cols-3 ${
+            activeSponsors.length <= 3
+              ? "lg:grid-cols-3 max-w-4xl mx-auto"
+              : activeSponsors.length <= 4
+              ? "lg:grid-cols-4 max-w-5xl mx-auto"
+              : "lg:grid-cols-4 xl:grid-cols-6"
+          } gap-4 sm:gap-6 mb-12 sm:mb-16`}
+        >
           {activeSponsors.map((partner, idx) => (
             <RevealItem key={partner.name}>
               <SponsorCard partner={partner} index={idx} />

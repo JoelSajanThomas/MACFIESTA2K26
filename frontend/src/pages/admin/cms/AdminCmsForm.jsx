@@ -12,16 +12,18 @@ export default function AdminCmsForm() {
   const { resource, id } = useParams();
   const config = CMS_RESOURCES[resource];
   const navigate = useNavigate();
-  const isEdit = id !== "new";
+  const isEdit = id !== "new" && Boolean(id);
   const [form, setForm] = useState(config?.empty || {});
   const [imageFile, setImageFile] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   const [loading, setLoading] = useState(isEdit);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
     if (!config || !isEdit) return;
+    setNotFound(false);
     config.api.get(id)
       .then((res) => {
         setForm(res.data);
@@ -30,19 +32,27 @@ export default function AdminCmsForm() {
           setImagePreview(mediaUrl(res.data[imgField.name]));
         }
       })
-      .catch(() => setError("Could not load item."))
+      .catch((err) => {
+        if (err.response?.status === 404) {
+          setNotFound(true);
+        } else {
+          setError(parseApiError(err));
+        }
+      })
       .finally(() => setLoading(false));
   }, [id, isEdit, config]);
 
   function handleChange(e) {
     const { name, value, type, checked } = e.target;
     setForm((p) => ({ ...p, [name]: type === "checkbox" ? checked : value }));
+    if (error) setError("");
   }
 
   function handleImageChange(e) {
     const file = e.target.files?.[0];
     setImageFile(file || null);
     setImagePreview(file ? URL.createObjectURL(file) : imagePreview);
+    if (error) setError("");
   }
 
   async function handleSubmit(e) {
@@ -51,27 +61,46 @@ export default function AdminCmsForm() {
     setError("");
     try {
       const hasImage = config.fields.some((f) => f.type === "image");
+      const imgField = config.fields.find((f) => f.type === "image");
       let payload;
       if (hasImage && imageFile) {
         payload = new FormData();
-        const imgField = config.fields.find((f) => f.type === "image");
-        Object.entries(form).forEach(([k, v]) => {
-          if (v !== null && v !== undefined && k !== imgField?.name && k !== "image" && k !== "logo") {
-            payload.append(k, typeof v === "boolean" ? (v ? "true" : "false") : v);
+        config.fields.forEach((f) => {
+          if (f.type !== "image") {
+            const v = form[f.name];
+            if (v !== null && v !== undefined) {
+              payload.append(f.name, typeof v === "boolean" ? (v ? "true" : "false") : v);
+            }
           }
         });
         if (imgField) {
           payload.append(imgField.name, imageFile);
         }
       } else {
-        payload = { ...form };
-        const imgField = config.fields.find((f) => f.type === "image");
-        if (imgField && typeof payload[imgField.name] === "string") {
-          delete payload[imgField.name];
-        }
+        payload = {};
+        config.fields.forEach((f) => {
+          if (f.type !== "image") {
+            if (form[f.name] !== undefined) {
+              payload[f.name] = form[f.name];
+            }
+          }
+        });
       }
-      if (isEdit) await config.api.update(id, payload);
-      else await config.api.create(payload);
+
+      if (isEdit) {
+        try {
+          await config.api.update(id, payload);
+        } catch (err) {
+          // If the item was not found on backend (404), seamlessly create it
+          if (err.response?.status === 404) {
+            await config.api.create(payload);
+          } else {
+            throw err;
+          }
+        }
+      } else {
+        await config.api.create(payload);
+      }
       navigate(config.basePath);
     } catch (err) {
       setError(parseApiError(err));
@@ -82,6 +111,27 @@ export default function AdminCmsForm() {
 
   if (!config) return <p className="state-msg error">Unknown content type.</p>;
   if (loading) return <LoadingState message="Loading…" />;
+
+  if (notFound) {
+    return (
+      <div className="admin-ops-page">
+        <Link to={config.basePath} className="back-link">← Back to {config.title}</Link>
+        <div className="admin-ops-header" style={{ marginTop: "1rem" }}>
+          <p className="section-eyebrow">Record Status</p>
+          <h1>{config.singular} Not Found</h1>
+          <p>This {config.singular.toLowerCase()} record does not exist on the server or may have been removed.</p>
+          <div className="admin-action-grid" style={{ marginTop: "1.5rem" }}>
+            <Link to={`${config.basePath}/new`} className="admin-action-btn admin-action-btn--primary">
+              + Create New {config.singular}
+            </Link>
+            <Link to={config.basePath} className="admin-action-btn">
+              View All {config.title}
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
