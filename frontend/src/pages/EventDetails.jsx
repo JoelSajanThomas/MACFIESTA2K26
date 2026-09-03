@@ -16,6 +16,7 @@ import {
   RiMailLine,
   RiUserLine,
   RiShieldUserLine,
+  RiExternalLinkLine,
 } from "react-icons/ri";
 import { getCurrentUser, getEvent, getEvents, isLoggedIn } from "../services/api";
 import { ALL_EVENTS } from "../lib/eventsData";
@@ -94,6 +95,7 @@ export default function EventDetails() {
           teamSizeText: local?.teamSizeText || (d.min_team_size ? `${d.min_team_size} - ${d.max_team_size || d.min_team_size} members` : "Individual / Team"),
           min_team_size: d.min_team_size || local?.min_team_size || 1,
           max_team_size: d.max_team_size || local?.max_team_size || 1,
+          externalRegistrationUrl: local?.externalRegistrationUrl || (local?.slug === "vibe-coding-hackathon" || d?.slug === "vibe-coding-hackathon" ? "https://hackathon.macfast.org/" : undefined),
         };
         setEvent(merged);
         return merged;
@@ -146,7 +148,19 @@ export default function EventDetails() {
   const isExpo = event.slug === "school-stark-expo";
   const isTeamEvent = (event.max_team_size || 1) > 1;
 
+  const isExternalReg = Boolean(
+    event.externalRegistrationUrl ||
+    event.slug === "vibe-coding-hackathon" ||
+    event.slug === "avengers-code-assemble" ||
+    event._id === "clg-1"
+  );
+  const externalUrl = event.externalRegistrationUrl || "https://hackathon.macfast.org/";
+
   function handleRegisterClick() {
+    if (isExternalReg) {
+      window.open(externalUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
     if (!isLoggedIn()) {
       navigate(`/login?next=/events/${event.slug || event.id}`);
       return;
@@ -357,30 +371,46 @@ export default function EventDetails() {
           <div className="lg:col-span-4 space-y-6">
             
             {/* Quick Registration / Join Pass Card */}
-            <div className="marvel-card p-6 rounded-3xl border border-metallic-gold/40 space-y-5 bg-[#0A0D1A]/95 shadow-2xl">
+            <div className={`marvel-card p-6 rounded-3xl space-y-5 bg-[#0A0D1A]/95 shadow-2xl ${isExternalReg ? "border border-arc-cyan/60" : "border border-metallic-gold/40"}`}>
               <div className="space-y-1">
-                <span className="text-[10px] uppercase font-bold text-metallic-gold tracking-widest font-excon-bold">Fast-Track Pass</span>
+                <span className={`text-[10px] uppercase font-bold tracking-widest font-excon-bold flex items-center gap-1 ${isExternalReg ? "text-arc-cyan" : "text-metallic-gold"}`}>
+                  <span>{isExternalReg ? "⚡ Official Hackathon Portal" : "Fast-Track Pass"}</span>
+                </span>
                 <h3 className="text-xl font-black text-white uppercase font-excon-black">
-                  {isTeamEvent ? "Assemble Squad" : "Enroll & Pay Online"}
+                  {isExternalReg ? "Hackathon Registration" : (isTeamEvent ? "Assemble Squad" : "Enroll & Pay Online")}
                 </h3>
                 <p className="text-xs text-white/60">
-                  {isTeamEvent
-                    ? "Create your squad, assign yourself as Captain, invite team members, and track independent payments."
-                    : (isFree
-                        ? "School students enter free with authorized school identity card."
-                        : "Register online via UPI / GPay / QR to secure your verified tournament slot & digital pass.")}
+                  {isExternalReg
+                    ? "Registrations for Avengers: Code Assemble (Vibe Coding Hackathon) are officially hosted directly at hackathon.macfast.org."
+                    : (isTeamEvent
+                        ? "Create your squad, assign yourself as Captain, invite team members, and track independent payments."
+                        : (isFree
+                            ? "School students enter free with authorized school identity card."
+                            : "Register online via UPI / GPay / QR to secure your verified tournament slot & digital pass."))}
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={handleRegisterClick}
-                className="w-full py-3.5 bg-metallic-gold hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_20px_rgba(212,175,55,0.4)] font-excon-black cursor-pointer text-center block"
-              >
-                {isTeamEvent
-                  ? (isFree ? "Claim Free Squad Pass" : `Register Squad & Pay Online · ${feeDisplay}`)
-                  : (isFree ? "Claim Free Mission Pass" : `Register & Pay Online · ${feeDisplay}`)}
-              </button>
+              {isExternalReg ? (
+                <a
+                  href={externalUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3.5 bg-arc-cyan hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_20px_#00D4FF] font-excon-black cursor-pointer text-center flex items-center justify-center gap-2"
+                >
+                  <span>Register on Hackathon Portal</span>
+                  <RiExternalLinkLine className="text-sm" />
+                </a>
+              ) : (
+                <button
+                  type="button"
+                  onClick={handleRegisterClick}
+                  className="w-full py-3.5 bg-metallic-gold hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_20px_rgba(212,175,55,0.4)] font-excon-black cursor-pointer text-center block"
+                >
+                  {isTeamEvent
+                    ? (isFree ? "Claim Free Squad Pass" : `Register Squad & Pay Online · ${feeDisplay}`)
+                    : (isFree ? "Claim Free Mission Pass" : `Register & Pay Online · ${feeDisplay}`)}
+                </button>
+              )}
 
               <div className="text-[10px] text-white/50 space-y-1.5 pt-2 border-t border-white/10 font-mono">
                 <div className="flex justify-between">
@@ -392,8 +422,10 @@ export default function EventDetails() {
                   <span className="text-metallic-gold font-bold">{feeDisplay}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Payment Mode</span>
-                  <span className="text-emerald-400 font-bold">{isFree ? "Free Entry" : "Online UPI / QR Gateway"}</span>
+                  <span>Registration Portal</span>
+                  <span className="text-arc-cyan font-bold font-mono">
+                    {isExternalReg ? "hackathon.macfast.org" : (isFree ? "Free Entry" : "Online UPI / QR Gateway")}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Pass Type</span>

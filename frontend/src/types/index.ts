@@ -45,6 +45,7 @@ export interface Event {
   registeredCount: number;
   isLive: boolean;
   status: "upcoming" | "ongoing" | "completed";
+  externalRegistrationUrl?: string;
   createdAt: string;
 }
 

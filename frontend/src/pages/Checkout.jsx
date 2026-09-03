@@ -135,6 +135,10 @@ export default function Checkout() {
 
         // Pre-select event from URL if present
         const preselectSlug = searchParams.get("event");
+        if (preselectSlug === "vibe-coding-hackathon" || preselectSlug === "clg-1" || preselectSlug === "avengers-code-assemble" || preselectSlug === "1") {
+          window.location.href = "https://hackathon.macfast.org/";
+          return;
+        }
         if (preselectSlug && eventList.length > 0) {
           const match = eventList.find(
             (e) => e.slug === preselectSlug || String(e.id) === preselectSlug
@@ -173,6 +177,11 @@ export default function Checkout() {
   }, [navigate, searchParams, pathname, search]);
 
   function handleToggleEvent(id) {
+    const target = events.find((e) => Number(e.id) === Number(id));
+    if (target && (target.slug === "vibe-coding-hackathon" || target.slug === "avengers-code-assemble" || target.id === 1 || target.id === "1")) {
+      window.open("https://hackathon.macfast.org/", "_blank", "noopener,noreferrer");
+      return;
+    }
     const updated = toggleCartEvent(id);
     setCartIds(updated);
   }

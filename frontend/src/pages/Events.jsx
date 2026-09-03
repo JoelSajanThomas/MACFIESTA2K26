@@ -411,12 +411,24 @@ export default function Events() {
                       <span className="truncate">Rules &amp; Briefing</span>
                       <RiArrowRightLine className="shrink-0" />
                     </Link>
-                    <Link
-                      to={`/events/${item.slug || item._id}`}
-                      className="text-[10px] sm:text-[11px] font-black text-black bg-arc-cyan px-4 py-1.5 rounded-full hover:bg-white transition-all uppercase tracking-wider shadow-[0_0_12px_#00D4FF] font-excon-black shrink-0 text-center whitespace-nowrap"
-                    >
-                      Join Mission
-                    </Link>
+                    {item.externalRegistrationUrl || item.slug === "vibe-coding-hackathon" ? (
+                      <a
+                        href={item.externalRegistrationUrl || "https://hackathon.macfast.org/"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={(e) => e.stopPropagation()}
+                        className="text-[10px] sm:text-[11px] font-black text-black bg-arc-cyan px-4 py-1.5 rounded-full hover:bg-white transition-all uppercase tracking-wider shadow-[0_0_12px_#00D4FF] font-excon-black shrink-0 text-center whitespace-nowrap inline-flex items-center gap-1"
+                      >
+                        <span>Register ↗</span>
+                      </a>
+                    ) : (
+                      <Link
+                        to={`/events/${item.slug || item._id}`}
+                        className="text-[10px] sm:text-[11px] font-black text-black bg-arc-cyan px-4 py-1.5 rounded-full hover:bg-white transition-all uppercase tracking-wider shadow-[0_0_12px_#00D4FF] font-excon-black shrink-0 text-center whitespace-nowrap"
+                      >
+                        Join Mission
+                      </Link>
+                    )}
                   </div>
                 </div>
               </motion.div>

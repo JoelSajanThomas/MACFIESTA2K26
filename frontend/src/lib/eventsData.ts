@@ -56,6 +56,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: true,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
+    externalRegistrationUrl: "https://hackathon.macfast.org/",
     coordinator: { name: "Rojin V Saji", department: "S3 MCA", phone: "+91 89433 70713", email: "rojin@macfast.org" },
     teamSizeText: "1 or 3 members per team",
     rules: [
