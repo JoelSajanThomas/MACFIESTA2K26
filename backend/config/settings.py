@@ -138,9 +138,9 @@ REGISTRATION_SIGNER_SALT = os.environ.get("REGISTRATION_SIGNER_SALT", "macfiesta
 REGISTRATION_PASS_MAX_AGE_DAYS = int(os.environ.get("REGISTRATION_PASS_MAX_AGE_DAYS", "60"))
 
 # Public contact fallbacks (CMS site-settings can override on the site)
-CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "")
+CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "macfiesta@macfast.org")
 CONTACT_PHONE = os.environ.get("CONTACT_PHONE", "")
-REGISTRATION_HELP_EMAIL = os.environ.get("REGISTRATION_HELP_EMAIL", "")
+REGISTRATION_HELP_EMAIL = os.environ.get("REGISTRATION_HELP_EMAIL", "macfiesta@macfast.org")
 REGISTRATION_HELP_PHONE = os.environ.get("REGISTRATION_HELP_PHONE", "")
 OFFICIAL_WEBSITE = os.environ.get("OFFICIAL_WEBSITE", "")
 INSTAGRAM_URL = os.environ.get("INSTAGRAM_URL", "")
@@ -303,6 +303,6 @@ EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL",
-    f"MACFIESTA 2026 <{os.environ.get('EMAIL_HOST_USER') or 'noreply@macfiesta.org'}>",
+    f"MACFIESTA 2026 <{os.environ.get('EMAIL_HOST_USER') or 'macfiesta@macfast.org'}>",
 )
 

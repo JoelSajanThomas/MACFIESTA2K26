@@ -12,7 +12,7 @@ class SiteSetting(models.Model):
     fest_date = models.DateField(null=True, blank=True)
     venue = models.CharField(max_length=200, blank=True)
     location = models.CharField(max_length=200, blank=True)
-    contact_email = models.EmailField(blank=True)
+    contact_email = models.EmailField(blank=True, default="macfiesta@macfast.org")
     contact_phone = models.CharField(max_length=30, blank=True)
     official_website = models.URLField(blank=True)
     instagram_url = models.URLField(blank=True)

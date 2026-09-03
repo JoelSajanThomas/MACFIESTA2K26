@@ -107,13 +107,12 @@ export default function Sponsors() {
               Exhibit your brand before 5000+ college students, tech leaders, and cultural enthusiasts. Connect with our sponsorship team.
             </p>
           </div>
-          <button
-            type="button"
-            onClick={() => alert("Please send partnership query to info@macfiesta.macfast.org")}
-            className="px-8 py-3.5 bg-marvel-red hover:bg-white hover:text-black font-black text-xs uppercase tracking-wider rounded-full transition-all shadow-[0_0_20px_#ED1D24] cursor-pointer"
+          <a
+            href="mailto:macfiesta@macfast.org?subject=MacFiesta%20Sponsorship%20Inquiry"
+            className="px-8 py-3.5 bg-marvel-red hover:bg-white hover:text-black font-black text-xs uppercase tracking-wider rounded-full transition-all shadow-[0_0_20px_#ED1D24] cursor-pointer inline-block"
           >
             <span>Partner With Us</span>
-          </button>
+          </a>
         </div>
 
       </div>

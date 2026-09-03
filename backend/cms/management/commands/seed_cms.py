@@ -67,7 +67,7 @@ class Command(BaseCommand):
             fest_date="2026-09-24",
             venue="MACFAST Campus, Thiruvalla",
             location="Pathanamthitta, Kerala, India",
-            contact_email="fest@macfast.ac.in",
+            contact_email="macfiesta@macfast.org",
             contact_phone="",
             official_website="https://macfiesta.macfast.org/",
             instagram_url="https://instagram.com/macfiesta",
@@ -167,7 +167,7 @@ class Command(BaseCommand):
             ("How do I register?", "Log in, open Events, pick a competition, and complete the registration form. Slots are limited per event."),
             ("Where are events held?", "Competitions run at the main stage, tech arena, cultural halls, and outdoor venues across MACFAST campus."),
             ("When are results published?", "Coordinators publish winners at the result desk after each event. Results appear on the Results page."),
-            ("Who do I contact for help?", "Email registrations@macfast.ac.in or call +91 98765 43211 during fest days."),
+            ("Who do I contact for help?", "Email macfiesta@macfast.org or call +91 98765 43211 during fest days."),
         ]
         for i, (q, a) in enumerate(items):
             FAQ.objects.create(question=q, answer=a, order=i)

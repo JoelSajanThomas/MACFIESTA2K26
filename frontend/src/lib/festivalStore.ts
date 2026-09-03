@@ -770,7 +770,7 @@ export function useFestivalControl() {
             name: d.fest_name || "MacFiesta",
             tagline: d.fest_theme || "Where Legends Rise",
             registrationOpen: d.registration_open ?? true,
-            contactEmail: d.contact_email || "fest@macfast.org",
+            contactEmail: d.contact_email || "macfiesta@macfast.org",
             contactPhone: d.contact_phone || "+91 94470 12345",
           };
           saveFestivalSettings(updatedSettings);

@@ -217,7 +217,7 @@ class SignupView(APIView):
             send_mail(
                 subject,
                 message,
-                getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@macfiesta.local"),
+                getattr(settings, "DEFAULT_FROM_EMAIL", "macfiesta@macfast.org"),
                 [user.email],
                 fail_silently=True,
             )

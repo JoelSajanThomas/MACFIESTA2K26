@@ -70,7 +70,7 @@ def send_registration_approval_email(registration):
         f"MacFiesta 2026 Organizing Committee\n"
         f"Mar Athanasios College for Advanced Studies Tiruvalla (MACFAST)\n"
     )
-    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@macfiesta.local")
+    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "macfiesta@macfast.org")
     recipients = [registration.email]
     
     # Run in background thread to ensure instantaneous API response

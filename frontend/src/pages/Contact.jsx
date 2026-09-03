@@ -154,7 +154,7 @@ export default function Contact() {
                 </div>
                 <div className="flex items-center gap-3">
                   <RiMailSendLine className="text-arc-cyan text-lg shrink-0" />
-                  <span>Official Email: <strong className="text-white font-bold font-excon-bold">macfiesta@macfast.org</strong></span>
+                  <span>Official Email: <a href="mailto:macfiesta@macfast.org" className="text-white font-bold font-excon-bold hover:text-arc-cyan transition-colors">macfiesta@macfast.org</a></span>
                 </div>
                 <div className="flex items-center gap-3">
                   <RiMapPin2Line className="text-marvel-red text-lg shrink-0" />
