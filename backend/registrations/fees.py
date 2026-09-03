@@ -12,12 +12,24 @@ def _money(value, default="0.00"):
         return Decimal(default)
 
 
+def breakfast_fee():
+    return _money(getattr(settings, "BREAKFAST_FEE", "50.00"), "50.00")
+
+
+def lunch_fee():
+    return _money(getattr(settings, "LUNCH_FEE", "70.00"), "70.00")
+
+
+def dinner_fee():
+    return _money(getattr(settings, "DINNER_FEE", "50.00"), "50.00")
+
+
 def food_package_fee():
-    return _money(getattr(settings, "FOOD_PACKAGE_FEE", "150.00"), "150.00")
+    return _money(getattr(settings, "FOOD_PACKAGE_FEE", "170.00"), "170.00")
 
 
 def accommodation_fee_per_person():
-    return _money(getattr(settings, "ACCOMMODATION_FEE_PER_PERSON", "300.00"), "300.00")
+    return _money(getattr(settings, "ACCOMMODATION_FEE_PER_PERSON", "350.00"), "350.00")
 
 
 def transport_assist_fee():
@@ -35,16 +47,25 @@ def compute_registration_amount(
     """
     Total payable = event fee + selected add-ons.
 
-    Amounts are configured in backend/.env (FOOD_PACKAGE_FEE, etc.).
+    Amounts are configured in backend/.env (BREAKFAST_FEE=50, LUNCH_FEE=70, DINNER_FEE=50, etc.).
     """
     total = Decimal(event_fee or 0)
     food = Decimal("0.00")
     accommodation = Decimal("0.00")
     transport = Decimal("0.00")
 
-    if (food_preference or "none") != "none":
+    pref = str(food_preference or "none").lower()
+    if pref in ("full", "all", "veg", "non_veg", "jain", "package"):
         food = food_package_fee()
-        total += food
+    elif pref != "none":
+        meals = [m.strip() for m in pref.replace("+", ",").replace(";", ",").split(",") if m.strip()]
+        bf = breakfast_fee() if ("breakfast" in meals or "bf" in meals) else Decimal("0.00")
+        ln = lunch_fee() if ("lunch" in meals or "ln" in meals) else Decimal("0.00")
+        dn = dinner_fee() if ("dinner" in meals or "dn" in meals) else Decimal("0.00")
+        calc = bf + ln + dn
+        food = calc if calc > 0 else food_package_fee()
+
+    total += food
 
     if needs_accommodation:
         count = int(accommodation_count or 1)

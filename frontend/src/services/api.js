@@ -1,5 +1,6 @@
 import axios from "axios";
 import { logout, notifyAuthChange } from "../utils/auth";
+import { hashPassword } from "../utils/crypto";
 
 /**
  * Resolve API base for desktop, LAN phone browsers, and Capacitor.
@@ -120,13 +121,47 @@ export function getStaffDirectory() {
   return api.get("/admin/staff/", { headers: authHeaders() });
 }
 
-export function createStaffAccount(data) {
-  return api.post("/admin/staff/", data, { headers: authHeaders() });
+export async function createStaffAccount(data) {
+  const payload = { ...data };
+  if (payload.temporary_password) {
+    payload.temporary_password = await hashPassword(payload.temporary_password);
+  }
+  return api.post("/admin/staff/", payload, { headers: authHeaders() });
 }
 
-export function updateStaffAccount(id, data) {
-  return api.patch(`/admin/staff/${id}/`, data, { headers: authHeaders() });
+export async function updateStaffAccount(id, data) {
+  const payload = { ...data };
+  if (payload.temporary_password) {
+    payload.temporary_password = await hashPassword(payload.temporary_password);
+  }
+  return api.patch(`/admin/staff/${id}/`, payload, { headers: authHeaders() });
 }
+
+export function getParticipantList(params = {}) {
+  return api.get("/admin/participants/", { headers: authHeaders(), params });
+}
+
+export async function createParticipant(data) {
+  const payload = { ...data };
+  if (payload.password) payload.password = await hashPassword(payload.password);
+  if (payload.password_confirm) payload.password_confirm = await hashPassword(payload.password_confirm);
+  return api.post("/admin/participants/", payload, { headers: authHeaders() });
+}
+
+export async function updateParticipant(id, data) {
+  const payload = { ...data };
+  if (payload.password) payload.password = await hashPassword(payload.password);
+  if (payload.password_confirm) payload.password_confirm = await hashPassword(payload.password_confirm);
+  return api.patch(`/admin/participants/${id}/`, payload, { headers: authHeaders() });
+}
+
+export function exportParticipantsCSV() {
+  // Returns a URL that the browser can follow to trigger CSV download
+  const token = localStorage.getItem("access_token") || "";
+  const base = api.defaults.baseURL || "";
+  return `${base}/admin/participants/?export=csv&token=${encodeURIComponent(token)}`;
+}
+
 
 export function getCurrentUser() {
   return api.get("/auth/me/", { headers: authHeaders() });
@@ -206,6 +241,47 @@ export function getRegistrationPass(id) {
   return api.get(`/registrations/${id}/pass/`, { headers: authHeaders() });
 }
 
+export function createTeamRegistration(data) {
+  return api.post("/registrations/team/create/", data, { headers: authHeaders() });
+}
+
+export function inviteTeamMember(registrationId, data) {
+  return api.post(`/registrations/${registrationId}/team/invite/`, data, { headers: authHeaders() });
+}
+
+export function removeTeamMember(registrationId, memberId) {
+  return api.post(`/registrations/${registrationId}/team/remove-member/`, { member_id: memberId }, { headers: authHeaders() });
+}
+
+export function submitMemberPayment(registrationId, memberId, { payment_transaction_id, payment_proof, payment_method }) {
+  const form = new FormData();
+  form.append("member_id", memberId);
+  form.append("payment_transaction_id", payment_transaction_id || "");
+  if (payment_method) form.append("payment_method", payment_method);
+  if (payment_proof) form.append("payment_proof", payment_proof);
+  return api.post(`/registrations/${registrationId}/team/member-payment/`, form, adminConfig(form));
+}
+
+export function getMyInvitations() {
+  return api.get("/registrations/invitations/my/", { headers: authHeaders() });
+}
+
+export function respondTeamInvitation({ invitation_id, action }) {
+  return api.post("/registrations/invitations/respond/", { invitation_id, action }, { headers: authHeaders() });
+}
+
+export function searchStudents(q) {
+  return api.get("/registrations/students/search/", { headers: authHeaders(), params: { q } });
+}
+
+export function adminVerifyMemberFinance(memberId, data) {
+  return api.post(`/admin/team-members/${memberId}/verify-finance/`, data, { headers: authHeaders() });
+}
+
+export function adminVerifyMemberOrganizer(memberId, data) {
+  return api.post(`/admin/team-members/${memberId}/verify-organizer/`, data, { headers: authHeaders() });
+}
+
 export function getCertificate(resultId) {
   return api.get(`/certificates/${resultId}/`);
 }
@@ -219,24 +295,38 @@ export function promoteWaitlist(eventId) {
   return api.post(`/admin/events/${eventId}/promote-waitlist/`, {}, { headers: authHeaders() });
 }
 
-export function login(credentials) {
-  return axios.post(`${API_BASE}/auth/login/`, credentials);
+export async function login(credentials) {
+  const payload = { ...credentials };
+  if (payload.password) {
+    payload.password = await hashPassword(payload.password);
+  }
+  return axios.post(`${API_BASE}/auth/login/`, payload);
 }
 
-export function registerAccount(data) {
-  return axios.post(`${API_BASE}/auth/register/`, data);
+export async function registerAccount(data) {
+  const payload = { ...data };
+  if (payload.password) payload.password = await hashPassword(payload.password);
+  if (payload.password_confirm) payload.password_confirm = await hashPassword(payload.password_confirm);
+  return axios.post(`${API_BASE}/auth/register/`, payload);
 }
 
 export function requestPasswordReset(email) {
   return axios.post(`${API_BASE}/auth/password-reset/`, { email });
 }
 
-export function confirmPasswordReset(data) {
-  return axios.post(`${API_BASE}/auth/password-reset/confirm/`, data);
+export async function confirmPasswordReset(data) {
+  const payload = { ...data };
+  if (payload.password) payload.password = await hashPassword(payload.password);
+  if (payload.password_confirm) payload.password_confirm = await hashPassword(payload.password_confirm);
+  return axios.post(`${API_BASE}/auth/password-reset/confirm/`, payload);
 }
 
-export function changePassword(data) {
-  return api.post("/auth/change-password/", data, { headers: authHeaders() });
+export async function changePassword(data) {
+  const payload = { ...data };
+  if (payload.current_password) payload.current_password = await hashPassword(payload.current_password);
+  if (payload.password) payload.password = await hashPassword(payload.password);
+  if (payload.password_confirm) payload.password_confirm = await hashPassword(payload.password_confirm);
+  return api.post("/auth/change-password/", payload, { headers: authHeaders() });
 }
 
 /** Persist JWT pair from login or signup responses. */
@@ -552,6 +642,15 @@ export function getHomepageSections(asAdmin = false) {
 
 export function updateHomepageSection(id, data) {
   return api.patch(`/cms/homepage-sections/${id}/`, data, adminConfig(data));
+}
+
+export async function purgeAllRegisteredData(password) {
+  const hashed = await hashPassword(password);
+  return api.post(
+    "/admin/purge-registered-data/",
+    { password: hashed, raw_password: password },
+    { headers: authHeaders() }
+  );
 }
 
 let refreshPromise = null;

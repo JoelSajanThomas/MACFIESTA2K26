@@ -881,3 +881,143 @@ body:has(.admin-shell),
   color: rgba(255, 255, 255, 0.9) !important;
 }
 
+/* ── Admin Finance / Ops Page Layout ─────────────────── */
+
+.admin-shell .admin-ops-page {
+  padding: 1.5rem;
+  overflow-y: auto;
+  height: 100%;
+}
+
+.admin-shell .admin-finance-page {
+  max-width: 100%;
+}
+
+/* Small Button Variant */
+.admin-shell .btn-sm {
+  padding: 0.4rem 0.9rem !important;
+  font-size: 0.8rem !important;
+  min-height: 32px !important;
+}
+
+/* Form Error */
+.admin-shell .form-error {
+  color: #ff6b6b;
+  font-size: 0.85rem;
+  margin: 0.5rem 0;
+}
+
+/* Mobile Card List (shown on mobile, hidden on desktop) */
+.admin-shell .admin-ops-card-list {
+  display: none;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.admin-shell .admin-show-mobile-cards {
+  display: flex;
+}
+
+.admin-shell .admin-hide-mobile-table {
+  display: block;
+}
+
+.admin-shell .admin-ops-mobile-card {
+  background: rgba(10, 14, 28, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.admin-shell .admin-ops-mobile-card h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.admin-shell .admin-ops-mobile-card p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--ops-muted, #94a3b8);
+}
+
+.admin-shell .admin-ops-card-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.admin-shell .admin-ops-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+/* Verification page */
+.admin-shell .detail-panel,
+.admin-shell .verify-panel {
+  background: rgba(10, 14, 28, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.admin-shell .verify-status-banner {
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-align: center;
+  margin: 0 0 1rem;
+}
+
+.admin-shell .verify-status-banner.is-valid { background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid #10b981; }
+.admin-shell .verify-status-banner.is-pending { background: rgba(245, 158, 11, 0.15); color: #f59e0b; border: 1px solid #f59e0b; }
+.admin-shell .verify-status-banner.is-bad { background: rgba(237, 29, 36, 0.15); color: #ed1d24; border: 1px solid #ed1d24; }
+
+.admin-shell .verification-dl {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.4rem 1rem;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.admin-shell .verification-dl dt {
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+}
+
+.admin-shell .verification-empty {
+  text-align: center;
+  padding: 2rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* On larger screens: hide mobile cards, show table */
+@media (min-width: 700px) {
+  .admin-shell .admin-show-mobile-cards {
+    display: none !important;
+  }
+  .admin-shell .admin-hide-mobile-table {
+    display: block !important;
+  }
+}
+
+/* On small screens: hide table, show mobile cards */
+@media (max-width: 699px) {
+  .admin-shell .admin-show-mobile-cards {
+    display: flex !important;
+  }
+  .admin-shell .admin-hide-mobile-table {
+    display: none !important;
+  }
+}

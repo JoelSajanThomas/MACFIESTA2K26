@@ -7,6 +7,8 @@ from registrations.views import (
     AdminRegistrationListView,
     AdminRegistrationDetailView,
     admin_promote_waitlist,
+    admin_verify_member_finance,
+    admin_verify_member_organizer,
     my_pass,
     certificate_data,
     attendance_report,
@@ -24,7 +26,13 @@ from dashboard.views import (
     public_fest_stats,
     public_fest_config,
 )
-from accounts.staff_views import staff_directory, staff_detail
+from accounts.staff_views import (
+    staff_directory,
+    staff_detail,
+    participant_user_list,
+    participant_user_detail,
+    purge_registered_users_data,
+)
 from cms.views import (
     SiteSettingViewSet,
     FestivalHighlightViewSet,
@@ -76,12 +84,17 @@ urlpatterns = [
     path('auth/me/', current_user),
     path('admin/staff/', staff_directory),
     path('admin/staff/<int:pk>/', staff_detail),
+    path('admin/participants/', participant_user_list),
+    path('admin/participants/<int:pk>/', participant_user_detail),
     path('admin/registrations/', AdminRegistrationListView.as_view()),
     path('admin/registrations/<int:pk>/', AdminRegistrationDetailView.as_view()),
+    path('admin/team-members/<int:member_id>/verify-finance/', admin_verify_member_finance),
+    path('admin/team-members/<int:member_id>/verify-organizer/', admin_verify_member_organizer),
     path('admin/events/<int:event_id>/promote-waitlist/', admin_promote_waitlist),
     path('admin/reports/attendance/', attendance_report),
     path('admin/reports/registrations.csv', export_registrations_csv),
     path('admin/hospitality/stats/', admin_hospitality_stats),
+    path('admin/purge-registered-data/', purge_registered_users_data),
     path('admin/verification/lookup/', verify_lookup),
     path('admin/verification/check-in/', verify_check_in),
     path('registrations/<int:pk>/pass/', my_pass),

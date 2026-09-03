@@ -1,22 +1,72 @@
 import re
-
-from django.db import IntegrityError, transaction
-from django.utils import timezone
+from decimal import Decimal
 from rest_framework import serializers
 
 from events.models import Event
 from .models import Registration, TeamMember
-from .services import (
-    cancel_registration,
-    next_waitlist_position,
-    send_registration_email,
-)
 
 
 class TeamMemberSerializer(serializers.ModelSerializer):
+    qr_pass_code = serializers.CharField(read_only=True)
+    payment_proof_url = serializers.SerializerMethodField()
+    photo_url = serializers.SerializerMethodField()
+
     class Meta:
         model = TeamMember
-        fields = ["id", "name", "phone", "email", "college_name"]
+        fields = [
+            "id",
+            "role",
+            "name",
+            "phone",
+            "email",
+            "college_name",
+            "department",
+            "register_number",
+            "gender",
+            "photo",
+            "photo_url",
+            "invitation_status",
+            "invited_at",
+            "accepted_at",
+            "payment_status",
+            "payment_amount",
+            "payment_method",
+            "payment_transaction_id",
+            "payment_proof",
+            "payment_proof_url",
+            "payment_rejection_reason",
+            "payment_verified_at",
+            "finance_status",
+            "finance_verified_at",
+            "organizer_status",
+            "organizer_verified_at",
+            "attendance_marked",
+            "qr_pass_code",
+            "user",
+        ]
+        read_only_fields = [
+            "qr_pass_code",
+            "invited_at",
+            "accepted_at",
+            "payment_verified_at",
+            "finance_verified_at",
+            "organizer_verified_at",
+            "user",
+        ]
+
+    def get_payment_proof_url(self, obj):
+        if not obj.payment_proof:
+            return None
+        request = self.context.get("request")
+        url = obj.payment_proof.url
+        return request.build_absolute_uri(url) if request else url
+
+    def get_photo_url(self, obj):
+        if not obj.photo:
+            return None
+        request = self.context.get("request")
+        url = obj.photo.url
+        return request.build_absolute_uri(url) if request else url
 
 
 class RegistrationSerializer(serializers.ModelSerializer):
@@ -24,10 +74,16 @@ class RegistrationSerializer(serializers.ModelSerializer):
     event_venue = serializers.CharField(source="event.venue", read_only=True)
     event_date = serializers.DateField(source="event.event_date", read_only=True)
     event_time = serializers.TimeField(source="event.event_time", read_only=True)
+    min_team_size = serializers.IntegerField(source="event.min_team_size", read_only=True)
+    max_team_size = serializers.IntegerField(source="event.max_team_size", read_only=True)
     team_members = TeamMemberSerializer(many=True, required=False)
     pass_token = serializers.SerializerMethodField()
     entry_qr_status = serializers.SerializerMethodField()
     payment_proof_uploaded = serializers.SerializerMethodField()
+    is_captain = serializers.SerializerMethodField()
+    is_team_full = serializers.BooleanField(read_only=True)
+    is_team_paid = serializers.BooleanField(read_only=True)
+    total_team_members_count = serializers.IntegerField(read_only=True)
 
     class Meta:
         model = Registration
@@ -38,13 +94,18 @@ class RegistrationSerializer(serializers.ModelSerializer):
             "event_venue",
             "event_date",
             "event_time",
+            "min_team_size",
+            "max_team_size",
             "registration_type",
             "team_name",
             "team_members",
             "participant_name",
             "college_name",
+            "department",
+            "register_number",
             "email",
             "phone",
+            "gender",
             "payment_status",
             "approval_status",
             "is_waiting_list",
@@ -74,6 +135,10 @@ class RegistrationSerializer(serializers.ModelSerializer):
             "verified_at",
             "cancelled_at",
             "user",
+            "is_captain",
+            "is_team_full",
+            "is_team_paid",
+            "total_team_members_count",
         ]
         read_only_fields = [
             "user",
@@ -98,6 +163,9 @@ class RegistrationSerializer(serializers.ModelSerializer):
             "payment_reference",
             "verified_at",
             "cancelled_at",
+            "is_team_full",
+            "is_team_paid",
+            "total_team_members_count",
         ]
 
     def get_pass_token(self, obj):
@@ -115,227 +183,78 @@ class RegistrationSerializer(serializers.ModelSerializer):
     def get_payment_proof_uploaded(self, obj):
         return bool(obj.payment_proof)
 
+    def get_is_captain(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user or not request.user.is_authenticated:
+            return False
+        return obj.user_id == request.user.id or request.user.is_staff
+
     def validate_email(self, value):
         return value.strip().lower()
 
     def validate_phone(self, value):
-        digits = re.sub(r"\D", "", str(value))
-        if len(digits) < 10 or len(digits) > 15:
-            raise serializers.ValidationError("Enter a valid phone number (10–15 digits).")
-        return value.strip()
+        stripped = re.sub(r"\s+", "", str(value or "").strip())
+        digits = re.sub(r"\D", "", stripped)
+
+        # 10 digits starting with 6-9
+        if len(digits) == 10 and re.match(r"^[6-9]\d{9}$", digits):
+            return digits
+        # +91 prefix (12 digits, remaining 10 start with 6-9)
+        if len(digits) == 12 and digits.startswith("91") and re.match(r"^[6-9]\d{9}$", digits[2:]):
+            return digits[2:]
+
+        if len(digits) > 10:
+            raise serializers.ValidationError("Mobile number cannot exceed 10 digits.")
+        if len(digits) < 10:
+            raise serializers.ValidationError("Mobile number must be exactly 10 digits.")
+        raise serializers.ValidationError(
+            "Enter a valid 10-digit mobile number starting with 6, 7, 8, or 9."
+        )
 
     def validate(self, attrs):
+        user = self.context.get("request").user if self.context.get("request") else None
         event = attrs.get("event")
-        if not event:
-            return attrs
+        if not event and self.instance:
+            event = self.instance.event
 
-        now = timezone.now()
-        if event.registration_deadline and now > event.registration_deadline:
-            raise serializers.ValidationError({"event": "Registration deadline has passed."})
-        if event.event_date and event.event_date < timezone.localdate():
-            raise serializers.ValidationError({"event": "Registration is closed for past events."})
+        if not self.instance and user and event:
+            from .models import Registration
 
-        registration_type = attrs.get("registration_type", "individual")
-        if registration_type == "team" and not attrs.get("team_name", "").strip():
-            raise serializers.ValidationError(
-                {"team_name": "Team name is required for team registration."}
-            )
-
-        min_size = event.min_team_size or 1
-        max_size = event.max_team_size
-        if registration_type == "individual" and min_size > 1:
-            raise serializers.ValidationError(
-                {
-                    "registration_type": (
-                        f"This event requires a team of at least {min_size} members. "
-                        "Choose Team registration."
-                    )
-                }
-            )
-        if registration_type == "team" and max_size == 1:
-            raise serializers.ValidationError(
-                {"registration_type": "This event only accepts individual registrations."}
-            )
-
-        members = self.initial_data.get("team_members") or []
-        if registration_type == "team":
-            total = 1 + len(members)
-            if min_size and total < min_size:
-                raise serializers.ValidationError(
-                    {"team_members": f"This event needs at least {min_size} members (including you)."}
-                )
-            if max_size and total > max_size:
-                raise serializers.ValidationError(
-                    {"team_members": f"This event allows at most {max_size} members (including you)."}
-                )
-
-        for field in ("participant_name", "college_name"):
-            if field in attrs and attrs[field] is not None:
-                attrs[field] = attrs[field].strip()
-                if not attrs[field]:
-                    raise serializers.ValidationError({field: "This field may not be blank."})
+            if Registration.objects.filter(user=user, event=event, cancelled_at__isnull=True).exists():
+                raise serializers.ValidationError({"event": "You are already registered for this event."})
 
         return attrs
-
-    def create(self, validated_data):
-        members_data = validated_data.pop("team_members", None)
-        if members_data is None:
-            raw = self.initial_data.get("team_members") or []
-            members_data = raw if isinstance(raw, list) else []
-
-        user = validated_data.pop("user", None) or self.context["request"].user
-        event_id = validated_data["event"].pk
-
-        try:
-            with transaction.atomic():
-                event = Event.objects.select_for_update().get(pk=event_id)
-
-                if not event.is_registration_open:
-                    raise serializers.ValidationError(
-                        {"event": "Registration is closed for this event."}
-                    )
-                if event.status == "cancelled":
-                    raise serializers.ValidationError({"event": "This event has been cancelled."})
-                if event.registration_deadline and timezone.now() > event.registration_deadline:
-                    raise serializers.ValidationError(
-                        {"event": "Registration deadline has passed."}
-                    )
-                if event.event_date and event.event_date < timezone.localdate():
-                    raise serializers.ValidationError(
-                        {"event": "Registration is closed for past events."}
-                    )
-                if Registration.objects.filter(
-                    user=user, event=event, cancelled_at__isnull=True
-                ).exists():
-                    raise serializers.ValidationError(
-                        {"event": "You are already registered for this event."}
-                    )
-
-                confirmed_count = event.registrations.filter(
-                    is_waiting_list=False, cancelled_at__isnull=True
-                ).count()
-                is_waiting = False
-                wait_pos = None
-                if confirmed_count >= event.max_participants:
-                    if event.waiting_list_enabled:
-                        is_waiting = True
-                        wait_pos = next_waitlist_position(event)
-                    else:
-                        raise serializers.ValidationError({"event": "This event is full."})
-
-                fee = event.registration_fee
-                from .fees import compute_registration_amount
-                from .batch import new_payment_batch_id, new_payment_reference
-
-                # Logged-in student identity — never require retyping account name/email
-                if not (validated_data.get("email") or "").strip():
-                    validated_data["email"] = (user.email or "").strip().lower()
-                if not (validated_data.get("participant_name") or "").strip():
-                    validated_data["participant_name"] = (
-                        (user.get_full_name() or "").strip() or user.username
-                    )
-
-                breakdown = compute_registration_amount(
-                    event_fee=fee,
-                    food_preference=validated_data.get("food_preference", "none"),
-                    needs_accommodation=validated_data.get("needs_accommodation", False),
-                    accommodation_count=validated_data.get("accommodation_count"),
-                    needs_transport=False,
-                )
-                # ₹0 total → auto-cleared; otherwise always starts Pending until Finance verifies.
-                initial_payment_status = "waived" if breakdown["total"] <= 0 else "pending"
-                payment_batch_id = new_payment_batch_id()
-                payment_reference = new_payment_reference()
-                validated_data["needs_transport"] = False
-                validated_data["transport_note"] = ""
-                registration = Registration.objects.create(
-                    user=user,
-                    is_waiting_list=is_waiting,
-                    waitlist_position=wait_pos,
-                    approval_status="approved" if not is_waiting else "pending",
-                    payment_status=initial_payment_status,
-                    payment_amount=breakdown["total"],
-                    payment_notes=(
-                        f"Event ₹{breakdown['event_fee']}"
-                        f" + Food ₹{breakdown['food_fee']}"
-                        f" + Stay ₹{breakdown['accommodation_fee']}"
-                        f" + Transport ₹{breakdown['transport_fee']}"
-                        f" = ₹{breakdown['total']}"
-                    ),
-                    payment_batch_id=payment_batch_id,
-                    payment_reference=payment_reference,
-                    **validated_data,
-                )
-                try:
-                    from .institutions import ensure_institution
-
-                    ensure_institution(registration.college_name)
-                except Exception:
-                    pass
-
-                if registration.registration_type == "team":
-                    for member in members_data:
-                        if not member:
-                            continue
-                        name = (member.get("name") or "").strip()
-                        if not name:
-                            continue
-                        TeamMember.objects.create(
-                            registration=registration,
-                            name=name,
-                            phone=(member.get("phone") or "").strip(),
-                            email=(member.get("email") or "").strip(),
-                            college_name=(member.get("college_name") or "").strip(),
-                        )
-
-                send_registration_email(registration)
-                return registration
-        except IntegrityError as exc:
-            raise serializers.ValidationError(
-                {"event": "You are already registered for this event."}
-            ) from exc
 
 
 class AdminRegistrationSerializer(serializers.ModelSerializer):
     event_title = serializers.CharField(source="event.title", read_only=True)
     event_audience = serializers.CharField(source="event.audience", read_only=True)
     event_date = serializers.DateField(source="event.event_date", read_only=True)
-    username = serializers.CharField(source="user.username", read_only=True)
-    team_members = TeamMemberSerializer(many=True, read_only=True)
-    verified_by_username = serializers.CharField(
-        source="verified_by.username", read_only=True, default=None
-    )
+    verified_by_username = serializers.CharField(source="verified_by.username", read_only=True)
     payment_verified_by_username = serializers.CharField(
-        source="payment_verified_by.username", read_only=True, default=None
+        source="payment_verified_by.username", read_only=True
     )
     payment_proof_url = serializers.SerializerMethodField()
     entry_qr_status = serializers.SerializerMethodField()
+    team_members = TeamMemberSerializer(many=True, required=False)
 
     class Meta:
         model = Registration
         fields = [
             "id",
+            "user",
             "event",
             "event_title",
-            "event_audience",
-            "event_date",
-            "username",
             "registration_type",
             "team_name",
             "team_members",
             "participant_name",
             "college_name",
+            "department",
+            "register_number",
             "email",
             "phone",
             "gender",
-            "payment_status",
-            "approval_status",
-            "is_waiting_list",
-            "waitlist_position",
-            "attendance_marked",
-            "registration_number",
-            "entry_qr_status",
-            "registered_at",
             "food_preference",
             "food_notes",
             "needs_accommodation",
@@ -346,24 +265,20 @@ class AdminRegistrationSerializer(serializers.ModelSerializer):
             "accommodation_room",
             "needs_transport",
             "transport_note",
+            "payment_status",
             "payment_amount",
             "payment_method",
             "payment_receipt_number",
             "payment_transaction_id",
-            "payment_proof",
-            "payment_proof_url",
             "payment_rejection_reason",
             "payment_confirmed_at",
             "payment_notes",
-            "payment_verified_at",
-            "payment_verified_by",
-            "payment_verified_by_username",
-            "verified_at",
-            "verified_by",
-            "verified_by_username",
-            "cancelled_at",
-        ]
-        read_only_fields = [
+            "payment_batch_id",
+            "payment_reference",
+            "approval_status",
+            "is_waiting_list",
+            "waitlist_position",
+            "attendance_marked",
             "registration_number",
             "registered_at",
             "entry_qr_status",
@@ -390,7 +305,6 @@ class AdminRegistrationSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         from .payment import can_manage_payments
 
-        # Screenshots are Finance / Core only — never leak to other desks or public.
         if request and not can_manage_payments(request.user):
             return None
         url = obj.payment_proof.url
@@ -405,7 +319,6 @@ class AdminRegistrationSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         user = request.user if request else None
 
-        # Only Finance / Core may change payment status or override verification fields.
         payment_keys = {
             "payment_status",
             "payment_rejection_reason",
@@ -423,6 +336,7 @@ class AdminRegistrationSerializer(serializers.ModelSerializer):
             )
 
         prev_paid = instance.payment_status
+        prev_approval = instance.approval_status
         prev_attendance = instance.attendance_marked
         prev_needs_stay = instance.needs_accommodation
         instance = super().update(instance, validated_data)
@@ -452,6 +366,26 @@ class AdminRegistrationSerializer(serializers.ModelSerializer):
                     "payment_rejection_reason",
                 ]
             )
+            # Also clear team members if this is a team registration
+            instance.team_members.all().update(
+                payment_status="paid",
+                payment_verified_at=timezone.now(),
+                finance_status="verified",
+                finance_verified_at=timezone.now(),
+            )
+            try:
+                from .services import send_registration_approval_email
+                send_registration_approval_email(instance)
+            except Exception:
+                pass
+        elif instance.approval_status == "approved" and prev_approval != "approved":
+            is_cleared = instance.payment_status in ("paid", "waived") or Decimal(instance.payment_amount or 0) <= 0
+            if is_cleared:
+                try:
+                    from .services import send_registration_approval_email
+                    send_registration_approval_email(instance)
+                except Exception:
+                    pass
 
         if instance.payment_status in ("failed", "rejected") and prev_paid not in ("failed", "rejected"):
             instance.payment_verified_at = None

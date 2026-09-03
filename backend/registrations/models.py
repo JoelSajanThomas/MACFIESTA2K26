@@ -59,6 +59,8 @@ class Registration(models.Model):
     team_name = models.CharField(max_length=150, blank=True)
     participant_name = models.CharField(max_length=150)
     college_name = models.CharField(max_length=200)
+    department = models.CharField(max_length=150, blank=True)
+    register_number = models.CharField(max_length=50, blank=True)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
     gender = models.CharField(
@@ -160,6 +162,27 @@ class Registration(models.Model):
         if creating:
             self.finalize_registration_number()
 
+    @property
+    def is_team_event(self):
+        return self.registration_type == "team" or (self.event and (self.event.max_team_size or 1) > 1)
+
+    @property
+    def total_team_members_count(self):
+        # 1 Captain + accepted/joined team members
+        return 1 + self.team_members.filter(invitation_status="accepted").count()
+
+    @property
+    def is_team_full(self):
+        target_size = self.event.max_team_size or self.event.min_team_size or 1
+        min_size = self.event.min_team_size or 1
+        count = self.total_team_members_count
+        return count >= min_size
+
+    @property
+    def is_team_paid(self):
+        # One single payment by Captain covers the entire team
+        return self.payment_status in ("paid", "waived")
+
     def __str__(self):
         return f"{self.participant_name} - {self.event.title}"
 
@@ -178,13 +201,112 @@ class Institution(models.Model):
 
 
 class TeamMember(models.Model):
+    ROLE_CHOICES = [
+        ("captain", "Captain"),
+        ("member", "Member"),
+    ]
+
+    INVITATION_STATUS_CHOICES = [
+        ("pending", "Invitation Pending"),
+        ("accepted", "Accepted"),
+        ("declined", "Declined"),
+    ]
+
+    PAYMENT_STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("paid", "Paid"),
+        ("failed", "Failed"),
+        ("rejected", "Rejected"),
+        ("refunded", "Refunded"),
+        ("waived", "Waived"),
+    ]
+
+    VERIFICATION_STATUS_CHOICES = [
+        ("pending", "Pending"),
+        ("verified", "Verified"),
+        ("rejected", "Rejected"),
+    ]
+
     registration = models.ForeignKey(
         Registration, related_name="team_members", on_delete=models.CASCADE
     )
+    user = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="team_memberships",
+    )
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default="member")
     name = models.CharField(max_length=150)
     phone = models.CharField(max_length=20, blank=True)
     email = models.EmailField(blank=True)
     college_name = models.CharField(max_length=200, blank=True)
+    department = models.CharField(max_length=150, blank=True)
+    register_number = models.CharField(max_length=50, blank=True)
+    gender = models.CharField(max_length=20, blank=True, default="unspecified")
+    photo = models.ImageField(upload_to="team_members/photos/", blank=True, null=True)
+
+    invitation_status = models.CharField(
+        max_length=20, choices=INVITATION_STATUS_CHOICES, default="accepted"
+    )
+    invited_at = models.DateTimeField(default=timezone.now)
+    accepted_at = models.DateTimeField(null=True, blank=True)
+
+    # Per-member independent payment tracking
+    payment_status = models.CharField(
+        max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending"
+    )
+    payment_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
+    payment_method = models.CharField(max_length=40, blank=True)
+    payment_transaction_id = models.CharField(max_length=80, blank=True)
+    payment_proof = models.ImageField(
+        upload_to="team_members/payment_proof/", blank=True, null=True
+    )
+    payment_rejection_reason = models.CharField(max_length=255, blank=True)
+    payment_verified_at = models.DateTimeField(null=True, blank=True)
+    payment_verified_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="member_payment_verifications",
+    )
+
+    # Separate Finance & Organizer Verification
+    finance_status = models.CharField(
+        max_length=20, choices=VERIFICATION_STATUS_CHOICES, default="pending"
+    )
+    finance_verified_at = models.DateTimeField(null=True, blank=True)
+    finance_verified_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="member_finance_verifications",
+    )
+
+    organizer_status = models.CharField(
+        max_length=20, choices=VERIFICATION_STATUS_CHOICES, default="pending"
+    )
+    organizer_verified_at = models.DateTimeField(null=True, blank=True)
+    organizer_verified_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="member_organizer_verifications",
+    )
+
+    attendance_marked = models.BooleanField(default=False)
+    qr_pass_code = models.CharField(max_length=64, blank=True, unique=True, null=True)
+
+    def save(self, *args, **kwargs):
+        if not self.qr_pass_code:
+            self.qr_pass_code = f"TMB-{uuid.uuid4().hex[:10].upper()}"
+        super().save(*args, **kwargs)
 
     def __str__(self):
-        return f"{self.name} ({self.registration.registration_number})"
+        return f"{self.name} ({self.role} - {self.registration.team_name or self.registration.registration_number})"

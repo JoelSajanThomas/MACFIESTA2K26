@@ -53,10 +53,9 @@ export default function CollegeSchoolPicker({
       setIsOthers(false);
       setQuery(current);
       setCustomName("");
-    } else if (current) {
-      setIsOthers(true);
-      setQuery(OTHERS_LABEL);
-      setCustomName(current);
+    } else {
+      // Keep query text so user can still see and edit/search the list instead of forcing custom others mode
+      setQuery(current);
     }
     // Only sync when parent value changes externally
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -70,13 +69,16 @@ export default function CollegeSchoolPicker({
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
-  const matches = useMemo(() => filterInstitutions(options, query, 12), [options, query]);
+  const matches = useMemo(() => filterInstitutions(options, query, 25), [options, query]);
 
   const menuItems = useMemo(() => {
     const items = matches.map((n) => ({ value: n, label: n }));
     const q = query.trim().toLowerCase();
     const exact = options.some((n) => n.toLowerCase() === q);
-    if (!exact || !q) {
+    // Only show "Others (not in list)" when user searched or at the end of matches
+    if (q.length > 0 && !exact) {
+      items.push({ value: OTHERS_VALUE, label: `+ Add "${query.trim()}" (Not in list)` });
+    } else if (q.length === 0) {
       items.push({ value: OTHERS_VALUE, label: OTHERS_LABEL });
     }
     return items;
@@ -154,11 +156,15 @@ export default function CollegeSchoolPicker({
     <div className="relative w-full" ref={rootRef}>
       <div className="relative w-full">
         {label && (
-          <label className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold">
+          <label
+            htmlFor={`${name}-picker-input`}
+            className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold"
+          >
             {label}
           </label>
         )}
         <input
+          id={`${name}-picker-input`}
           type="text"
           role="combobox"
           name={`${name}_search`}
@@ -211,7 +217,10 @@ export default function CollegeSchoolPicker({
       {isOthers ? (
         <div className="mt-3 space-y-1.5">
           <div className="flex items-center justify-between">
-            <label className="block text-[10px] uppercase font-bold tracking-wider text-white/50 font-excon-bold">
+            <label
+              htmlFor={`${name}-custom-input`}
+              className="block text-[10px] uppercase font-bold tracking-wider text-white/50 font-excon-bold"
+            >
               Enter custom college / school name *
             </label>
             <button
@@ -230,6 +239,7 @@ export default function CollegeSchoolPicker({
             </button>
           </div>
           <input
+            id={`${name}-custom-input`}
             type="text"
             name={name}
             value={customName}

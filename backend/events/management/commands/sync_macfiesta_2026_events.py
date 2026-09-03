@@ -21,6 +21,8 @@ SYNC_FIELDS = (
     "event_end_time",
     "registration_fee",
     "prize_pool",
+    "min_team_size",
+    "max_team_size",
 )
 
 

@@ -1,18 +1,19 @@
 // Global High-Speed Frame Cache & Preload Manager
-export const TOTAL_FRAMES = 61;
+export const TOTAL_FRAMES = 156;
 
-export function getFramePath(seq = "frames1", index: number): string {
-  const padded = String(index).padStart(3, "0");
-  return `/MARVEL/${seq}/frame-${padded}.jpg`;
+export function getFramePath(seq = "frames", index: number): string {
+  const safeIndex = Math.max(1, Math.min(TOTAL_FRAMES, Math.round(index) || 1));
+  const padded = String(safeIndex).padStart(3, "0");
+  return `/MARVEL/frames/ezgif-frame-${padded}.jpg`;
 }
 
 // In-memory global cache across component mounts/unmounts
 const globalFrameCache: Record<string, (HTMLImageElement | null)[]> = {
-  frames1: new Array(TOTAL_FRAMES + 1).fill(null),
+  frames: new Array(TOTAL_FRAMES + 1).fill(null),
 };
 
 const preloadingPromises: Record<string, Promise<void> | null> = {
-  frames1: null,
+  frames: null,
 };
 
 const listeners: Set<() => void> = new Set();
@@ -32,7 +33,7 @@ export function subscribeToPreload(callback: () => void): () => void {
   return () => listeners.delete(callback);
 }
 
-export function getLoadedFrame(seq = "frames1", index: number): HTMLImageElement | null {
+export function getLoadedFrame(seq = "frames", index: number): HTMLImageElement | null {
   const cache = globalFrameCache[seq];
   if (!cache) return null;
   const img = cache[index];
@@ -43,7 +44,7 @@ export function getLoadedFrame(seq = "frames1", index: number): HTMLImageElement
 }
 
 export function getNearestLoadedFrame(
-  seq = "frames1",
+  seq = "frames",
   targetIndex: number,
   totalFrames = TOTAL_FRAMES
 ): HTMLImageElement | null {
@@ -66,7 +67,7 @@ export function getNearestLoadedFrame(
   return null;
 }
 
-export function loadSingleFrame(seq = "frames1", idx: number, highPriority = false): Promise<HTMLImageElement> {
+export function loadSingleFrame(seq = "frames", idx: number, highPriority = false): Promise<HTMLImageElement> {
   if (!globalFrameCache[seq]) {
     globalFrameCache[seq] = new Array(TOTAL_FRAMES + 1).fill(null);
   }
@@ -119,7 +120,7 @@ async function processQueue(seq: string, queue: number[], concurrency: number) {
  * Start aggressive background preloading immediately.
  * This runs while user is on LoadingScreen or browsing.
  */
-export function startBackgroundPreload(seq = "frames1"): Promise<void> {
+export function startBackgroundPreload(seq = "frames"): Promise<void> {
   if (preloadingPromises[seq]) {
     return preloadingPromises[seq]!;
   }
@@ -128,16 +129,16 @@ export function startBackgroundPreload(seq = "frames1"): Promise<void> {
     // 1. Load Frame 1 with maximum priority
     await loadSingleFrame(seq, 1, true);
 
-    // 2. Priority Batch: Hero frames (1 to 25) with high concurrency
+    // 2. Priority Batch: Hero frames (1 to 30) with high concurrency
     const heroFrames: number[] = [];
-    for (let i = 2; i <= Math.min(25, TOTAL_FRAMES); i++) {
+    for (let i = 2; i <= Math.min(30, TOTAL_FRAMES); i++) {
       heroFrames.push(i);
     }
     await processQueue(seq, heroFrames, 12);
 
-    // 3. Keyframes stride 4 (evenly covers full page length)
+    // 3. Keyframes stride 5 (evenly covers full scroll length)
     const keyframes: number[] = [];
-    for (let i = 28; i <= TOTAL_FRAMES; i += 4) {
+    for (let i = 35; i <= TOTAL_FRAMES; i += 5) {
       keyframes.push(i);
     }
     if (keyframes[keyframes.length - 1] !== TOTAL_FRAMES) {
@@ -161,10 +162,9 @@ export function startBackgroundPreload(seq = "frames1"): Promise<void> {
 
 // Automatically start preloading when this module is evaluated in the browser
 if (typeof window !== "undefined") {
-  // Use requestIdleCallback or immediate setTimeout to avoid blocking initial parse
   if ("requestIdleCallback" in window) {
-    (window as any).requestIdleCallback(() => startBackgroundPreload("frames1"));
+    (window as any).requestIdleCallback(() => startBackgroundPreload("frames"));
   } else {
-    setTimeout(() => startBackgroundPreload("frames1"), 100);
+    setTimeout(() => startBackgroundPreload("frames"), 100);
   }
 }

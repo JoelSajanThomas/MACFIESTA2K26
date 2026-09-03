@@ -12,6 +12,9 @@ import {
   RiTicketLine,
   RiGraduationCapLine,
   RiBuilding4Line,
+  RiUserLine,
+  RiTeamLine,
+  RiFilter3Line,
 } from "react-icons/ri";
 import { getEvents } from "../services/api";
 import { ALL_EVENTS } from "../lib/eventsData";
@@ -31,6 +34,7 @@ export default function Events() {
   const [events, setEvents] = useState(ALL_EVENTS || []);
   const [search, setSearch] = useState("");
   const [selectedScope, setSelectedScope] = useState("all");
+  const [selectedType, setSelectedType] = useState("all"); // 'all' | 'solo' | 'squad'
   const [selectedCat, setSelectedCat] = useState("all");
 
   usePageSeo({
@@ -53,6 +57,11 @@ export default function Events() {
             const prize = apiEvt.prize_pool ? Number(apiEvt.prize_pool) : (isSchool ? 5000 : 15000);
 
             const local = ALL_EVENTS.find((e) => e.slug === apiEvt.slug || String(e._id) === String(apiEvt.id));
+            
+            // Determine Solo vs Squad type
+            const maxTeam = apiEvt.max_team_size ?? local?.max_team_size ?? (local?.type === "squad" ? 4 : 1);
+            const isSquad = maxTeam > 1 || apiEvt.type === "squad" || local?.type === "squad";
+            const teamType = isSquad ? "squad" : "solo";
 
             return {
               _id: String(apiEvt.id),
@@ -60,6 +69,8 @@ export default function Events() {
               slug: apiEvt.slug || String(apiEvt.id),
               title: apiEvt.title,
               scope: scope,
+              type: teamType,
+              maxTeamSize: maxTeam,
               category: apiEvt.category || "general",
               department: apiEvt.department || "",
               description: apiEvt.description || "Official MacFiesta 2026 festival championship mission brief.",
@@ -85,11 +96,20 @@ export default function Events() {
   const collegeCount = useMemo(() => events.filter(e => e.scope === "college").length, [events]);
   const schoolCount = useMemo(() => events.filter(e => e.scope === "school").length, [events]);
 
+  const soloCount = useMemo(() => events.filter(e => e.type === "solo" || e.maxTeamSize === 1).length, [events]);
+  const squadCount = useMemo(() => events.filter(e => e.type === "squad" || (e.maxTeamSize && e.maxTeamSize > 1)).length, [events]);
+
   const scopeTabs = useMemo(() => [
-    { id: "all", label: `All Missions (${events.length})`, icon: RiShieldFlashLine },
-    { id: "college", label: `College Missions (${collegeCount})`, icon: RiGraduationCapLine },
-    { id: "school", label: `School Missions (${schoolCount})`, icon: RiBuilding4Line },
+    { id: "all", label: `All (${events.length})`, icon: RiShieldFlashLine },
+    { id: "college", label: `College (${collegeCount})`, icon: RiGraduationCapLine },
+    { id: "school", label: `School (${schoolCount})`, icon: RiBuilding4Line },
   ], [events.length, collegeCount, schoolCount]);
+
+  const typeTabs = useMemo(() => [
+    { id: "all", label: "All Formats" },
+    { id: "solo", label: `Solo (${soloCount})`, icon: RiUserLine },
+    { id: "squad", label: `Squad (${squadCount})`, icon: RiTeamLine },
+  ], [soloCount, squadCount]);
 
   const filteredEvents = useMemo(() => {
     return events.filter((e) => {
@@ -100,6 +120,12 @@ export default function Events() {
         (e.venue || "").toLowerCase().includes(search.toLowerCase());
 
       const matchScope = selectedScope === "all" || e.scope === selectedScope;
+
+      const isSquad = e.type === "squad" || (e.maxTeamSize && e.maxTeamSize > 1);
+      const matchType =
+        selectedType === "all" ||
+        (selectedType === "solo" && !isSquad) ||
+        (selectedType === "squad" && isSquad);
 
       let matchCat = selectedCat === "all";
       if (!matchCat) {
@@ -113,9 +139,9 @@ export default function Events() {
         else matchCat = c.includes(selectedCat.toLowerCase());
       }
 
-      return matchSearch && matchScope && matchCat;
+      return matchSearch && matchScope && matchType && matchCat;
     });
-  }, [events, search, selectedScope, selectedCat]);
+  }, [events, search, selectedScope, selectedType, selectedCat]);
 
   return (
     <div className="bg-[#05050A] min-h-screen pt-28 pb-16 text-white font-excon relative overflow-hidden">
@@ -156,34 +182,59 @@ export default function Events() {
         {/* Filter Controls Panel */}
         <div className="glass-aurora p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-white/10 space-y-4 shadow-2xl">
           
-          {/* Scope Filters + Search Bar */}
-          <div className="flex flex-col md:flex-row gap-3 justify-between items-center">
+          {/* Scope Filters, Solo/Squad Selector & Search Bar */}
+          <div className="flex flex-col lg:flex-row gap-3 justify-between items-center">
             
-            {/* Scope Tabs */}
-            <div className="flex bg-black/50 p-1 rounded-full border border-white/10 w-full md:w-auto overflow-x-auto select-scrollbar">
-              {scopeTabs.map((tab) => {
-                const Icon = tab.icon;
-                const active = selectedScope === tab.id;
-                return (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setSelectedScope(tab.id)}
-                    className={`flex items-center gap-1.5 px-3.5 sm:px-5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap font-excon-bold cursor-pointer ${
-                      active
-                        ? "bg-marvel-red text-white shadow-[0_0_15px_#ED1D24]"
-                        : "text-white/60 hover:text-white"
-                    }`}
-                  >
-                    <Icon className="text-sm" />
-                    <span>{tab.label}</span>
-                  </button>
-                );
-              })}
+            <div className="flex flex-wrap items-center gap-2.5 w-full lg:w-auto">
+              {/* Scope Tabs (All, College, School) */}
+              <div className="flex bg-black/50 p-1 rounded-full border border-white/10 overflow-x-auto select-scrollbar">
+                {scopeTabs.map((tab) => {
+                  const Icon = tab.icon;
+                  const active = selectedScope === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setSelectedScope(tab.id)}
+                      className={`flex items-center gap-1.5 px-3 sm:px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap font-excon-bold cursor-pointer ${
+                        active
+                          ? "bg-marvel-red text-white shadow-[0_0_15px_#ED1D24]"
+                          : "text-white/60 hover:text-white"
+                      }`}
+                    >
+                      <Icon className="text-sm" />
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Format Filter (Solo vs Squad) */}
+              <div className="flex bg-black/50 p-1 rounded-full border border-metallic-gold/30 overflow-x-auto select-scrollbar">
+                {typeTabs.map((tab) => {
+                  const active = selectedType === tab.id;
+                  const Icon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setSelectedType(tab.id)}
+                      className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap font-excon-bold cursor-pointer ${
+                        active
+                          ? "bg-metallic-gold text-black shadow-[0_0_12px_rgba(212,175,55,0.4)]"
+                          : "text-white/60 hover:text-white"
+                      }`}
+                    >
+                      {Icon && <Icon className="text-xs" />}
+                      <span>{tab.label}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Search Input */}
-            <div className="relative w-full md:w-72">
+            <div className="relative w-full lg:w-72">
               <RiSearchLine className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-base" />
               <input
                 type="text"
@@ -262,10 +313,19 @@ export default function Events() {
                     </span>
                   </div>
 
-                  {/* Scope Tag Top Right */}
-                  <div className="absolute top-3 right-3 z-20">
+                  {/* Scope & Format Tag Top Right */}
+                  <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5">
                     <span
-                      className={`px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-full font-excon-black border ${
+                      className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-full font-excon-bold border ${
+                        item.type === "squad"
+                          ? "bg-arc-cyan/20 text-arc-cyan border-arc-cyan/40"
+                          : "bg-white/10 text-white/80 border-white/20"
+                      }`}
+                    >
+                      {item.type === "squad" ? `👥 Squad (${item.maxTeamSize}P)` : "👤 Solo"}
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-full font-excon-black border ${
                         isSchool
                           ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/40"
                           : "bg-metallic-gold/20 text-metallic-gold border-metallic-gold/40"

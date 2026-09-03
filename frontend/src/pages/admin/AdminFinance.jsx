@@ -5,7 +5,11 @@ import LoadingState from "../../components/ui/LoadingState";
 import ErrorState from "../../components/ui/ErrorState";
 import EmptyState from "../../components/ui/EmptyState";
 import StatusChip from "../../components/theme/StatusChip";
-import { getAdminRegistrations, updateAdminRegistration } from "../../services/api";
+import {
+  getAdminRegistrations,
+  updateAdminRegistration,
+  adminVerifyMemberFinance,
+} from "../../services/api";
 
 function money(v) {
   const n = Number(v);
@@ -14,7 +18,7 @@ function money(v) {
 }
 
 /**
- * Finance desk — payment monitoring + verify/reject with proof review.
+ * Finance desk — payment monitoring + verify/reject with proof review and team members support.
  */
 export default function AdminFinance() {
   const [rows, setRows] = useState([]);
@@ -53,6 +57,7 @@ export default function AdminFinance() {
         r.payment_transaction_id,
         r.payment_receipt_number,
         r.event_title,
+        r.team_name,
       ].some((v) => String(v || "").toLowerCase().includes(q));
     });
   }, [rows, search, status]);
@@ -78,6 +83,7 @@ export default function AdminFinance() {
     if (!confirmAction || !active) return;
     setBusy(true);
     try {
+      const expectedStatus = confirmAction === "verify" ? "paid" : "rejected";
       const payload =
         confirmAction === "verify"
           ? { payment_status: "paid", payment_rejection_reason: "" }
@@ -86,25 +92,48 @@ export default function AdminFinance() {
               payment_rejection_reason: rejectReason.trim() || "Payment rejected by finance desk",
             };
       const res = await updateAdminRegistration(active.id, payload);
+
+      if (res.data.payment_status !== expectedStatus) {
+        setError("Permission denied: your account does not have Finance/Core access to verify payments.");
+        setConfirmAction(null);
+        return;
+      }
+
       setRows((prev) => prev.map((r) => (r.id === active.id ? { ...r, ...res.data } : r)));
       setActive({ ...active, ...res.data });
       setConfirmAction(null);
       setRejectReason("");
     } catch {
-      setError("Could not update payment status.");
+      setError("Could not update payment status. Check your permissions.");
     } finally {
       setBusy(false);
     }
   }
 
+  async function handleVerifyMember(memberId, verifyStatus) {
+    try {
+      const res = await adminVerifyMemberFinance(memberId, { status: verifyStatus });
+      // Update local member state inside active and rows
+      if (active) {
+        const updatedMembers = (active.team_members || []).map((m) =>
+          m.id === memberId ? { ...m, ...res.data } : m
+        );
+        setActive({ ...active, team_members: updatedMembers });
+      }
+      load();
+    } catch (err) {
+      alert(err?.response?.data?.detail || "Could not update member finance status.");
+    }
+  }
 
   function exportFilteredCsv(list) {
-    const headers = ["Reg #", "Participant", "Institution", "Event", "Amount", "Txn ID", "Status", "Verified By", "Verified At"];
+    const headers = ["Reg #", "Participant", "Team Name", "Institution", "Event", "Amount", "Txn ID", "Status", "Verified By", "Verified At"];
     const lines = [headers.join(",")].concat(
       list.map((r) =>
         [
           r.registration_number,
           r.participant_name,
+          r.team_name || "",
           r.college_name,
           r.event_title,
           r.payment_amount,
@@ -130,8 +159,8 @@ export default function AdminFinance() {
     <div className="admin-ops-page admin-finance-page">
       <header className="admin-ops-header">
         <p className="section-eyebrow">Finance</p>
-        <h1>Payments</h1>
-        <p>Review screenshots, verify or reject. Only verified amounts count as collected.</p>
+        <h1>Payments &amp; Squad Verification Desk</h1>
+        <p>Review screenshots, verify captain and individual team member payments. Only verified amounts count as collected.</p>
         <div className="admin-action-grid" style={{ marginTop: "0.85rem" }}>
           <button type="button" className="admin-action-btn admin-action-btn--primary" onClick={() => setStatus("pending")}>
             Review Pending Payments
@@ -152,7 +181,7 @@ export default function AdminFinance() {
         <article className="admin-kpi-card"><strong>{money(summary.verifiedRevenue)}</strong><span>Total verified amount</span></article>
       </div>
 
-      <AdminTableToolbar search={search} onSearchChange={setSearch} searchPlaceholder="Reg #, name, txn ID…">
+      <AdminTableToolbar search={search} onSearchChange={setSearch} searchPlaceholder="Reg #, name, team name, txn ID…">
         <select className="admin-select" value={status} onChange={(e) => setStatus(e.target.value)}>
           <option value="all">All payments</option>
           <option value="pending">Pending verification</option>
@@ -175,7 +204,7 @@ export default function AdminFinance() {
           <div className="admin-ops-card-list admin-show-mobile-cards">
             {filtered.map((r) => (
               <article key={`m-${r.id}`} className="admin-ops-mobile-card">
-                <h3>{r.participant_name}</h3>
+                <h3>{r.participant_name} {r.team_name ? `(Team: ${r.team_name})` : ""}</h3>
                 <p>{r.registration_number}</p>
                 <p>{r.college_name}</p>
                 <p>{r.event_title} · {money(r.payment_amount)}</p>
@@ -193,7 +222,8 @@ export default function AdminFinance() {
             <thead>
               <tr>
                 <th>Reg #</th>
-                <th>Participant</th>
+                <th>Participant / Captain</th>
+                <th>Team Roster</th>
                 <th>Institution</th>
                 <th>Event</th>
                 <th>Amount</th>
@@ -208,7 +238,16 @@ export default function AdminFinance() {
                   <td>{r.registration_number || "—"}</td>
                   <td>
                     <strong>{r.participant_name}</strong>
-                    {r.team_name ? <div className="muted-line">Team: {r.team_name}</div> : null}
+                    {r.team_name ? <div className="muted-line font-bold">Team: {r.team_name}</div> : null}
+                  </td>
+                  <td>
+                    {r.team_name || (r.team_members && r.team_members.length > 0) ? (
+                      <span className="dash-badge payment-pending">
+                        1 Cap + {(r.team_members || []).length} Members
+                      </span>
+                    ) : (
+                      <span className="text-white/40 text-xs font-mono">Solo</span>
+                    )}
                   </td>
                   <td>{r.college_name}</td>
                   <td>{r.event_title}</td>
@@ -235,48 +274,157 @@ export default function AdminFinance() {
             role="dialog"
             aria-label="Payment review"
             onClick={(e) => e.stopPropagation()}
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+              maxHeight: "100%",
+              width: "480px",
+            }}
           >
-            <header className="admin-drawer-head">
-              <h2>Payment review</h2>
+            {/* Header */}
+            <header
+              className="admin-drawer-head"
+              style={{ flexShrink: 0, borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "0.75rem" }}
+            >
+              <h2>Payment Review &amp; Squad Roster</h2>
               <button type="button" className="btn btn-outline btn-sm" onClick={() => setActive(null)}>Close</button>
             </header>
-            <div className="admin-drawer-body">
+
+            {/* Body */}
+            <div
+              className="admin-drawer-body"
+              style={{ flex: "1 1 auto", overflowY: "auto", padding: "0.75rem 0" }}
+            >
               <p><strong>Reg #:</strong> {active.registration_number}</p>
-              <p><strong>Student:</strong> {active.participant_name}</p>
+              <p><strong>Captain / Student:</strong> {active.participant_name}</p>
+              {active.team_name && <p><strong>Team Name:</strong> {active.team_name}</p>}
               <p><strong>Institution:</strong> {active.college_name}</p>
               <p><strong>Event:</strong> {active.event_title}</p>
               <p><strong>Amount:</strong> {money(active.payment_amount)}</p>
               <p><strong>Method:</strong> {active.payment_method || "—"}</p>
               <p><strong>Transaction ID:</strong> {active.payment_transaction_id || "—"}</p>
-              <p><strong>Receipt #:</strong> {active.payment_receipt_number || "—"}</p>
-              <p><strong>Notes:</strong> {active.payment_notes || "—"}</p>
               <p><strong>Status:</strong> <StatusChip status={active.payment_status} /></p>
-              {active.payment_rejection_reason ? (
-                <p><strong>Rejection reason:</strong> {active.payment_rejection_reason}</p>
-              ) : null}
-              {active.payment_verified_by_username ? (
-                <p className="muted-line">
-                  Verified by {active.payment_verified_by_username}
-                  {active.payment_verified_at ? ` · ${new Date(active.payment_verified_at).toLocaleString()}` : ""}
-                </p>
-              ) : null}
+
               {active.payment_proof_url ? (
-                <a href={active.payment_proof_url} target="_blank" rel="noreferrer" className="admin-proof-link">
-                  <img src={active.payment_proof_url} alt="Payment proof" className="admin-proof-image" />
-                </a>
-              ) : (
-                <p className="muted-line">No payment screenshot uploaded yet.</p>
+                <div style={{ marginTop: "0.75rem" }}>
+                  <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "rgba(255,255,255,0.7)" }}>Captain Payment Proof:</span>
+                  <a href={active.payment_proof_url} target="_blank" rel="noreferrer" className="admin-proof-link" style={{ display: "block", marginTop: "0.3rem" }}>
+                    <img src={active.payment_proof_url} alt="Payment proof" className="admin-proof-image" />
+                    <span style={{ display: "block", marginTop: "0.3rem", fontSize: "0.75rem", color: "rgba(255,255,255,0.5)" }}>
+                      Click image to open full size ↗
+                    </span>
+                  </a>
+                </div>
+              ) : null}
+
+              {/* Team Members List Breakdown */}
+              {active.team_members && active.team_members.length > 0 && (
+                <div style={{ marginTop: "1.25rem", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "0.75rem" }}>
+                  <h4 style={{ fontSize: "0.9rem", color: "#d4af37", marginBottom: "0.5rem" }}>
+                    Team Members Verification ({active.team_members.length})
+                  </h4>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+                    {active.team_members.map((m) => (
+                      <div
+                        key={m.id}
+                        style={{
+                          padding: "0.6rem",
+                          borderRadius: "8px",
+                          background: "rgba(255,255,255,0.03)",
+                          border: "1px solid rgba(255,255,255,0.08)",
+                          fontSize: "0.8rem",
+                        }}
+                      >
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                          <strong>{m.name}</strong>
+                          <StatusChip status={m.payment_status} />
+                        </div>
+                        <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem", margin: "0.2rem 0" }}>
+                          {m.email} · Txn: {m.payment_transaction_id || "None"}
+                        </p>
+                        {m.payment_proof_url && (
+                          <a href={m.payment_proof_url} target="_blank" rel="noreferrer" style={{ color: "#00d2ff", fontSize: "0.75rem" }}>
+                            View Member Proof ↗
+                          </a>
+                        )}
+                        <div style={{ display: "flex", gap: "0.4rem", marginTop: "0.4rem" }}>
+                          {m.finance_status !== "verified" && (
+                            <button
+                              type="button"
+                              className="btn btn-gold btn-sm"
+                              style={{ padding: "0.2rem 0.6rem", fontSize: "0.7rem" }}
+                              onClick={() => handleVerifyMember(m.id, "verified")}
+                            >
+                              ✓ Verify Member
+                            </button>
+                          )}
+                          {m.finance_status !== "rejected" && (
+                            <button
+                              type="button"
+                              className="btn btn-outline btn-sm"
+                              style={{ padding: "0.2rem 0.6rem", fontSize: "0.7rem" }}
+                              onClick={() => handleVerifyMember(m.id, "rejected")}
+                            >
+                              ✕ Reject Member
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               )}
             </div>
-            <footer className="admin-drawer-actions">
+
+            {/* Footer actions for Captain / Primary */}
+            <footer
+              className="admin-drawer-actions"
+              style={{
+                flexShrink: 0,
+                borderTop: "1px solid rgba(255,255,255,0.12)",
+                paddingTop: "0.85rem",
+                marginTop: "0",
+                gap: "0.75rem",
+                display: "flex",
+                flexWrap: "wrap",
+              }}
+            >
               {active.payment_status !== "paid" && (
-                <button type="button" className="btn btn-gold" onClick={() => setConfirmAction("verify")}>
-                  VERIFY
+                <button
+                  type="button"
+                  className="btn btn-gold"
+                  style={{ flex: 1, minWidth: "100px" }}
+                  onClick={() => setConfirmAction("verify")}
+                >
+                  ✓ VERIFY CAPTAIN
                 </button>
               )}
+              {active.payment_status === "paid" && (
+                <div style={{
+                  flex: 1,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.5rem",
+                  padding: "0.6rem 1rem",
+                  background: "rgba(16,185,129,0.15)",
+                  border: "1px solid #10b981",
+                  borderRadius: "8px",
+                  color: "#10b981",
+                  fontWeight: 700,
+                  fontSize: "0.88rem",
+                }}>
+                  ✓ Captain Payment Verified
+                </div>
+              )}
               {active.payment_status !== "rejected" && active.payment_status !== "failed" && (
-                <button type="button" className="btn btn-outline" onClick={() => setConfirmAction("reject")}>
-                  REJECT
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  style={{ flex: 1, minWidth: "100px" }}
+                  onClick={() => setConfirmAction("reject")}
+                >
+                  ✕ REJECT
                 </button>
               )}
             </footer>
@@ -289,7 +437,7 @@ export default function AdminFinance() {
         title={confirmAction === "verify" ? "Verify this payment?" : "Reject this payment?"}
         message={
           confirmAction === "verify"
-            ? "This marks the payment as verified and adds it to verified revenue."
+            ? "This marks the primary/captain payment as verified and adds it to verified revenue."
             : "The registration is kept. Payment status becomes failed/rejected."
         }
         confirmLabel={confirmAction === "verify" ? "Verify" : "Reject"}

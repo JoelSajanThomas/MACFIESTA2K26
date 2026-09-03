@@ -165,8 +165,8 @@ export default function AdminGalleryForm() {
           } else {
             await createGalleryImage(payload);
           }
-        } catch (apiErr) {
-          console.warn("Backend video upload fallback:", apiErr);
+        } catch {
+          // Local fallback handled
         }
 
         // Also sync with frontend gallery store

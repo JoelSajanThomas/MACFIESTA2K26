@@ -19,6 +19,7 @@ import { LoadingProvider, useLoading } from "./providers/LoadingProvider";
 import "./App.css";
 import "./styles/mobile-install.css";
 import "./styles/admin-simple-ui.css";
+import "./styles/production-polish.css";
 import "./styles/checkout-events.css";
 
 const Home = lazy(() => import("./pages/Home"));
@@ -59,6 +60,7 @@ const AdminInsights = lazy(() => import("./pages/admin/AdminInsights"));
 const AdminControls = lazy(() => import("./pages/admin/AdminControls"));
 const AdminVerification = lazy(() => import("./pages/admin/AdminVerification"));
 const AdminUsers = lazy(() => import("./pages/admin/AdminUsers"));
+const AdminParticipantList = lazy(() => import("./pages/admin/AdminParticipantList"));
 const AdminSchedule = lazy(() => import("./pages/admin/AdminSchedule"));
 const AdminEventsList = lazy(() => import("./pages/admin/AdminEventsList"));
 const AdminEventForm = lazy(() => import("./pages/admin/AdminEventForm"));
@@ -140,6 +142,7 @@ function AppRoutes() {
         <Route path="site-controls" element={<Navigate to="/admin/controls" replace />} />
         <Route path="verification" element={<AdminVerification />} />
         <Route path="users" element={<AdminUsers />} />
+        <Route path="participant-list" element={<AdminParticipantList />} />
         <Route path="schedule" element={<AdminSchedule />} />
         <Route path="events" element={<AdminEventsList />} />
         <Route path="events/new" element={<AdminEventForm />} />

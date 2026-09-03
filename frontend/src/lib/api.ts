@@ -36,16 +36,11 @@ api.interceptors.response.use(
         sessionStorage.removeItem("macfiesta_user");
         // Optional: redirect to sign-in page if not on a public path
         if (
-          window.location.pathname !== "/signin" &&
-          window.location.pathname !== "/signup" &&
-          window.location.pathname !== "/admin/login" &&
+          window.location.pathname !== "/login" &&
+          window.location.pathname !== "/forgot-password" &&
           window.location.pathname !== "/"
         ) {
-          if (window.location.pathname.startsWith("/admin")) {
-            window.location.href = "/admin/login";
-          } else {
-            window.location.href = "/signin";
-          }
+          window.location.href = "/login";
         }
       }
     }

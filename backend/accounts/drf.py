@@ -26,7 +26,7 @@ def HasModule(module_name):
     """Factory: permission_classes = [HasModule("registrations")]"""
 
     class _HasModule(BasePermission):
-        def has_permission(self, request, view):
+        def has_permission(self, request, view=None):
             user = request.user
             if not user or not user.is_authenticated:
                 return False

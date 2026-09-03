@@ -24,7 +24,27 @@ export default defineConfig({
     include: ['react', 'react-dom', 'react-router-dom', 'framer-motion', 'axios'],
   },
   build: {
+    sourcemap: false,          // No source maps — DevTools won't show readable source
     cssCodeSplit: true,
+    minify: "terser",
+    terserOptions: {
+      compress: {
+        drop_console: true,    // Strip all console.* at build time
+        drop_debugger: true,   // Strip debugger statements
+        pure_funcs: [          // Treat these as side-effect free (tree-shake them)
+          "console.log", "console.debug", "console.info",
+          "console.warn", "console.error", "console.table",
+          "console.dir", "console.trace", "console.group",
+          "console.groupEnd", "console.time", "console.timeEnd",
+        ],
+      },
+      mangle: {
+        toplevel: true,        // Mangle top-level names for extra obfuscation
+      },
+      format: {
+        comments: false,       // Strip all comments from output
+      },
+    },
     rollupOptions: {
       output: {
         manualChunks(id) {

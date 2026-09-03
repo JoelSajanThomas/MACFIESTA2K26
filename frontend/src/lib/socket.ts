@@ -28,8 +28,8 @@ class MockSocket {
       this.listeners[event].forEach((cb) => {
         try {
           cb(...args);
-        } catch (e) {
-          console.error("Socket mock error", e);
+        } catch {
+          // Ignore listener execution failure in mock socket
         }
       });
     }

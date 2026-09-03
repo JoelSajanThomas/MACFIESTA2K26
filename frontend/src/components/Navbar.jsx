@@ -11,6 +11,10 @@ import {
   RiQuestionLine,
   RiFileListLine,
   RiMedalLine,
+  RiLogoutBoxLine,
+  RiDashboardLine,
+  RiShieldUserLine,
+  RiUserLine,
 } from "react-icons/ri";
 import { getCurrentUser, isLoggedIn } from "../services/api";
 import { AUTH_CHANGE_EVENT, logout, isUnauthorized } from "../utils/auth";
@@ -107,7 +111,7 @@ export default function Navbar() {
         initial={{ y: -60, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-transparent py-3 sm:py-4"
+        className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-gradient-to-b from-[#05050A]/85 via-[#05050A]/45 via-50% to-transparent pt-3 pb-7 sm:pt-4 sm:pb-8 backdrop-blur-[0.5px]"
       >
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 md:gap-4">
           
@@ -120,10 +124,11 @@ export default function Navbar() {
             <img
               src="/logo.png"
               alt="MACFIESTA"
-              className="w-7 h-7 sm:w-8 sm:h-8 object-contain group-hover:scale-105 transition-transform shrink-0"
+              className="w-8 h-8 sm:w-9 sm:h-9 object-contain group-hover:scale-105 transition-transform shrink-0"
+              loading="eager"
             />
             <span
-              className="text-lg sm:text-2xl font-black uppercase font-anton tracking-wider text-metallic-gold group-hover:text-white transition-colors"
+              className="text-lg sm:text-2xl font-black uppercase font-anton tracking-wider text-metallic-gold group-hover:text-white transition-colors [text-shadow:_0_1px_3px_rgba(0,0,0,0.7)]"
             >
               MACFIESTA
             </span>
@@ -270,11 +275,11 @@ export default function Navbar() {
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            className="fixed inset-0 z-[99] bg-[#05050A]/95 backdrop-blur-2xl flex flex-col justify-between p-4 sm:p-6 lg:hidden overflow-hidden w-full max-w-full"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.22, ease: "easeOut" }}
+            className="fixed inset-0 z-[99] bg-[#05050A]/97 backdrop-blur-2xl flex flex-col p-4 sm:p-6 lg:hidden overflow-hidden w-full max-w-full"
+            initial={{ opacity: 0, x: "100%" }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: "100%" }}
+            transition={{ duration: 0.28, ease: "easeOut" }}
           >
             {/* Ambient Lighting */}
             <div className="absolute -top-20 -left-20 w-60 h-60 rounded-full bg-marvel-red/15 blur-[90px] pointer-events-none" />
@@ -299,7 +304,7 @@ export default function Navbar() {
             </div>
 
             {/* Nav Links Stack */}
-            <nav className="flex flex-col items-center justify-center gap-2.5 py-4 overflow-y-auto max-h-[55vh] select-scrollbar relative z-10 w-full font-space">
+            <nav className="flex flex-col items-center justify-center gap-1.5 py-4 flex-1 overflow-y-auto relative z-10 w-full font-space">
               {mainNavItems.map((item, i) => (
                 <motion.div
                   key={item.href}
@@ -339,30 +344,72 @@ export default function Navbar() {
             </nav>
 
             {/* Mobile Footer Actions */}
-            <div className="pt-3 border-t border-white/10 flex flex-col gap-2 relative z-10 font-space pb-4 w-full">
+            <div className="pt-3 border-t border-white/10 flex flex-col gap-3 relative z-10 font-space pb-[max(1rem,env(safe-area-inset-bottom))] w-full">
               {user ? (
-                <Link
-                  to={user.is_staff || user.is_superuser ? "/admin" : "/student-dashboard"}
-                  onClick={closeMobile}
-                  className="w-full py-2.5 text-center text-xs font-black bg-marvel-red text-white rounded-full tracking-[0.2em] uppercase shadow-[0_0_15px_#ED1D24]"
-                >
-                  {user.is_staff || user.is_superuser ? "Command Console" : "Agent HUD"}
-                </Link>
+                <>
+                  {/* User Profile Card */}
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.04] border border-white/10">
+                    {/* Avatar */}
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-arc-cyan/30 to-metallic-gold/30 border border-arc-cyan/40 flex items-center justify-center shrink-0 shadow-[0_0_14px_rgba(0,212,255,0.3)]">
+                      <span className="text-sm font-black text-arc-cyan font-excon-black uppercase">
+                        {(user.first_name?.[0] || user.username?.[0] || "A").toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-black text-white uppercase font-excon-bold truncate">
+                        {user.first_name && user.last_name
+                          ? `${user.first_name} ${user.last_name}`
+                          : user.first_name || user.username || "Agent"}
+                      </p>
+                      <p className="text-[10px] text-white/50 font-mono truncate">{user.email || ""}</p>
+                      {(user.is_staff || user.is_superuser) && (
+                        <span className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded bg-marvel-red/20 text-marvel-red border border-marvel-red/30 font-bold uppercase mt-0.5">
+                          <RiShieldUserLine className="text-[9px]" /> Staff
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Dashboard + Logout */}
+                  <div className="grid grid-cols-2 gap-2 w-full">
+                    <Link
+                      to={user.is_staff || user.is_superuser ? "/admin" : "/student-dashboard"}
+                      onClick={closeMobile}
+                      className="flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-black bg-gradient-to-r from-arc-cyan to-arc-cyan/80 text-black rounded-full tracking-wider uppercase shadow-[0_0_15px_rgba(0,212,255,0.35)]"
+                    >
+                      {user.is_staff || user.is_superuser ? (
+                        <><RiShieldUserLine className="text-xs" /><span>Console</span></>
+                      ) : (
+                        <><RiDashboardLine className="text-xs" /><span>My HUD</span></>
+                      )}
+                    </Link>
+                    <button
+                      type="button"
+                      onClick={() => { closeMobile(); logout(); setUser(null); navigate("/"); }}
+                      className="flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-black bg-gradient-to-r from-marvel-red/90 to-marvel-red text-white rounded-full tracking-wider uppercase shadow-[0_0_15px_rgba(237,29,36,0.4)] cursor-pointer hover:shadow-[0_0_25px_rgba(237,29,36,0.7)] transition-all"
+                    >
+                      <RiLogoutBoxLine className="text-xs" />
+                      <span>Log Out</span>
+                    </button>
+                  </div>
+                </>
               ) : (
                 <div className="grid grid-cols-2 gap-2 w-full">
                   <Link
                     to="/login"
                     onClick={closeMobile}
-                    className="py-2 text-center text-xs font-bold bg-white/5 border border-white/20 text-white rounded-full tracking-wider uppercase hover:border-white truncate px-2"
+                    className="flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-bold bg-white/5 border border-white/20 text-white rounded-full tracking-wider uppercase hover:border-white hover:bg-white/10 transition-all"
                   >
-                    Agent Login
+                    <RiUserLine className="text-xs" />
+                    <span>Agent Login</span>
                   </Link>
                   <Link
                     to="/register"
                     onClick={closeMobile}
-                    className="py-2 text-center text-xs font-black bg-metallic-gold text-black rounded-full tracking-wider uppercase shadow-[0_0_15px_rgba(255,215,0,0.5)] truncate px-2"
+                    className="flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-black bg-metallic-gold text-black rounded-full tracking-wider uppercase shadow-[0_0_15px_rgba(255,215,0,0.5)] hover:shadow-[0_0_25px_rgba(255,215,0,0.7)] transition-all"
                   >
-                    Register Pass
+                    <RiShieldFlashLine className="text-xs" />
+                    <span>Register Pass</span>
                   </Link>
                 </div>
               )}

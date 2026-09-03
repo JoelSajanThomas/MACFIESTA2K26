@@ -138,7 +138,10 @@ export default function ForgotPassword() {
 
           <form onSubmit={handleSubmit} className="space-y-4 font-excon">
             <div>
-              <label className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold">
+              <label
+                htmlFor="forgot-email"
+                className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold"
+              >
                 Registered Email Address
               </label>
               <div className="relative">
@@ -146,6 +149,7 @@ export default function ForgotPassword() {
                   <RiMailLine size={16} />
                 </div>
                 <input
+                  id="forgot-email"
                   type="email"
                   name="email"
                   value={email}

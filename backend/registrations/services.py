@@ -20,34 +20,70 @@ def next_waitlist_position(event):
     return (current or 0) + 1
 
 
-def send_registration_email(registration):
-    if not registration.email:
-        return
-    status = "waiting list" if registration.is_waiting_list else "confirmed"
-    subject = f"MacFiesta registration {registration.registration_number}"
-    message = (
-        f"Hi {registration.participant_name},\n\n"
-        f"Your registration for {registration.event.title} is {status}.\n"
-        f"Registration number: {registration.registration_number}\n"
-        f"Venue: {registration.event.venue}\n"
-        f"Date: {registration.event.event_date}\n\n"
-        "Show this registration number / QR at the fest desk for payment and entry.\n"
-        "Payment is collected manually at the finance desk unless waived.\n\n"
-        "— MacFiesta Pro\n"
-    )
+import threading
+
+def _send_mail_worker(subject, message, from_email, recipient_list, reg_id):
     try:
         send_mail(
             subject,
             message,
-            getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@macfiesta.local"),
-            [registration.email],
+            from_email,
+            recipient_list,
             fail_silently=True,
         )
     except Exception:
         logger.exception(
             "Failed to send registration email for registration_id=%s",
-            registration.id,
+            reg_id,
         )
+
+def send_registration_approval_email(registration):
+    """Sends official confirmation email to participant ONLY after Admin approves/verifies the registration."""
+    if not registration.email:
+        return
+    
+    is_team = registration.registration_type == "team"
+    team_info = f"\n• Team / Squad: {registration.team_name or 'Squad'}" if is_team else ""
+    amount_str = f"₹{registration.payment_amount}" if registration.payment_amount else "Free Pass"
+
+    subject = f"Registration Approved & Verified: {registration.event.title} | MacFiesta 2026"
+    message = (
+        f"Dear {registration.participant_name},\n\n"
+        f"Congratulations! Your registration for {registration.event.title} has been APPROVED & VERIFIED by the MacFiesta Administration.\n\n"
+        f"══════════════════════════════════════════════════\n"
+        f"OFFICIAL MISSION / EVENT PASS DETAILS\n"
+        f"══════════════════════════════════════════════════\n"
+        f"• Registration No: {registration.registration_number}\n"
+        f"• Event / Mission: {registration.event.title}\n"
+        f"• Format: {'Squad Competition (Captain)' if is_team else 'Solo Competition'}{team_info}\n"
+        f"• Institution: {registration.college_name}\n"
+        f"• Event Date: {registration.event.event_date}\n"
+        f"• Venue: {registration.event.venue or 'Main Festival Arena'}\n"
+        f"• Payment Status: {registration.payment_status.upper()} ({amount_str})\n"
+        f"• Approval Status: APPROVED & VERIFIED\n"
+        f"══════════════════════════════════════════════════\n\n"
+        f"Your official tournament entry pass QR is now active.\n"
+        f"You can view and present your Digital Entry Pass from your Student Dashboard:\n"
+        f"https://macfiesta.in/pass/{registration.id}\n\n"
+        f"We look forward to seeing you at MacFiesta 2026!\n\n"
+        f"Best regards,\n"
+        f"MacFiesta 2026 Organizing Committee\n"
+        f"Mar Athanasios College for Advanced Studies Tiruvalla (MACFAST)\n"
+    )
+    from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@macfiesta.local")
+    recipients = [registration.email]
+    
+    # Run in background thread to ensure instantaneous API response
+    threading.Thread(
+        target=_send_mail_worker,
+        args=(subject, message, from_email, recipients, registration.id),
+        daemon=True,
+    ).start()
+
+
+def send_registration_email(registration):
+    """Alias for backwards-compatibility - routed to approval email when verified."""
+    send_registration_approval_email(registration)
 
 
 @transaction.atomic

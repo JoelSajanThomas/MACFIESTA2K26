@@ -7,14 +7,18 @@ import {
   RiCheckDoubleLine,
   RiRadarLine,
   RiLockPasswordLine,
+  RiDeleteBin7Line,
+  RiShieldFlashLine,
 } from "react-icons/ri";
 import { useFestivalControl } from "../../lib/festivalStore";
 import { useAdminStaff } from "../../components/admin/AdminStaffContext";
+import PurgeDataModal from "../../components/admin/PurgeDataModal";
 
 export default function AdminControls() {
   const staff = useAdminStaff();
   const { settings, updateSettings } = useFestivalControl();
   const [statusMsg, setStatusMsg] = useState("");
+  const [purgeModalOpen, setPurgeModalOpen] = useState(false);
 
   const isSuperuser = Boolean(staff?.is_superuser || staff?.committee === "core");
 
@@ -244,6 +248,43 @@ export default function AdminControls() {
           </div>
         </div>
       </div>
+
+      {/* Danger Zone: Clear Registered Participant Data */}
+      <div className="p-6 sm:p-8 rounded-3xl border border-rose-500/30 bg-rose-950/20 relative overflow-hidden shadow-[0_0_40px_rgba(244,63,94,0.12)] space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full border border-rose-500/40 bg-rose-500/10 text-rose-400 text-[10px] font-black uppercase tracking-widest font-mono">
+              <RiShieldFlashLine />
+              <span>DANGER ZONE • QUANTUM RESET</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black text-white uppercase font-excon-black">
+              Clear All Registered User Data
+            </h2>
+            <p className="text-xs text-white/70 max-w-2xl leading-relaxed">
+              Permanently wipe all registered participant accounts, event registrations, fast-track passes, team entries, and hostel bookings. Requires admin password verification before execution.
+            </p>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setPurgeModalOpen(true)}
+            className="px-5 py-3 rounded-2xl bg-rose-600/20 hover:bg-rose-600 border border-rose-500/50 hover:border-rose-400 text-rose-300 hover:text-white text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 shrink-0 shadow-lg cursor-pointer font-excon-black hover:shadow-[0_0_25px_rgba(244,63,94,0.4)]"
+          >
+            <RiDeleteBin7Line className="text-base" />
+            <span>Purge All Registered Data</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Purge Verification Modal */}
+      <PurgeDataModal
+        open={purgeModalOpen}
+        onClose={() => setPurgeModalOpen(false)}
+        onSuccess={(data) => {
+          flash(`✓ Successfully purged registered participant records.`);
+        }}
+      />
     </div>
   );
 }
+

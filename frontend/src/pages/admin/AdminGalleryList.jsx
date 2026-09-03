@@ -69,8 +69,8 @@ export default function AdminGalleryList() {
       if (!isNaN(Number(deleteId))) {
         try {
           await deleteGalleryImage(deleteId);
-        } catch (apiErr) {
-          console.warn("Backend delete API warning:", apiErr);
+        } catch {
+          // Backend record may already be removed or mock item
         }
       }
       deleteStoreGalleryItem(String(deleteId));

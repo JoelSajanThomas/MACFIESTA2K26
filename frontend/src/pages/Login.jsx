@@ -144,12 +144,16 @@ export default function Login() {
 
           <form onSubmit={handleSubmit} className="space-y-4 font-excon">
             <div>
-              <label className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold">
+              <label
+                htmlFor="login-username"
+                className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold"
+              >
                 Email Address or Username
               </label>
               <div className="relative">
                 <RiMailLine className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
                 <input
+                  id="login-username"
                   type="text"
                   name="username"
                   required
@@ -164,12 +168,16 @@ export default function Login() {
             </div>
 
             <div>
-              <label className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold">
+              <label
+                htmlFor="login-password"
+                className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold"
+              >
                 Password
               </label>
               <div className="relative">
                 <RiLockLine className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
                 <input
+                  id="login-password"
                   type={showPassword ? "text" : "password"}
                   name="password"
                   required

@@ -16,19 +16,50 @@ import { notifyAuthChange } from "../utils/auth";
 import { saveParticipantProfile } from "../utils/participantProfile";
 import { BackgroundVideo } from "../components/ui/BackgroundVideo";
 import { usePageSeo } from "../hooks/usePageSeo";
+import CollegeSchoolPicker from "../components/CollegeSchoolPicker";
 
 function parseApiError(err) {
   const data = err?.response?.data;
-  if (!data) return "Could not create your account. Please check your credentials.";
+  if (!data) return "Could not create your account. Please check your network connection and credentials.";
   if (typeof data === "string") return data;
   if (data.detail) return Array.isArray(data.detail) ? data.detail[0] : String(data.detail);
-  const firstKey = Object.keys(data)[0];
-  if (firstKey) {
-    const val = data[firstKey];
-    const msg = Array.isArray(val) ? val[0] : String(val);
-    return `${firstKey.replace(/_/g, " ")}: ${msg}`;
+  if (typeof data === "object") {
+    const messages = [];
+    for (const [key, val] of Object.entries(data)) {
+      const fieldName = key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+      if (Array.isArray(val)) {
+        messages.push(`${fieldName}: ${val.join(", ")}`);
+      } else if (typeof val === "string") {
+        messages.push(`${fieldName}: ${val}`);
+      } else if (typeof val === "object" && val !== null) {
+        messages.push(`${fieldName}: ${JSON.stringify(val)}`);
+      }
+    }
+    if (messages.length > 0) return messages.join(" | ");
   }
-  return "Could not create your account. Please try again.";
+  return "Could not create your account. Please check your details and try again.";
+}
+
+/** Validates Indian mobile numbers (strictly 10 digits starting with 6-9, or +91 prefix) */
+function validatePhone(raw) {
+  const stripped = (raw || "").replace(/\s+/g, "");
+  const digits = stripped.replace(/\D/g, "");
+  if (!digits) return "Mobile number is required.";
+  if (digits.length === 12 && digits.startsWith("91")) {
+    const num = digits.slice(2);
+    if (!/^[6-9]/.test(num)) return "Mobile number must start with 6, 7, 8, or 9.";
+    return null;
+  }
+  if (digits.length > 10) {
+    return "Mobile number cannot exceed 10 digits.";
+  }
+  if (digits.length < 10) {
+    return `Mobile number must be 10 digits (${digits.length}/10 entered).`;
+  }
+  if (!/^[6-9]/.test(digits)) {
+    return "Mobile number must start with 6, 7, 8, or 9.";
+  }
+  return null;
 }
 
 export default function Register() {
@@ -45,6 +76,7 @@ export default function Register() {
     password: "",
     password_confirm: "",
   });
+  const [phoneError, setPhoneError] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -56,6 +88,18 @@ export default function Register() {
 
   function handleChange(e) {
     const { name, value } = e.target;
+    if (name === "phone") {
+      // Strictly allow only digits and cap at exactly 10 digits
+      const digitsOnly = value.replace(/\D/g, "").slice(0, 10);
+      setForm((prev) => ({ ...prev, phone: digitsOnly }));
+      setErrorMsg("");
+      if (digitsOnly.length > 0) {
+        setPhoneError(validatePhone(digitsOnly) || "");
+      } else {
+        setPhoneError("");
+      }
+      return;
+    }
     setForm((prev) => ({ ...prev, [name]: value }));
     setErrorMsg("");
   }
@@ -64,29 +108,55 @@ export default function Register() {
     e.preventDefault();
     setErrorMsg("");
 
-    if (step === 1) {
-      if (!form.full_name.trim()) {
-        setErrorMsg("Please enter your full name.");
-        return;
-      }
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-      if (!emailRegex.test(form.email.trim())) {
-        setErrorMsg("Please enter a valid email address.");
-        return;
-      }
-      const digits = form.phone.replace(/\D/g, "");
-      if (digits.length < 10) {
-        setErrorMsg("Please enter a valid 10-digit mobile number.");
-        return;
-      }
-      setStep(2);
+    const name = form.full_name.trim();
+    if (!name || name.length < 2) {
+      setErrorMsg("Please enter your full name (at least 2 characters).");
+      return;
     }
+    const email = form.email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      setErrorMsg("Please enter a valid email address (e.g. name@domain.com).");
+      return;
+    }
+    const phoneErr = validatePhone(form.phone);
+    if (phoneErr) {
+      setPhoneError(phoneErr);
+      setErrorMsg(phoneErr);
+      return;
+    }
+    setPhoneError("");
+    setStep(2);
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (!form.college_name.trim()) {
-      setErrorMsg("Please enter your College or School name.");
+    setErrorMsg("");
+
+    // Full pre-flight validation across all fields
+    const name = form.full_name.trim();
+    if (!name || name.length < 2) {
+      setStep(1);
+      setErrorMsg("Please enter your full name.");
+      return;
+    }
+    const email = form.email.trim().toLowerCase();
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!email || !emailRegex.test(email)) {
+      setStep(1);
+      setErrorMsg("Please enter a valid email address.");
+      return;
+    }
+    const phoneErr2 = validatePhone(form.phone);
+    if (phoneErr2) {
+      setStep(1);
+      setPhoneError(phoneErr2);
+      setErrorMsg(phoneErr2);
+      return;
+    }
+    const college = form.college_name.trim();
+    if (!college || college.length < 2) {
+      setErrorMsg("Please enter your College or School name (at least 2 characters).");
       return;
     }
     if (form.password.length < 8) {
@@ -94,7 +164,7 @@ export default function Register() {
       return;
     }
     if (form.password !== form.password_confirm) {
-      setErrorMsg("Passwords do not match.");
+      setErrorMsg("Passwords do not match. Please verify your confirm password field.");
       return;
     }
 
@@ -103,10 +173,10 @@ export default function Register() {
 
     try {
       const payload = {
-        full_name: form.full_name.trim(),
-        email: form.email.trim().toLowerCase(),
+        full_name: name,
+        email: email,
         phone: form.phone.trim(),
-        college_name: form.college_name.trim(),
+        college_name: college,
         password: form.password,
         password_confirm: form.password_confirm,
       };
@@ -198,12 +268,16 @@ export default function Register() {
           {step === 1 ? (
             <form onSubmit={handleNextStep} className="space-y-4 font-excon">
               <div>
-                <label className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold">
+                <label
+                  htmlFor="reg-fullname"
+                  className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold"
+                >
                   Full Name (As on ID Card)
                 </label>
                 <div className="relative">
                   <RiUserLine className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
                   <input
+                    id="reg-fullname"
                     type="text"
                     name="full_name"
                     required
@@ -216,12 +290,16 @@ export default function Register() {
               </div>
 
               <div>
-                <label className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold">
+                <label
+                  htmlFor="reg-email"
+                  className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold"
+                >
                   Email Address
                 </label>
                 <div className="relative">
                   <RiMailLine className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
                   <input
+                    id="reg-email"
                     type="email"
                     name="email"
                     required
@@ -234,21 +312,37 @@ export default function Register() {
               </div>
 
               <div>
-                <label className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold">
+                <label
+                  htmlFor="reg-phone"
+                  className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold"
+                >
                   Mobile Number (WhatsApp)
                 </label>
                 <div className="relative">
                   <RiSmartphoneLine className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
                   <input
+                    id="reg-phone"
                     type="tel"
+                    inputMode="numeric"
                     name="phone"
                     required
                     value={form.phone}
                     onChange={handleChange}
                     placeholder="9876543210"
-                    className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-arc-cyan focus:outline-none text-white text-xs font-excon font-mono"
+                    maxLength={10}
+                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-xl focus:outline-none text-white text-xs font-excon font-mono transition-colors ${
+                      phoneError
+                        ? "border-marvel-red focus:border-marvel-red"
+                        : "border-white/10 focus:border-arc-cyan"
+                    }`}
                   />
                 </div>
+                {phoneError && (
+                  <p className="text-[11px] text-marvel-red mt-1 font-mono">{phoneError}</p>
+                )}
+                {!phoneError && form.phone && form.phone.length === 10 && (
+                  <p className="text-[11px] text-emerald-400 mt-1 font-mono">✓ Valid 10-digit mobile number</p>
+                )}
               </div>
 
               <button
@@ -261,30 +355,28 @@ export default function Register() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4 font-excon">
               <div>
-                <label className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold">
-                  College or School Name
-                </label>
-                <div className="relative">
-                  <RiBuilding4Line className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
-                  <input
-                    type="text"
-                    name="college_name"
-                    required
-                    value={form.college_name}
-                    onChange={handleChange}
-                    placeholder="MACFAST / St. Thomas Higher Secondary"
-                    className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-arc-cyan focus:outline-none text-white text-xs font-excon"
-                  />
-                </div>
+                <CollegeSchoolPicker
+                  label="College or School Name *"
+                  placeholder="Search your college or school name in Kerala..."
+                  name="college_name"
+                  value={form.college_name}
+                  onChange={(college_name) => setForm((prev) => ({ ...prev, college_name }))}
+                  required
+                  disabled={loading}
+                />
               </div>
 
               <div>
-                <label className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold">
+                <label
+                  htmlFor="reg-password"
+                  className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold"
+                >
                   Password (Min 8 Characters)
                 </label>
                 <div className="relative">
                   <RiLockLine className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
                   <input
+                    id="reg-password"
                     type={showPassword ? "text" : "password"}
                     name="password"
                     required
@@ -305,12 +397,16 @@ export default function Register() {
               </div>
 
               <div>
-                <label className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold">
+                <label
+                  htmlFor="reg-password-confirm"
+                  className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold"
+                >
                   Confirm Password
                 </label>
                 <div className="relative">
                   <RiLockLine className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
                   <input
+                    id="reg-password-confirm"
                     type={showPassword ? "text" : "password"}
                     name="password_confirm"
                     required

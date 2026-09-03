@@ -56,22 +56,24 @@ export function InfinityChallenge() {
 
   return (
     <section className="relative bg-transparent py-20 md:py-24 border-t border-arc-cyan/20 overflow-hidden min-h-[580px]">
-      {/* Background Infinity Gauntlet Marvel Image */}
-      <div className="absolute inset-0 z-0 opacity-85 pointer-events-none">
+      {/* Background Infinity Gauntlet Marvel Image — High Opacity & Vivid Contrast */}
+      <div className="absolute inset-0 z-0 opacity-75 sm:opacity-85 md:opacity-90 lg:opacity-95 pointer-events-none select-none overflow-hidden transition-opacity duration-700">
         <Image
           src="/MARVEL/4081455907815375.png"
           alt="Infinity Gauntlet Background"
           fill
           priority
-          className="object-cover object-top filter brightness-110 contrast-125 saturate-135"
+          className="object-cover object-top filter brightness-115 contrast-125 saturate-135 drop-shadow-[0_0_50px_rgba(255,215,0,0.4)] scale-[1.02]"
+          style={{
+            maskImage: "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,1) 12%, rgba(0,0,0,1) 88%, rgba(0,0,0,0.3) 100%)",
+            WebkitMaskImage: "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,1) 12%, rgba(0,0,0,1) 88%, rgba(0,0,0,0.3) 100%)",
+          }}
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#05050A]/60 via-transparent to-[#05050A]/70 z-[1]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_50%,rgba(5,5,10,0.7)_95%)] z-[1]" />
       </div>
 
-      {/* Background ambient glow matching active stone */}
+      {/* Background ambient glow matching active stone (Vivid & Dynamic) */}
       <div
-        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[320px] rounded-full blur-[140px] pointer-events-none transition-all duration-700 opacity-25 z-0"
+        className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] rounded-full blur-[130px] pointer-events-none transition-all duration-700 opacity-40 z-0"
         style={{ background: activeStone.color }}
       />
 
