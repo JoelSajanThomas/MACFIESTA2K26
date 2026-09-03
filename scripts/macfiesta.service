@@ -1,0 +1,22 @@
+[Unit]
+Description=MacFiesta Pro Gunicorn Daemon
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/macfiesta/backend
+EnvironmentFile=/var/www/macfiesta/backend/.env
+ExecStart=/var/www/macfiesta/backend/venv/bin/gunicorn \
+          --workers 3 \
+          --bind 127.0.0.1:8000 \
+          --timeout 120 \
+          --access-logfile /var/log/macfiesta/gunicorn-access.log \
+          --error-logfile /var/log/macfiesta/gunicorn-error.log \
+          config.wsgi:application
+
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
