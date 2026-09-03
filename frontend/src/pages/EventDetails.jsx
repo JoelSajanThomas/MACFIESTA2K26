@@ -13,7 +13,6 @@ import {
   RiCompass3Line,
   RiUserStarLine,
   RiPhoneLine,
-  RiMailLine,
   RiUserLine,
   RiShieldUserLine,
   RiExternalLinkLine,
@@ -82,10 +81,9 @@ export default function EventDetails() {
                     "Report to the assigned arena 15 minutes before mission start.",
                   ]),
           coordinator: {
-            name: d.coordinator_name || local?.coordinator?.name || "Event In-Charge",
+            name: (d.coordinator_name || local?.coordinator?.name || "Event In-Charge").replace(/\s*\([^)]*\)\s*/g, " ").trim(),
             phone: d.coordinator_phone || local?.coordinator?.phone || "+91 85909 39674",
-            email: d.coordinator_email || local?.coordinator?.email || "fest@macfast.org",
-            department: local?.coordinator?.department || "",
+            department: local?.coordinator?.department || ((d.coordinator_name || "").match(/\(([^)]+)\)/)?.[1] || ""),
             team: local?.coordinator?.team || [],
           },
           manpower: local?.manpower || [],
@@ -469,27 +467,18 @@ export default function EventDetails() {
                   </div>
                 </div>
 
-                {/* Quick Helpline Actions */}
-                <div className="pt-2 flex flex-wrap gap-2 border-t border-white/10">
-                  {event.coordinator?.phone && (
+                {/* Helpline Phone Call Button */}
+                {event.coordinator?.phone && (
+                  <div className="pt-2 border-t border-white/10">
                     <a
                       href={`tel:${event.coordinator.phone.replace(/[^0-9+]/g, "")}`}
-                      className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-arc-cyan/15 hover:bg-arc-cyan text-arc-cyan hover:text-black font-mono font-bold text-xs transition-all border border-arc-cyan/40 hover:shadow-[0_0_15px_#00D4FF]"
+                      className="w-full flex items-center justify-center gap-2.5 py-3 px-4 rounded-xl bg-arc-cyan/15 hover:bg-arc-cyan text-arc-cyan hover:text-black font-mono font-bold text-xs transition-all border border-arc-cyan/40 hover:shadow-[0_0_20px_#00D4FF]"
                     >
-                      <RiPhoneLine size={14} />
-                      <span>{event.coordinator.phone}</span>
+                      <RiPhoneLine size={15} />
+                      <span className="tracking-wider">{event.coordinator.phone}</span>
                     </a>
-                  )}
-                  {event.coordinator?.email && (
-                    <a
-                      href={`mailto:${event.coordinator.email}`}
-                      className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/15 text-white/70 hover:text-white font-mono text-xs transition-all border border-white/10"
-                      title={`Email ${event.coordinator.email}`}
-                    >
-                      <RiMailLine size={14} />
-                    </a>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
 
               {/* Full Committee Team Roster (e.g. for Treasure Hunt or Joint In-Charges) */}

@@ -57,7 +57,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
     externalRegistrationUrl: "https://hackathon.macfast.org/",
-    coordinator: { name: "Rojin V Saji", department: "S3 MCA", phone: "+91 89433 70713", email: "rojin@macfast.org" },
+    coordinator: { name: "Rojin V Saji", department: "S3 MCA", phone: "+91 89433 70713" },
     teamSizeText: "1 or 3 members per team",
     rules: [
       "Team participation only; each team must have 1 or 3 members. A participant may belong to only one team.",
@@ -117,7 +117,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: true,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
-    coordinator: { name: "Karthik Chandra", department: "MCA", phone: "+91 81139 62361", email: "karthik@macfast.org" },
+    coordinator: { name: "Karthik Chandra", department: "MCA", phone: "+91 81139 62361" },
     teamSizeText: "Individual participation only",
     rules: [
       "Individual participation only. Participants must use the registration name and assigned system or seat.",
@@ -175,7 +175,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: true,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
-    coordinator: { name: "Danie Joseph Augustine", department: "S1 MBA", phone: "+91 80869 59419", email: "danie@macfast.org" },
+    coordinator: { name: "Danie Joseph Augustine", department: "S1 MBA", phone: "+91 80869 59419" },
     teamSizeText: "Squad (Exactly 4 players · No substitutes)",
     rules: [
       "Squad participation only; each squad must have exactly 4 players. Substitutes are not permitted.",
@@ -233,7 +233,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: true,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
-    coordinator: { name: "Gowtham Thulasi", department: "S3 MCA", phone: "+91 85909 61934", email: "gowtham@macfast.org" },
+    coordinator: { name: "Gowtham Thulasi", department: "S3 MCA", phone: "+91 85909 61934" },
     teamSizeText: "Individual participation only",
     rules: [
       "Individual participation only. The format may be knockout or group-plus-knockout depending on registrations and must be announced before the draw.",
@@ -288,7 +288,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: true,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
-    coordinator: { name: "Hanna Rose Flash", department: "S1 MBA", phone: "+91 90742 73970", email: "hanna@macfast.org" },
+    coordinator: { name: "Hanna Rose Flash", department: "S1 MBA", phone: "+91 90742 73970" },
     teamSizeText: "Teams of 2 members",
     rules: [
       "Teams may consist of 2 members. Each participant may represent only one team.",
@@ -347,7 +347,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: true,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
-    coordinator: { name: "Abin Mathew", department: "S3 MBA", phone: "+91 62357 16978", email: "abin@macfast.org" },
+    coordinator: { name: "Abin Mathew", department: "S3 MBA", phone: "+91 62357 16978" },
     teamSizeText: "Individual participation only",
     rules: [
       "Individual participation only.",
@@ -405,7 +405,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: true,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
-    coordinator: { name: "Sreehari S Nair", department: "S1 BBA", phone: "+91 80759 96464", email: "sreehari@macfast.org" },
+    coordinator: { name: "Sreehari S Nair", department: "S1 BBA", phone: "+91 80759 96464" },
     teamSizeText: "Individual participation only",
     rules: [
       "Individual participation only.",
@@ -463,7 +463,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: true,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
-    coordinator: { name: "Gokul Krishnan", department: "S1 MBA", phone: "+91 88918 56541", email: "gokul@macfast.org" },
+    coordinator: { name: "Gokul Krishnan", department: "S1 MBA", phone: "+91 88918 56541" },
     teamSizeText: "4 to 8 performers per team",
     rules: [
       "Each team must have 4 to 8 performers. Only registered members may perform.",
@@ -527,7 +527,6 @@ export const ALL_EVENTS: FestivalEventItem[] = [
       name: "Arun Manoj & Team",
       department: "S3 MCA & Multidisciplinary Committee",
       phone: "+91 98951 14550",
-      email: "arun@macfast.org",
       team: [
         { name: "Arun Manoj (Lead)", detail: "S3 MCA", phone: "+91 98951 14550" },
         { name: "Krishnaveni S", detail: "MBA", phone: "+91 75608 61813" },
@@ -596,7 +595,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: true,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
-    coordinator: { name: "Meenakshi Jayaprakash", department: "Psychology", phone: "+91 85476 09910", email: "meenakshi@macfast.org" },
+    coordinator: { name: "Meenakshi Jayaprakash", department: "Psychology", phone: "+91 85476 09910" },
     teamSizeText: "Teams of 2 to 4 members",
     rules: [
       "Teams must consist of 2 to 4 members. Only registered members may discuss or submit the solution.",
@@ -655,7 +654,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: true,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
-    coordinator: { name: "Karthika S Nair", department: "S3 MCA", phone: "+91 85477 32047", email: "karthika@macfast.org" },
+    coordinator: { name: "Karthika S Nair", department: "S3 MCA", phone: "+91 85477 32047" },
     teamSizeText: "Teams of 2 to 4 members",
     rules: [
       "Teams must consist of 2 to 4 members. Only one team may enter a room/session at a time unless parallel identical rooms are used.",
@@ -715,7 +714,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: true,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
-    coordinator: { name: "Nayana Prasad", department: "Food Tech", phone: "+91 85900 70939", email: "nayana@macfast.org" },
+    coordinator: { name: "Nayana Prasad", department: "Food Tech", phone: "+91 85900 70939" },
     teamSizeText: "Individual participation only",
     rules: [
       "Individual participation only. Each participant must prepare and present their own dish or task.",
@@ -776,7 +775,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: true,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
-    coordinator: { name: "Ansa Mariam Rajan", department: "S1 MBA", phone: "+91 79840 24571", email: "ansa@macfast.org" },
+    coordinator: { name: "Ansa Mariam Rajan", department: "S1 MBA", phone: "+91 79840 24571" },
     teamSizeText: "Teams of 2 to 4 members",
     rules: [
       "Teams must consist of 2 to 4 members. Each participant may represent only one team.",
@@ -839,7 +838,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: true,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
-    coordinator: { name: "Joel Thomas Chandy", department: "Tech Department", phone: "+91 79023 02297", email: "joel@macfast.org" },
+    coordinator: { name: "Joel Thomas Chandy", department: "Tech Department", phone: "+91 79023 02297" },
     teamSizeText: "Individual participation only",
     rules: [
       "1. Participants must use only the computers or laptops provided by the college; personal laptops are not permitted.",
@@ -896,7 +895,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: true,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
-    coordinator: { name: "Aryalekshmi R", department: "BCA", phone: "+91 75111 09409", email: "aryalekshmi@macfast.org" },
+    coordinator: { name: "Aryalekshmi R", department: "BCA", phone: "+91 75111 09409" },
     teamSizeText: "Individual participation only (exactly 1 photo)",
     rules: [
       "1. The competition will be conducted as mobile photography within the college campus only.",
@@ -953,7 +952,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: true,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
-    coordinator: { name: "Diya Deepak", department: "S3 MCA", phone: "+91 62389 46763", email: "diya@macfast.org" },
+    coordinator: { name: "Diya Deepak", department: "S3 MCA", phone: "+91 62389 46763" },
     teamSizeText: "Individual participation only",
     rules: [
       "1. The event will be conducted as an individual spot dance competition.",
@@ -1016,7 +1015,6 @@ export const ALL_EVENTS: FestivalEventItem[] = [
       name: "Muhammed Yaseen & Aleena Sunny",
       department: "MBA & BCA",
       phone: "+91 90376 17606",
-      email: "yaseen@macfast.org",
       team: [
         { name: "Muhammed Yaseen", detail: "MBA", phone: "+91 90376 17606" },
         { name: "Aleena Sunny", detail: "BCA", phone: "+91 98471 76934" }
@@ -1080,7 +1078,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: true,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
-    coordinator: { name: "Jerin George", department: "MCA", phone: "+91 73568 02019", email: "jerin@macfast.org" },
+    coordinator: { name: "Jerin George", department: "MCA", phone: "+91 73568 02019" },
     teamSizeText: "Team competition (2 to 4 members)",
     rules: [
       "1. The event will be conducted as a team competition.",
@@ -1139,7 +1137,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: true,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
-    coordinator: { name: "Meenakshi Jayaprakash", department: "Psychology", phone: "+91 85476 09910", email: "meenakshi@macfast.org" },
+    coordinator: { name: "Meenakshi Jayaprakash", department: "Psychology", phone: "+91 85476 09910" },
     teamSizeText: "2 to 4 members per team",
     rules: [
       "1. The event will be conducted as a team competition with 2 to 4 members per team.",
@@ -1197,7 +1195,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: true,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
-    coordinator: { name: "Jeffin Jaimon", department: "BBA", phone: "+91 77360 21205", email: "jeffin@macfast.org" },
+    coordinator: { name: "Jeffin Jaimon", department: "BBA", phone: "+91 77360 21205" },
     teamSizeText: "3 players on field + up to 2 substitutes",
     rules: [
       "1. Each team must have 3 players on the field and may register up to 2 substitutes.",
@@ -1256,7 +1254,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: true,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
-    coordinator: { name: "Josson Jose Joseph", department: "MCA", phone: "+91 96055 21309", email: "josson@macfast.org" },
+    coordinator: { name: "Josson Jose Joseph", department: "MCA", phone: "+91 96055 21309" },
     teamSizeText: "Individual competition (Classes 10-12)",
     rules: [
       "1. The event will be conducted as an individual competition.",
@@ -1316,7 +1314,7 @@ export const ALL_EVENTS: FestivalEventItem[] = [
     isCompetition: false,
     status: "upcoming",
     createdAt: "2026-08-01T00:00:00.000Z",
-    coordinator: { name: "Organizing Committee", department: "MACFAST Command", phone: "+91 85909 39674", email: "info@macfast.org" },
+    coordinator: { name: "Organizing Committee", department: "MACFAST Command", phone: "+91 85909 39674" },
     teamSizeText: "Open Exhibition Showcase",
     rules: [
       "Room 1 — Robotics Zone: Robots, Arduino projects, line-following robots, and robotic arms.",
