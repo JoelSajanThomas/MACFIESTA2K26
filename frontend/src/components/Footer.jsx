@@ -30,9 +30,9 @@ const LIVE_FEEDS = [
 ];
 
 const SOCIAL_LINKS = [
-  { platform: "instagram", label: "Instagram", url: "https://instagram.com/macfiesta2k26", icon: RiInstagramFill },
-  { platform: "facebook", label: "Facebook", url: "https://facebook.com/macfiesta", icon: RiFacebookCircleFill },
-  { platform: "youtube", label: "YouTube", url: "https://youtube.com/@macfiesta4285?si=pxB1LrqPgitwLjly", icon: RiYoutubeFill },
+  { platform: "instagram", label: "Instagram", url: "https://www.instagram.com/macfiestaofficial/", icon: RiInstagramFill },
+  { platform: "facebook", label: "Facebook", url: "https://www.facebook.com/macfastofficial/", icon: RiFacebookCircleFill },
+  { platform: "youtube", label: "YouTube", url: "https://www.youtube.com/@macfastofficial161", icon: RiYoutubeFill },
 ];
 
 /**

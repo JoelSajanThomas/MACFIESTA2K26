@@ -142,10 +142,10 @@ CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "macfiesta@macfast.org")
 CONTACT_PHONE = os.environ.get("CONTACT_PHONE", "")
 REGISTRATION_HELP_EMAIL = os.environ.get("REGISTRATION_HELP_EMAIL", "macfiesta@macfast.org")
 REGISTRATION_HELP_PHONE = os.environ.get("REGISTRATION_HELP_PHONE", "")
-OFFICIAL_WEBSITE = os.environ.get("OFFICIAL_WEBSITE", "")
-INSTAGRAM_URL = os.environ.get("INSTAGRAM_URL", "")
-YOUTUBE_URL = os.environ.get("YOUTUBE_URL", "")
-FACEBOOK_URL = os.environ.get("FACEBOOK_URL", "")
+OFFICIAL_WEBSITE = os.environ.get("OFFICIAL_WEBSITE", "https://macfast.org/")
+INSTAGRAM_URL = os.environ.get("INSTAGRAM_URL", "https://www.instagram.com/macfiestaofficial/")
+YOUTUBE_URL = os.environ.get("YOUTUBE_URL", "https://www.youtube.com/@macfastofficial161")
+FACEBOOK_URL = os.environ.get("FACEBOOK_URL", "https://www.facebook.com/macfastofficial/")
 
 INSTALLED_APPS = [
     "django.contrib.admin",

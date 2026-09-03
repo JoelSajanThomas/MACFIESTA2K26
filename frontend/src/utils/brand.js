@@ -27,7 +27,7 @@ export const BRAND = {
   subtitle: "National-level school and college festival",
   collegeName: "MACFAST",
   collegeFullName: "Mar Athanasios College for Advanced Studies",
-  officialWebsite: envStr("VITE_OFFICIAL_WEBSITE", "https://macfiesta.macfast.org/"),
+  officialWebsite: envStr("VITE_OFFICIAL_WEBSITE", "https://macfast.org/"),
   venue: envStr("VITE_VENUE", "MACFAST Campus, Thiruvalla"),
   location: envStr("VITE_LOCATION", "Thiruvalla, Kerala, India"),
   email: envStr("VITE_CONTACT_EMAIL", "macfiesta@macfast.org"),
@@ -46,10 +46,10 @@ export const BRAND = {
   },
 
   socialLinks: {
-    website: envStr("VITE_OFFICIAL_WEBSITE", "https://macfiesta.macfast.org/"),
-    instagram: envStr("VITE_INSTAGRAM_URL", "https://instagram.com/macfiesta2k26"),
-    youtube: envStr("VITE_YOUTUBE_URL", "https://youtube.com/@macfiesta4285?si=pxB1LrqPgitwLjly"),
-    facebook: envStr("VITE_FACEBOOK_URL", "https://facebook.com/macfiesta"),
+    website: envStr("VITE_OFFICIAL_WEBSITE", "https://macfast.org/"),
+    instagram: envStr("VITE_INSTAGRAM_URL", "https://www.instagram.com/macfiestaofficial/"),
+    youtube: envStr("VITE_YOUTUBE_URL", "https://www.youtube.com/@macfastofficial161"),
+    facebook: envStr("VITE_FACEBOOK_URL", "https://www.facebook.com/macfastofficial/"),
   },
 
   logo: {

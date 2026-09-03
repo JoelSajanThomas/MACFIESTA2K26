@@ -160,6 +160,10 @@ export default function Contact() {
                   <RiMapPin2Line className="text-marvel-red text-lg shrink-0" />
                   <span>MACFAST, Kuttapuzha P.O., Tiruvalla, Kerala 689101</span>
                 </div>
+                <div className="flex items-center gap-3">
+                  <RiExternalLinkLine className="text-white/60 text-lg shrink-0" />
+                  <span>Official Website: <a href="https://macfast.org/" target="_blank" rel="noopener noreferrer" className="text-white font-bold font-excon-bold hover:text-arc-cyan transition-colors">macfast.org</a></span>
+                </div>
               </div>
             </div>
 

@@ -69,10 +69,10 @@ class Command(BaseCommand):
             location="Pathanamthitta, Kerala, India",
             contact_email="macfiesta@macfast.org",
             contact_phone="",
-            official_website="https://macfiesta.macfast.org/",
-            instagram_url="https://instagram.com/macfiesta",
-            youtube_url="https://youtube.com/@macfiesta",
-            facebook_url="https://facebook.com/macfiesta",
+            official_website="https://macfast.org/",
+            instagram_url="https://www.instagram.com/macfiestaofficial/",
+            youtube_url="https://www.youtube.com/@macfastofficial161",
+            facebook_url="https://www.facebook.com/macfastofficial/",
             about_title="Two days. One campus. Every arena.",
             about_body=(
                 "MacFiesta 2026 brings together students from schools and colleges across India "
