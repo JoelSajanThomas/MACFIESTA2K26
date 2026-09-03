@@ -101,9 +101,21 @@ class SignupSerializer(serializers.Serializer):
     def validate_phone(self, value):
         phone = re.sub(r"\s+", "", (value or "").strip())
         digits = re.sub(r"\D", "", phone)
-        if len(digits) < 10 or len(digits) > 15:
-            raise serializers.ValidationError("Enter a valid phone number (10–15 digits).")
-        return phone
+
+        # 10 digits starting with 6-9
+        if len(digits) == 10 and re.match(r"^[6-9]\d{9}$", digits):
+            return digits
+        # +91 prefix (12 digits, remaining 10 start with 6-9)
+        if len(digits) == 12 and digits.startswith("91") and re.match(r"^[6-9]\d{9}$", digits[2:]):
+            return digits[2:]
+
+        if len(digits) > 10:
+            raise serializers.ValidationError("Mobile number cannot exceed 10 digits.")
+        if len(digits) < 10:
+            raise serializers.ValidationError("Mobile number must be exactly 10 digits.")
+        raise serializers.ValidationError(
+            "Enter a valid 10-digit mobile number starting with 6, 7, 8, or 9."
+        )
 
     def validate(self, attrs):
         if attrs["password"] != attrs["password_confirm"]:
@@ -275,13 +287,20 @@ class PasswordResetRequestView(APIView):
             f'</div>'
         )
 
-        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "noreply@macfiesta.org")
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "macfiesta@macfast.org")
         try:
             msg = EmailMultiAlternatives(subject, text_message, from_email, [target_email])
             msg.attach_alternative(html_message, "text/html")
             msg.send(fail_silently=False)
-        except Exception:
-            logger.exception("Failed to send password reset OTP to %s (user_id=%s)", target_email, user.id)
+        except Exception as exc:
+            logger.exception("Failed to send password reset OTP to %s (user_id=%s): %s", target_email, user.id, exc)
+            return Response(
+                {
+                    "detail": "Failed to transmit OTP via email. Please check your network or try again in a few moments.",
+                    "error": str(exc),
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
         if settings.DEBUG:
             logger.info("Password OTP generated for user_id=%s (email=%s, otp=%s)", user.id, target_email, otp)

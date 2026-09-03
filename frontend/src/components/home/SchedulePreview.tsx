@@ -146,32 +146,91 @@ export function SchedulePreview() {
 
   return (
     <section className="relative bg-transparent section-padding border-t border-metallic-gold/20 overflow-hidden min-h-[640px]">
-      {/* ─── Parallax Marvel Background & Mystical Time Portal Ring ─── */}
-      <div className="absolute inset-0 z-0 opacity-35 pointer-events-none overflow-hidden">
-        <Image
-          src="/MARVEL/Doctor Strange.png"
-          alt="Doctor Strange Schedule Background"
-          fill
-          priority
-          className="object-cover object-top filter brightness-100 contrast-115 scale-[1.05]"
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-[#05050A]/80 via-transparent to-[#05050A]/90" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_40%,rgba(5,5,10,0.85)_95%)]" />
+      {/* ─── Ambient Translucent Glow (Allows 3D Canvas Scroll Frames to shine through) ─── */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden select-none">
+        {/* Subtle dual energy aura */}
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[380px] bg-gradient-to-r from-metallic-gold/10 via-arc-cyan/5 to-marvel-red/10 blur-[130px] rounded-full pointer-events-none" />
       </div>
 
-      {/* ─── Rotating Mystical Doctor Strange Time Spell Rings ─── */}
-      <div className="absolute top-1/2 right-[-120px] sm:right-[-60px] -translate-y-1/2 pointer-events-none opacity-25 z-0">
+      {/* ─── Left Hero: Wonder Woman ─── */}
+      <div className="absolute -left-8 sm:-left-12 md:-left-18 lg:-left-24 xl:-left-28 bottom-0 top-0 w-full max-w-[320px] sm:max-w-[420px] md:max-w-[500px] lg:max-w-[580px] xl:max-w-[660px] pointer-events-none z-0 overflow-hidden select-none">
+        {/* Ambient Golden / Amber Hero Radial Glow (Translucent) */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_left_center,rgba(212,175,55,0.22)_0%,rgba(212,175,55,0.05)_50%,transparent_75%)] pointer-events-none" />
+        
         <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
-          className="w-96 h-96 sm:w-[480px] sm:h-[480px] rounded-full border-2 border-dashed border-metallic-gold/50 flex items-center justify-center shadow-[0_0_50px_rgba(212,175,55,0.3)]"
+          initial={{ opacity: 0, x: -50 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.9, ease: "easeOut" }}
+          className="relative w-full h-full"
         >
           <motion.div
-            animate={{ rotate: -360 }}
-            transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-            className="w-72 h-72 sm:w-[360px] sm:h-[360px] rounded-full border border-arc-cyan/40 border-dotted flex items-center justify-center"
+            animate={{
+              y: [-8, 8, -8],
+              rotate: [-0.5, 0.5, -0.5],
+            }}
+            transition={{
+              duration: 7,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            className="relative w-full h-full flex items-end justify-start opacity-55 sm:opacity-65 md:opacity-72 lg:opacity-78 hover:opacity-90 transition-opacity duration-500"
           >
-            <div className="w-48 h-48 sm:w-[240px] sm:h-[240px] rounded-full border border-marvel-red/30" />
+            <Image
+              src="/MARVEL/wonder women.png"
+              alt="Wonder Woman"
+              fill
+              priority
+              className="object-contain object-bottom-left filter drop-shadow-[0_0_40px_rgba(212,175,55,0.4)] brightness-100 contrast-110 scale-[1.12] origin-bottom-left"
+              style={{
+                maskImage: "linear-gradient(to right, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 98%), linear-gradient(to bottom, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%)",
+                WebkitMaskImage: "linear-gradient(to right, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 98%), linear-gradient(to bottom, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%)",
+                maskComposite: "intersect",
+                WebkitMaskComposite: "source-in",
+              }}
+            />
+          </motion.div>
+        </motion.div>
+      </div>
+
+      {/* ─── Right Hero: Black Widow ─── */}
+      <div className="absolute -right-8 sm:-right-12 md:-right-18 lg:-right-24 xl:-right-28 bottom-0 top-0 w-full max-w-[320px] sm:max-w-[420px] md:max-w-[500px] lg:max-w-[580px] xl:max-w-[660px] pointer-events-none z-0 overflow-hidden select-none">
+        {/* Ambient Crimson / Marvel Red Hero Radial Glow (Translucent) */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_right_center,rgba(237,29,36,0.22)_0%,rgba(237,29,36,0.05)_50%,transparent_75%)] pointer-events-none" />
+        
+        <motion.div
+          initial={{ opacity: 0, x: 50 }}
+          whileInView={{ opacity: 1, x: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.9, ease: "easeOut" }}
+          className="relative w-full h-full"
+        >
+          <motion.div
+            animate={{
+              y: [8, -8, 8],
+              rotate: [0.5, -0.5, 0.5],
+            }}
+            transition={{
+              duration: 6.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+              delay: 0.5,
+            }}
+            className="relative w-full h-full flex items-end justify-end opacity-55 sm:opacity-65 md:opacity-72 lg:opacity-78 hover:opacity-90 transition-opacity duration-500"
+          >
+            <Image
+              src="/MARVEL/blackwidow.png"
+              alt="Black Widow"
+              fill
+              priority
+              className="object-contain object-bottom-right filter drop-shadow-[0_0_40px_rgba(237,29,36,0.4)] brightness-100 contrast-115 scale-[1.12] origin-bottom-right"
+              style={{
+                maskImage: "linear-gradient(to left, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 98%), linear-gradient(to bottom, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%)",
+                WebkitMaskImage: "linear-gradient(to left, rgba(0,0,0,1) 50%, rgba(0,0,0,0) 98%), linear-gradient(to bottom, rgba(0,0,0,1) 85%, rgba(0,0,0,0) 100%)",
+                maskComposite: "intersect",
+                WebkitMaskComposite: "source-in",
+              }}
+            />
           </motion.div>
         </motion.div>
       </div>
@@ -187,7 +246,7 @@ export function SchedulePreview() {
               className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-metallic-gold/40 bg-metallic-gold/10 text-metallic-gold text-xs font-bold tracking-[0.2em] uppercase shadow-[0_0_15px_rgba(212,175,55,0.25)] font-space"
             >
               <RiCompass3Line className="animate-spin text-metallic-gold text-sm" style={{ animationDuration: "8s" }} />
-              <span>SANCTUM TIME REALM CHRONOLOGY</span>
+              <span>SUPERHERO ARENA & FESTIVAL CHRONOLOGY</span>
             </motion.div>
 
             <h2 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-white font-excon-black">

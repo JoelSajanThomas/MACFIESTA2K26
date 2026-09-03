@@ -85,7 +85,21 @@ class AccommodationBookingSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if "hostel" not in attrs and not self.instance:
             raise serializers.ValidationError({"hostel": "Please select a valid hostel."})
-        return attrs
+        check_in = attrs.get("check_in_date") or (self.instance.check_in_date if self.instance else None)
+        check_out = attrs.get("check_out_date") or (self.instance.check_out_date if self.instance else None)
+        if check_in and check_out and check_out < check_in:
+            raise serializers.ValidationError({"check_out_date": "Check-out date cannot be earlier than check-in date."})
+        persons = attrs.get("persons_count")
+        if persons is not None and persons < 1:
+            raise serializers.ValidationError({"persons_count": "Persons count must be at least 1."})
+        phone = attrs.get("phone")
+        if phone:
+            from config.validators import validate_phone_number
+            try:
+                validate_phone_number(phone)
+            except Exception as e:
+                raise serializers.ValidationError({"phone": str(e)})
+        return super().validate(attrs)
 
 
 class AdminAccommodationBookingSerializer(serializers.ModelSerializer):

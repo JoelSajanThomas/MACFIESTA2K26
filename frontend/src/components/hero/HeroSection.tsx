@@ -302,8 +302,8 @@ export function HeroSection() {
       audio.volume = maxVolume * Math.max(0.1, factor);
       audio.play().then(() => {
         setPlayState(true);
-      }).catch(err => {
-        console.error("Audio playback blocked:", err);
+      }).catch(() => {
+        setPlayState(false);
       });
     }
   };

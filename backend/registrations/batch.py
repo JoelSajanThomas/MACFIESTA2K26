@@ -11,7 +11,14 @@ from rest_framework import serializers
 
 from events.models import Event
 
-from .fees import compute_registration_amount
+from .fees import (
+    accommodation_fee_per_person,
+    breakfast_fee,
+    compute_registration_amount,
+    dinner_fee,
+    food_package_fee,
+    lunch_fee,
+)
 from .models import Registration, TeamMember
 from .services import next_waitlist_position, send_registration_email
 
@@ -84,11 +91,22 @@ def _create_one_registration(
     )
     initial_payment_status = "waived" if breakdown["total"] <= 0 else "pending"
 
+    if event.max_team_size and event.max_team_size > 1:
+        reg_type = "team"
+    elif event.max_team_size and event.max_team_size <= 1:
+        reg_type = "individual"
+    else:
+        reg_type = "team" if base.get("registration_type") == "team" else "individual"
+
+    is_team_event = (reg_type == "team")
+    default_team_name = f"{base['participant_name']}'s Team"
+    resolved_team_name = (base.get("team_name") or default_team_name).strip() if is_team_event else ""
+
     create_kwargs = {
         "user": user,
         "event": event,
-        "registration_type": base.get("registration_type", "individual"),
-        "team_name": (base.get("team_name") or "").strip(),
+        "registration_type": reg_type,
+        "team_name": resolved_team_name,
         "participant_name": base["participant_name"],
         "college_name": base["college_name"],
         "email": base["email"],
@@ -138,7 +156,6 @@ def _create_one_registration(
                 college_name=(member.get("college_name") or "").strip(),
             )
 
-    send_registration_email(registration)
     return registration
 
 
@@ -197,11 +214,37 @@ def create_registration_batch(*, user, event_ids: list[int], profile: dict, memb
             members_data=members,
         )
         created.append(reg)
-
     batch_total = sum((r.payment_amount or Decimal("0")) for r in created)
+    event_fee_total = sum(Decimal(r.event.registration_fee or 0) for r in created)
+    # The first registration holds the accommodation and food breakdown
+    first_reg = created[0] if created else None
+    acc_count = int(base.get("accommodation_count") or 1) if base.get("needs_accommodation") else 0
+    accommodation_fee_total = (
+        accommodation_fee_per_person() * max(1, acc_count)
+        if base.get("needs_accommodation")
+        else Decimal("0.00")
+    )
+
+    food_fee_total = Decimal("0.00")
+    if base.get("needs_accommodation"):
+        pref = str(base.get("food_preference") or "none").lower()
+        if pref in ("full", "all", "veg", "non_veg", "jain", "package"):
+            food_fee_total = food_package_fee() * max(1, acc_count)
+        elif pref != "none":
+            meals = [m.strip() for m in pref.replace("+", ",").replace(";", ",").split(",") if m.strip()]
+            bf = breakfast_fee() if ("breakfast" in meals or "bf" in meals) else Decimal("0.00")
+            ln = lunch_fee() if ("lunch" in meals or "ln" in meals) else Decimal("0.00")
+            dn = dinner_fee() if ("dinner" in meals or "dn" in meals) else Decimal("0.00")
+            calc = (bf + ln + dn) * max(1, acc_count)
+            food_fee_total = calc if calc > 0 else (food_package_fee() * max(1, acc_count))
+
     return {
         "payment_batch_id": batch_id,
         "payment_reference": reference,
         "payment_amount_total": batch_total,
+        "event_fee_total": event_fee_total,
+        "accommodation_fee_total": accommodation_fee_total,
+        "food_fee_total": food_fee_total,
+        "hospitality_total": accommodation_fee_total + food_fee_total,
         "registrations": created,
     }

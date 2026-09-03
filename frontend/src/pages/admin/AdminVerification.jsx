@@ -413,49 +413,43 @@ export default function AdminVerification() {
           <dl className="verification-dl">
 
             <dt>Registration #</dt>
-
             <dd style={{ fontSize: "1.15rem", fontWeight: 700 }}>{match.registration_number}</dd>
-
             <dt>Institution</dt>
-
             <dd>{match.college_name}</dd>
-
             <dt>Event</dt>
-
             <dd>{match.event_title}</dd>
-
             <dt>Payment</dt>
-
             <dd>{paymentLabel}</dd>
-
+            <dt>Gate Desk</dt>
+            <dd>
+              <span className={`admin-badge-status ${(match.verification_attendance_marked || match.attendance_marked) ? "admin-badge-status--active" : "admin-badge-status--draft"}`}>
+                {(match.verification_attendance_marked || match.attendance_marked) ? "Verified & Checked In" : "Pending Gate Check-in"}
+              </span>
+            </dd>
+            <dt>Event Arena</dt>
+            <dd>
+              <span className={`admin-badge-status ${match.event_attendance_marked ? "admin-badge-status--active" : "admin-badge-status--draft"}`}>
+                {match.event_attendance_marked ? "Present at Event Arena" : "Awaiting Event Call"}
+              </span>
+            </dd>
           </dl>
 
-
-
           {vStatus === "PENDING" ? (
-
             <p className="form-error" role="alert">
-
               Payment must be verified before check-in.
-
             </p>
-
           ) : null}
 
-
-
           <div className="admin-ops-actions" style={{ marginTop: "1rem" }}>
-
-            {!match.attendance_marked && vStatus === "VALID" ? (
-
+            {!(match.verification_attendance_marked || match.attendance_marked) && vStatus === "VALID" ? (
               <button type="button" className="btn btn-gold" disabled={busy} onClick={handleCheckIn}>
-
-                {busy ? "Saving…" : "CHECK IN"}
-
+                {busy ? "Saving…" : "CHECK IN AT GATE"}
               </button>
-
+            ) : (match.verification_attendance_marked || match.attendance_marked) ? (
+              <div style={{ color: "#4ade80", fontWeight: 700, fontSize: "0.95rem" }}>
+                ✓ Gate Attendance Verified
+              </div>
             ) : null}
-
           </div>
 
         </div>

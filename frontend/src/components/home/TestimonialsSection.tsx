@@ -52,18 +52,16 @@ export function TestimonialsSection() {
   const testimonials =
     approvedList.length > 0
       ? approvedList.map((t, idx) => ({
-          quote:
-            t.quote ||
-            t.comment ||
-            fallbackTestimonials[idx % fallbackTestimonials.length].quote,
-          name: t.name || fallbackTestimonials[idx % fallbackTestimonials.length].name,
-          college:
-            t.college ||
-            t.role ||
-            fallbackTestimonials[idx % fallbackTestimonials.length].college,
-          rating: t.rating || 5,
-          direction: directions[idx % directions.length],
-        }))
+        quote:
+          t.comment ||
+          fallbackTestimonials[idx % fallbackTestimonials.length].quote,
+        name: t.name || fallbackTestimonials[idx % fallbackTestimonials.length].name,
+        college:
+          t.college ||
+          fallbackTestimonials[idx % fallbackTestimonials.length].college,
+        rating: t.rating || 5,
+        direction: directions[idx % directions.length],
+      }))
       : fallbackTestimonials;
   return (
     <section className="relative bg-transparent section-padding border-t border-white/10 overflow-hidden min-h-[520px]">

@@ -65,7 +65,8 @@ export default function AdminRegistrationsList() {
       "Amount",
       "Payment",
       "Approval",
-      "Attendance",
+      "Gate Verification",
+      "Event Attendance",
       "Waiting",
       "Food",
       "Stay",
@@ -83,7 +84,8 @@ export default function AdminRegistrationsList() {
       r.payment_amount ?? "",
       r.payment_status,
       r.approval_status,
-      r.attendance_marked ? "yes" : "no",
+      (r.verification_attendance_marked || r.attendance_marked) ? "yes" : "no",
+      r.event_attendance_marked ? "yes" : "no",
       r.is_waiting_list ? "yes" : "no",
       r.food_preference || "",
       r.needs_accommodation ? `yes (${r.accommodation_count || 1})` : "no",
@@ -156,14 +158,18 @@ export default function AdminRegistrationsList() {
                 <th>Participant</th>
                 <th>Reg #</th>
                 <th>College</th>
+                <th>Phone</th>
                 <th>Payment</th>
                 <th>Approval</th>
-                <th>Attendance</th>
+                <th>Gate Desk</th>
+                <th>Event Arena</th>
                 <th>Status</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((r) => (
+              {filtered.map((r) => {
+                const isGateVerified = Boolean(r.verification_attendance_marked || r.attendance_marked);
+                return (
                 <tr key={r.id}>
                   <td data-label="Event">{r.event_title}</td>
                   <td data-label="Participant">
@@ -179,6 +185,7 @@ export default function AdminRegistrationsList() {
                   </td>
                   <td data-label="Reg #">{r.registration_number}</td>
                   <td data-label="College">{r.college_name}</td>
+                  <td data-label="Phone">{r.phone}</td>
                   <td data-label="Payment">
                     <select
                       className="admin-select admin-inline-select"
@@ -201,16 +208,28 @@ export default function AdminRegistrationsList() {
                       {APPROVAL_OPTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
                     </select>
                   </td>
-                  <td data-label="Attendance">
+                  <td data-label="Gate Desk">
                     <label className="admin-attendance-toggle">
                       <input
                         type="checkbox"
-                        checked={Boolean(r.attendance_marked)}
+                        checked={isGateVerified}
                         disabled={updatingId === r.id}
-                        onChange={(e) => handleFieldUpdate(r, "attendance_marked", e.target.checked)}
-                        aria-label={`Attendance for ${r.participant_name}`}
+                        onChange={(e) => handleFieldUpdate(r, "verification_attendance_marked", e.target.checked)}
+                        aria-label={`Gate verification for ${r.participant_name}`}
                       />
-                      <span>{r.attendance_marked ? "Present" : "Pending"}</span>
+                      <span>{isGateVerified ? "Verified" : "Pending"}</span>
+                    </label>
+                  </td>
+                  <td data-label="Event Arena">
+                    <label className="admin-attendance-toggle">
+                      <input
+                        type="checkbox"
+                        checked={Boolean(r.event_attendance_marked)}
+                        disabled={updatingId === r.id}
+                        onChange={(e) => handleFieldUpdate(r, "event_attendance_marked", e.target.checked)}
+                        aria-label={`Event arena attendance for ${r.participant_name}`}
+                      />
+                      <span>{r.event_attendance_marked ? "Present" : "Pending"}</span>
                     </label>
                   </td>
                   <td data-label="Status">
@@ -233,7 +252,8 @@ export default function AdminRegistrationsList() {
                     )}
                   </td>
                 </tr>
-              ))}
+              );
+            })}
             </tbody>
           </table>
         </div>

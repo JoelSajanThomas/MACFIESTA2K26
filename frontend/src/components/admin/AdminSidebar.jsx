@@ -18,6 +18,7 @@ import {
   RiStarSmileLine,
   RiToggleLine,
   RiCloseLine,
+  RiUserSearchLine,
 } from "react-icons/ri";
 import { logout } from "../../utils/auth";
 import { dashboardRoleLabel, groupedAdminNav, staffLogoutPath } from "../../utils/committeeAccess";
@@ -39,6 +40,7 @@ const NAV_ICONS = {
   "/admin/content/guests": RiUserStarLine,
   "/admin/content": RiGlobalLine,
   "/admin/users": RiGroupLine,
+  "/admin/participant-list": RiUserSearchLine,
   "/admin/reports": RiFileChartLine,
 };
 

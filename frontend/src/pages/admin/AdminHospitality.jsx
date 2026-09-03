@@ -5,7 +5,7 @@ import LoadingState from "../../components/ui/LoadingState";
 import ErrorState from "../../components/ui/ErrorState";
 import EmptyState from "../../components/ui/EmptyState";
 import StatusChip from "../../components/theme/StatusChip";
-import { getAdminRegistrations, updateAdminRegistration } from "../../services/api";
+import { getAdminRegistrations, getHostels, updateAdminRegistration } from "../../services/api";
 import { exportCsv, exportExcel } from "../../utils/adminUtils";
 
 const VALID_TABS = new Set(["stay", "boys", "girls", "food"]);
@@ -29,6 +29,15 @@ const STAY_STATUS = [
   { value: "allocated", label: "Allocated" },
   { value: "checked_in", label: "Checked in" },
   { value: "checked_out", label: "Checked out" },
+];
+
+const STANDARD_HOSTEL_OPTIONS = [
+  { value: "Boys Hostel", label: "Boys Hostel", gender: "male" },
+  { value: "Girls Hostel", label: "Girls Hostel", gender: "female" },
+  { value: "St. Thomas Mens Hostel", label: "St. Thomas Mens Hostel (Boys)", gender: "male" },
+  { value: "St. Teresa Ladies Hostel", label: "St. Teresa Ladies Hostel (Girls)", gender: "female" },
+  { value: "St. Alphonsa Ladies Hostel", label: "St. Alphonsa Ladies Hostel (Girls)", gender: "female" },
+  { value: "Tiruvalla Town Guest Annex", label: "Tiruvalla Town Guest Annex (Co-ed)", gender: "all" },
 ];
 
 function downloadHostelList(label, rows) {
@@ -60,6 +69,7 @@ function downloadHostelList(label, rows) {
 export default function AdminHospitality() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [rows, setRows] = useState([]);
+  const [hostels, setHostels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const tabParam = searchParams.get("tab");
@@ -67,9 +77,11 @@ export default function AdminHospitality() {
   const [search, setSearch] = useState("");
   const [gender, setGender] = useState("all");
   const [stayStatus, setStayStatus] = useState("all");
+  const [hostelFilter, setHostelFilter] = useState("all");
   const [foodPref, setFoodPref] = useState("all");
   const [editingId, setEditingId] = useState(null);
   const [draft, setDraft] = useState({});
+  const [customHostelMode, setCustomHostelMode] = useState(false);
   const [busy, setBusy] = useState(false);
 
   function setTab(next) {
@@ -82,8 +94,17 @@ export default function AdminHospitality() {
   function load() {
     setLoading(true);
     setError("");
-    getAdminRegistrations()
-      .then((res) => setRows(Array.isArray(res.data) ? res.data : res.data?.results || []))
+    Promise.all([
+      getAdminRegistrations(),
+      getHostels().catch(() => ({ data: [] })),
+    ])
+      .then(([regRes, hostelRes]) => {
+        setRows(Array.isArray(regRes.data) ? regRes.data : regRes.data?.results || []);
+        const apiHostels = Array.isArray(hostelRes.data) ? hostelRes.data : hostelRes.data?.results || [];
+        if (apiHostels.length > 0) {
+          setHostels(apiHostels);
+        }
+      })
       .catch(() => setError("Could not load hospitality data."))
       .finally(() => setLoading(false));
   }
@@ -102,13 +123,31 @@ export default function AdminHospitality() {
     [active]
   );
 
+  const boysList = useMemo(() => {
+    return stayRows.filter((r) => {
+      const h = (r.accommodation_hostel || "").toLowerCase();
+      const isGirlsHostel = h.includes("girl") || h.includes("lad") || h.includes("teresa") || h.includes("alphonsa");
+      if (isGirlsHostel) return false;
+      const isBoysHostel = h.includes("boy") || h.includes("men") || h.includes("thomas");
+      return r.gender === "male" || isBoysHostel;
+    });
+  }, [stayRows]);
+
+  const girlsList = useMemo(() => {
+    return stayRows.filter((r) => {
+      const h = (r.accommodation_hostel || "").toLowerCase();
+      const isBoysHostel = h.includes("boy") || h.includes("men") || h.includes("thomas");
+      if (isBoysHostel) return false;
+      const isGirlsHostel = h.includes("girl") || h.includes("lad") || h.includes("teresa") || h.includes("alphonsa");
+      return r.gender === "female" || isGirlsHostel;
+    });
+  }, [stayRows]);
+
   const summary = useMemo(() => {
-    const boys = stayRows.filter((r) => r.gender === "male");
-    const girls = stayRows.filter((r) => r.gender === "female");
     return {
       stay: stayRows.length,
-      boys: boys.length,
-      girls: girls.length,
+      boys: boysList.length,
+      girls: girlsList.length,
       food: foodRows.length,
       allocated: stayRows.filter((r) =>
         ["allocated", "checked_in"].includes(r.accommodation_status)
@@ -118,20 +157,32 @@ export default function AdminHospitality() {
       nonVeg: foodRows.filter((r) => r.food_preference === "non_veg").length,
       jain: foodRows.filter((r) => r.food_preference === "jain").length,
     };
-  }, [stayRows, foodRows]);
+  }, [stayRows, foodRows, boysList, girlsList]);
 
   const filteredStay = useMemo(() => {
     const q = search.trim().toLowerCase();
     return stayRows.filter((r) => {
       if (gender !== "all" && r.gender !== gender) return false;
       if (stayStatus !== "all" && r.accommodation_status !== stayStatus) return false;
+      if (hostelFilter !== "all") {
+        const h = (r.accommodation_hostel || "").toLowerCase();
+        if (hostelFilter === "boys") {
+          const isBoys = h.includes("boy") || h.includes("men") || h.includes("thomas");
+          if (!isBoys) return false;
+        } else if (hostelFilter === "girls") {
+          const isGirls = h.includes("girl") || h.includes("lad") || h.includes("teresa") || h.includes("alphonsa");
+          if (!isGirls) return false;
+        } else if (hostelFilter === "unallocated") {
+          if (r.accommodation_hostel) return false;
+        }
+      }
       if (foodPref !== "all" && r.food_preference !== foodPref) return false;
       if (!q) return true;
-      return [r.registration_number, r.participant_name, r.college_name, r.phone].some((v) =>
+      return [r.registration_number, r.participant_name, r.college_name, r.phone, r.accommodation_hostel].some((v) =>
         String(v || "").toLowerCase().includes(q)
       );
     });
-  }, [stayRows, search, gender, stayStatus, foodPref]);
+  }, [stayRows, search, gender, stayStatus, hostelFilter, foodPref]);
 
   const filteredFood = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -147,9 +198,12 @@ export default function AdminHospitality() {
 
   function startEdit(r) {
     setEditingId(r.id);
+    const existing = r.accommodation_hostel || "";
+    const isKnown = STANDARD_HOSTEL_OPTIONS.some((o) => o.value === existing);
+    setCustomHostelMode(Boolean(existing && !isKnown));
     setDraft({
       accommodation_status: r.accommodation_status === "none" ? "pending" : r.accommodation_status,
-      accommodation_hostel: r.accommodation_hostel || "",
+      accommodation_hostel: existing,
       accommodation_room: r.accommodation_room || "",
       accommodation_notes: r.accommodation_notes || "",
       gender: r.gender || "unspecified",
@@ -169,9 +223,6 @@ export default function AdminHospitality() {
       setBusy(false);
     }
   }
-
-  const boysList = stayRows.filter((r) => r.gender === "male");
-  const girlsList = stayRows.filter((r) => r.gender === "female");
 
   return (
     <div className="admin-ops-page admin-hospitality-page">
@@ -220,12 +271,20 @@ export default function AdminHospitality() {
             <option value="unspecified">Unspecified</option>
           </select>
           {tab === "stay" && (
-            <select className="admin-select" value={stayStatus} onChange={(e) => setStayStatus(e.target.value)}>
-              <option value="all">All allocation statuses</option>
-              {STAY_STATUS.map((s) => (
-                <option key={s.value} value={s.value}>{s.label}</option>
-              ))}
-            </select>
+            <>
+              <select className="admin-select" value={stayStatus} onChange={(e) => setStayStatus(e.target.value)}>
+                <option value="all">All allocation statuses</option>
+                {STAY_STATUS.map((s) => (
+                  <option key={s.value} value={s.value}>{s.label}</option>
+                ))}
+              </select>
+              <select className="admin-select" value={hostelFilter} onChange={(e) => setHostelFilter(e.target.value)}>
+                <option value="all">All hostels</option>
+                <option value="boys">Boys Hostel</option>
+                <option value="girls">Girls Hostel</option>
+                <option value="unallocated">Unallocated / Not set</option>
+              </select>
+            </>
           )}
           <select className="admin-select" value={foodPref} onChange={(e) => setFoodPref(e.target.value)}>
             <option value="all">All food prefs</option>
@@ -293,6 +352,7 @@ export default function AdminHospitality() {
           title="Boys Hostel List"
           rows={boysList}
           onExport={() => downloadHostelList("Boys Hostel", boysList)}
+          onAllocate={startEdit}
         />
       )}
 
@@ -301,6 +361,7 @@ export default function AdminHospitality() {
           title="Girls Hostel List"
           rows={girlsList}
           onExport={() => downloadHostelList("Girls Hostel", girlsList)}
+          onAllocate={startEdit}
         />
       )}
 
@@ -381,11 +442,72 @@ export default function AdminHospitality() {
               </label>
               <label>
                 Hostel
-                <input
-                  value={draft.accommodation_hostel}
-                  onChange={(e) => setDraft((d) => ({ ...d, accommodation_hostel: e.target.value }))}
-                  placeholder="e.g. Boys Hostel A"
-                />
+                <select
+                  value={
+                    customHostelMode
+                      ? "__custom__"
+                      : draft.accommodation_hostel || ""
+                  }
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === "__custom__") {
+                      setCustomHostelMode(true);
+                      setDraft((d) => ({ ...d, accommodation_hostel: "" }));
+                    } else {
+                      setCustomHostelMode(false);
+                      setDraft((d) => {
+                        const next = { ...d, accommodation_hostel: val };
+                        // Auto-align gender if unspecified
+                        if (val === "Boys Hostel" || val.includes("Mens") || val.includes("Thomas")) {
+                          if (!d.gender || d.gender === "unspecified") next.gender = "male";
+                        } else if (val === "Girls Hostel" || val.includes("Ladies") || val.includes("Teresa") || val.includes("Alphonsa")) {
+                          if (!d.gender || d.gender === "unspecified") next.gender = "female";
+                        }
+                        if (val && (!d.accommodation_status || d.accommodation_status === "pending")) {
+                          next.accommodation_status = "allocated";
+                        }
+                        return next;
+                      });
+                    }
+                  }}
+                >
+                  <option value="">— Select Hostel —</option>
+                  <optgroup label="Standard Hostels">
+                    <option value="Boys Hostel">Boys Hostel</option>
+                    <option value="Girls Hostel">Girls Hostel</option>
+                  </optgroup>
+                  <optgroup label="Campus Hostels">
+                    {hostels.length > 0
+                      ? hostels.map((h) => (
+                          <option key={h.id || h.name} value={h.name}>
+                            {h.name} {h.gender === "male" ? "(Boys)" : h.gender === "female" ? "(Girls)" : "(Co-ed)"}
+                          </option>
+                        ))
+                      : STANDARD_HOSTEL_OPTIONS.slice(2).map((h) => (
+                          <option key={h.value} value={h.value}>
+                            {h.label}
+                          </option>
+                        ))}
+                  </optgroup>
+                  {draft.accommodation_hostel &&
+                    !STANDARD_HOSTEL_OPTIONS.some((o) => o.value === draft.accommodation_hostel) &&
+                    !hostels.some((h) => h.name === draft.accommodation_hostel) &&
+                    !customHostelMode && (
+                      <option value={draft.accommodation_hostel}>
+                        {draft.accommodation_hostel} (Current)
+                      </option>
+                    )}
+                  <option value="__custom__">Other / Custom Hostel…</option>
+                </select>
+                {customHostelMode && (
+                  <input
+                    style={{ marginTop: "0.35rem" }}
+                    value={draft.accommodation_hostel}
+                    onChange={(e) => setDraft((d) => ({ ...d, accommodation_hostel: e.target.value }))}
+                    placeholder="Enter hostel name"
+                    autoFocus
+                  />
+                )}
               </label>
               <label>
                 Room
@@ -415,7 +537,7 @@ export default function AdminHospitality() {
   );
 }
 
-function HostelPanel({ title, rows, onExport }) {
+function HostelPanel({ title, rows, onExport, onAllocate }) {
   if (rows.length === 0) {
     return <EmptyState title={`No ${title.toLowerCase()} entries`} message="Only students requiring accommodation and marked with this gender appear here." />;
   }
@@ -438,6 +560,7 @@ function HostelPanel({ title, rows, onExport }) {
               <th>Food</th>
               <th>Allocation</th>
               <th>Notes</th>
+              {onAllocate && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
@@ -454,6 +577,13 @@ function HostelPanel({ title, rows, onExport }) {
                     .join(" · ") || "Pending"}
                 </td>
                 <td>{r.accommodation_notes || "—"}</td>
+                {onAllocate && (
+                  <td>
+                    <button type="button" className="btn btn-outline btn-sm" onClick={() => onAllocate(r)}>
+                      Allocate
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

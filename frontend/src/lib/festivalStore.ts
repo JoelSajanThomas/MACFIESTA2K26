@@ -407,12 +407,6 @@ function notifyListeners(emitSocket: boolean = true) {
           theme: getThemeSettings(),
         });
       }
-      // Best-effort async server sync
-      api.put("/festival-settings", {
-        settings: getFestivalSettings(),
-        timeline: getTimelineSettings(),
-        theme: getThemeSettings(),
-      }).catch(() => {});
     } catch { }
   }
 }
@@ -739,21 +733,7 @@ export function useFestivalControl() {
   useEffect(() => {
     refreshAll();
 
-    // Fetch initial server state
-    api.get("/festival-settings").then((res) => {
-      if (res.data && res.data.success) {
-        if (res.data.settings) {
-          localStorage.setItem("macfiesta_control_settings", JSON.stringify(res.data.settings));
-        }
-        if (res.data.timeline) {
-          localStorage.setItem("macfiesta_control_timeline", JSON.stringify(res.data.timeline));
-        }
-        if (res.data.theme) {
-          localStorage.setItem("macfiesta_control_theme", JSON.stringify(res.data.theme));
-        }
-        refreshAll();
-      }
-    }).catch(() => {});
+    // Listen for local/cross-tab changes
 
     const handleChange = () => {
       refreshAll();

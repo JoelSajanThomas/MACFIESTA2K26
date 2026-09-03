@@ -63,6 +63,18 @@ def mark_payment_verified(reg, *, by_user: User):
             "payment_verified_by",
         ]
     )
+    # Automatically clear all team members under this registration
+    reg.team_members.all().update(
+        payment_status="paid",
+        payment_verified_at=now,
+        finance_status="verified",
+        finance_verified_at=now,
+    )
+    try:
+        from .services import send_registration_approval_email
+        send_registration_approval_email(reg)
+    except Exception:
+        pass
     return reg
 
 

@@ -8,6 +8,7 @@ import {
   startBackgroundPreload,
   getNearestLoadedFrame,
   subscribeToPreload,
+  loadSingleFrame,
 } from "../../utils/framePreloader";
 
 interface Marvel3DScrollCanvasProps {
@@ -34,89 +35,122 @@ export function Marvel3DScrollCanvas({
   const rafRef = useRef<number | null>(null);
   const isReadyRef = useRef(false);
 
+  const updateCanvasDimensions = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+    const targetW = Math.round(w * dpr);
+    const targetH = Math.round(h * dpr);
+
+    if (canvas.width !== targetW || canvas.height !== targetH) {
+      canvas.width = targetW;
+      canvas.height = targetH;
+    }
+  }, []);
+
+  // Helper to draw an image onto the canvas with true edge-to-edge object-fit: cover
+  const renderCover = useCallback((ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, img: HTMLImageElement) => {
+    const cw = canvas.width;
+    const ch = canvas.height;
+    if (!cw || !ch) return;
+
+    const iw = img.naturalWidth || img.width;
+    const ih = img.naturalHeight || img.height;
+    if (!iw || !ih) return;
+
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+
+    const imgAspect = iw / ih;
+    const canvasAspect = cw / ch;
+
+    let drawW = cw;
+    let drawH = ch;
+    let drawX = 0;
+    let drawY = 0;
+
+    if (canvasAspect > imgAspect) {
+      // Canvas is wider than image aspect ratio -> fit width, crop height top/bottom evenly
+      drawW = cw;
+      drawH = cw / imgAspect;
+      drawY = (ch - drawH) / 2;
+      drawX = 0;
+    } else {
+      // Canvas is taller than image aspect ratio -> fit height, crop width left/right evenly
+      drawH = ch;
+      drawW = ch * imgAspect;
+      drawX = (cw - drawW) / 2;
+      drawY = 0;
+    }
+
+    ctx.drawImage(img, drawX, drawY, drawW, drawH);
+  }, []);
+
   // Draw frame to canvas with object-fit: cover and high clarity
   const drawFrame = useCallback(
     (frameIdx: number) => {
       const canvas = canvasRef.current;
       if (!canvas) return;
+
+      if (canvas.width === 0 || canvas.height === 0) {
+        updateCanvasDimensions();
+      }
+
       const ctx = canvas.getContext("2d", { alpha: false });
       if (!ctx) return;
 
       const imgToDraw = getNearestLoadedFrame(sequence, frameIdx, TOTAL_FRAMES);
-      if (!imgToDraw || !imgToDraw.complete || imgToDraw.naturalWidth === 0) return;
-
-      const width = canvas.width;
-      const height = canvas.height;
-
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = "high";
-
-      // Calculate aspect ratio cover
-      const imgWidth = imgToDraw.naturalWidth;
-      const imgHeight = imgToDraw.naturalHeight;
-      const imgAspect = imgWidth / imgHeight;
-      const canvasAspect = width / height;
-
-      let renderWidth = width;
-      let renderHeight = height;
-      let offsetX = 0;
-      let offsetY = 0;
-
-      if (canvasAspect > imgAspect) {
-        // Canvas is wider than image
-        renderHeight = width / imgAspect;
-        offsetY = (height - renderHeight) / 2;
-      } else {
-        // Canvas is taller than image
-        renderWidth = height * imgAspect;
-        offsetX = (width - renderWidth) / 2;
+      if (!imgToDraw || !imgToDraw.complete || imgToDraw.naturalWidth === 0) {
+        // If not ready yet, request frame 1 load immediately
+        loadSingleFrame(sequence, 1, true).then((img) => {
+          if (img && img.complete && img.naturalWidth > 0 && canvasRef.current) {
+            const currentCtx = canvasRef.current.getContext("2d", { alpha: false });
+            if (currentCtx) {
+              renderCover(currentCtx, canvasRef.current, img);
+              isReadyRef.current = true;
+            }
+          }
+        });
+        return;
       }
 
-      ctx.drawImage(imgToDraw, offsetX, offsetY, renderWidth, renderHeight);
+      renderCover(ctx, canvas, imgToDraw);
       isReadyRef.current = true;
     },
-    [sequence]
+    [sequence, updateCanvasDimensions, renderCover]
   );
 
   // Initialize and ensure background preload is active
   useEffect(() => {
+    updateCanvasDimensions();
     startBackgroundPreload(sequence);
 
-    // Initial instant draw
+    // Initial draw
     drawFrame(1);
 
-    // Subscribe to incoming loaded frames to update frame 1 or current frame instantly
+    // Subscribe to incoming loaded frames to repaint when frame 1 or target loads
     const unsubscribe = subscribeToPreload(() => {
-      const target = Math.round(targetFrameRef.current);
+      const target = Math.round(targetFrameRef.current) || 1;
       drawFrame(target);
     });
 
     return () => {
       unsubscribe();
     };
-  }, [sequence, drawFrame]);
+  }, [sequence, drawFrame, updateCanvasDimensions]);
 
   // Resize handler
   useEffect(() => {
     const handleResize = () => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
-      const w = window.innerWidth;
-      const h = window.innerHeight;
-
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
-      canvas.style.width = `${w}px`;
-      canvas.style.height = `${h}px`;
-
-      drawFrame(Math.round(currentFrameRef.current));
+      updateCanvasDimensions();
+      drawFrame(Math.round(currentFrameRef.current) || 1);
     };
 
-    handleResize();
     window.addEventListener("resize", handleResize, { passive: true });
     return () => window.removeEventListener("resize", handleResize);
-  }, [drawFrame]);
+  }, [drawFrame, updateCanvasDimensions]);
 
   // Mouse move tilt handler
   useEffect(() => {
@@ -126,8 +160,8 @@ export function Marvel3DScrollCanvas({
         requestAnimationFrame(() => {
           const nx = (e.clientX / window.innerWidth - 0.5) * 2;
           const ny = (e.clientY / window.innerHeight - 0.5) * 2;
-          mouseTiltRef.current.targetX = nx * 2.5;
-          mouseTiltRef.current.targetY = ny * -2.5;
+          mouseTiltRef.current.targetX = nx * 1.5;
+          mouseTiltRef.current.targetY = ny * -1.5;
           ticking = false;
         });
         ticking = true;
@@ -183,7 +217,7 @@ export function Marvel3DScrollCanvas({
         drawFrameRef.current(frameToDraw);
       }
 
-      // Smooth mouse tilt
+      // Smooth mouse tilt with overscan safety
       const tilt = mouseTiltRef.current;
       const diffTiltX = tilt.targetX - tilt.x;
       const diffTiltY = tilt.targetY - tilt.y;
@@ -191,7 +225,7 @@ export function Marvel3DScrollCanvas({
         tilt.x += diffTiltX * 0.08;
         tilt.y += diffTiltY * 0.08;
         if (containerRef.current) {
-          containerRef.current.style.transform = `perspective(1200px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg) scale(1.01)`;
+          containerRef.current.style.transform = `perspective(1200px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg) scale(1.06)`;
         }
       }
 
@@ -208,24 +242,39 @@ export function Marvel3DScrollCanvas({
   }, []);
 
   const toggleSequence = () => {
-    setSequence((prev) => (prev === "frames" ? "frames2" : "frames"));
+    // Single 156-frame Marvel Multiverse sequence active
   };
 
   return (
     <>
       {/* ─── 3D Fixed Viewport Canvas Container ─── */}
-      <div className="fixed inset-0 w-full h-full z-0 overflow-hidden pointer-events-none bg-[#05050A]">
-        {/* Animated Perspective Wrapper */}
-        <div ref={containerRef} className="relative w-full h-full will-change-transform">
+      <div className="fixed inset-0 w-screen h-screen z-0 overflow-hidden pointer-events-none bg-[#05050A]">
+        {/* Animated Perspective Wrapper with 108% overscan buffer to guarantee no exposed edges on tilt */}
+        <div
+          ref={containerRef}
+          className="absolute -top-[4%] -bottom-[4%] -left-[4%] -right-[4%] w-[108%] h-[108%] will-change-transform origin-center"
+          style={{ transform: "perspective(1200px) rotateX(0deg) rotateY(0deg) scale(1.06)" }}
+        >
           <canvas
             ref={canvasRef}
-            className="w-full h-full block object-cover filter brightness-105 contrast-110 saturate-110"
+            className="w-full h-full block object-cover filter brightness-[1.05] contrast-[1.05] saturate-[1.10]"
           />
 
-          {/* Clean Subtle Lighting Vignette — Subject in Center is 100% Bright and Clear */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_55%,rgba(5,5,10,0.6)_100%)] pointer-events-none" />
-          <div className="absolute top-0 left-0 right-0 h-28 bg-gradient-to-b from-[#05050A]/70 via-[#05050A]/20 to-transparent pointer-events-none" />
-          <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#05050A]/70 via-[#05050A]/20 to-transparent pointer-events-none" />
+          {/* ─── Soft Subtle Edge Blending (Lightened for maximum frame visibility) ─── */}
+          {/* Very soft radial center vignette */}
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_65%,rgba(5,5,10,0.25)_90%,rgba(5,5,10,0.55)_100%)] pointer-events-none" />
+
+          {/* Top light blend */}
+          <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-[#05050A]/45 via-[#05050A]/15 to-transparent pointer-events-none" />
+
+          {/* Bottom light blend */}
+          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#05050A]/45 via-[#05050A]/15 to-transparent pointer-events-none" />
+
+          {/* Left subtle edge */}
+          <div className="absolute top-0 bottom-0 left-0 w-16 bg-gradient-to-r from-[#05050A]/30 to-transparent pointer-events-none" />
+
+          {/* Right subtle edge */}
+          <div className="absolute top-0 bottom-0 right-0 w-16 bg-gradient-to-l from-[#05050A]/30 to-transparent pointer-events-none" />
         </div>
       </div>
 

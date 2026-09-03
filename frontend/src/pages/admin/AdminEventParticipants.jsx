@@ -5,7 +5,8 @@ import LoadingState from "../../components/ui/LoadingState";
 import ErrorState from "../../components/ui/ErrorState";
 import EmptyState from "../../components/ui/EmptyState";
 import StatusChip from "../../components/theme/StatusChip";
-import { getAdminRegistrations, getEvent } from "../../services/api";
+import { getAdminRegistrations, getEvent, updateAdminRegistration } from "../../services/api";
+import { exportPdf, exportExcel } from "../../utils/adminUtils";
 
 /**
  * Per-event participant / team roster for Event Operations.
@@ -16,6 +17,7 @@ export default function AdminEventParticipants() {
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [updatingId, setUpdatingId] = useState(null);
   const [search, setSearch] = useState("");
   const [institution, setInstitution] = useState("all");
   const [status, setStatus] = useState("all");
@@ -37,6 +39,30 @@ export default function AdminEventParticipants() {
       .finally(() => setLoading(false));
   }
 
+  async function handleEventAttendanceToggle(r, nextVal) {
+    setUpdatingId(r.id);
+    try {
+      const res = await updateAdminRegistration(r.id, { event_attendance_marked: nextVal });
+      setRows((prev) => prev.map((item) => (item.id === r.id ? { ...item, ...res.data } : item)));
+    } catch {
+      setError("Failed to update event attendance.");
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
+  async function handleGateAttendanceToggle(r, nextVal) {
+    setUpdatingId(r.id);
+    try {
+      const res = await updateAdminRegistration(r.id, { verification_attendance_marked: nextVal });
+      setRows((prev) => prev.map((item) => (item.id === r.id ? { ...item, ...res.data } : item)));
+    } catch {
+      setError("Failed to update gate verification.");
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reload when event id changes
@@ -53,8 +79,10 @@ export default function AdminEventParticipants() {
       if (institution !== "all" && r.college_name !== institution) return false;
       if (status === "paid" && r.payment_status !== "paid") return false;
       if (status === "pending" && r.payment_status !== "pending") return false;
-      if (status === "attended" && !r.attendance_marked) return false;
-      if (status === "not_attended" && r.attendance_marked) return false;
+      if (status === "event_attended" && !r.event_attendance_marked) return false;
+      if (status === "event_not_attended" && r.event_attendance_marked) return false;
+      if (status === "gate_verified" && !r.verification_attendance_marked && !r.attendance_marked) return false;
+      if (status === "gate_pending" && (r.verification_attendance_marked || r.attendance_marked)) return false;
       if (!q) return true;
       const members = (r.team_members || []).map((m) => m.name).join(" ");
       return [
@@ -76,6 +104,68 @@ export default function AdminEventParticipants() {
     }, 0);
   }, [rows]);
 
+  const eventAttendedCount = useMemo(() => {
+    return rows.filter((r) => r.event_attendance_marked).length;
+  }, [rows]);
+
+  const gateVerifiedCount = useMemo(() => {
+    return rows.filter((r) => r.verification_attendance_marked || r.attendance_marked).length;
+  }, [rows]);
+
+  const eventAttendedRate = rows.length > 0 ? Math.round((eventAttendedCount / rows.length) * 100) : 0;
+  const gateVerifiedRate = rows.length > 0 ? Math.round((gateVerifiedCount / rows.length) * 100) : 0;
+
+  const exportRows = useMemo(() => {
+    return [
+      [
+        "Reg #",
+        "Participant / Captain",
+        "Type",
+        "Team Name",
+        "Teammates",
+        "Institution",
+        "Email",
+        "Phone",
+        "Gender",
+        "Payment",
+        "Gate Verification",
+        "Event Attendance",
+      ],
+      ...filtered.map((r) => {
+        const members = (r.team_members || []).map((m) => m.name).join(", ");
+        const gateStatus = (r.verification_attendance_marked || r.attendance_marked) ? "Verified at Gate" : "Gate Pending";
+        const eventStatus = r.event_attendance_marked ? "Present at Event" : "Absent";
+        return [
+          r.registration_number || "",
+          r.participant_name || "",
+          r.registration_type || "individual",
+          r.team_name || "",
+          members,
+          r.college_name || "",
+          r.email || "",
+          r.phone || "",
+          r.gender || "",
+          r.payment_status || "pending",
+          gateStatus,
+          eventStatus,
+        ];
+      }),
+    ];
+  }, [filtered]);
+
+  function handleExportPdf() {
+    const slug = (event?.title || "event").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const filename = `${slug}-participants-attendance.pdf`;
+    const title = `${event?.title || "Event"} — Participants & Attendance Roster`;
+    exportPdf(filename, exportRows, title);
+  }
+
+  function handleExportExcel() {
+    const slug = (event?.title || "event").toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    const filename = `${slug}-participants-attendance.xls`;
+    exportExcel(filename, exportRows);
+  }
+
   if (loading) return <LoadingState message="Loading participants…" />;
   if (error) return <ErrorState message={error} onRetry={load} />;
   if (!event) return <EmptyState title="Event not found" message="This event could not be loaded." />;
@@ -92,7 +182,25 @@ export default function AdminEventParticipants() {
             .join(" · ")}
         </p>
         <div className="admin-ops-actions">
-          <Link to={`/admin/events/${id}/winners`} className="btn btn-gold btn-sm">
+          <button
+            type="button"
+            className="btn btn-gold btn-sm"
+            onClick={handleExportPdf}
+            disabled={!filtered.length}
+            title="Download participants roster as PDF"
+          >
+            Download PDF
+          </button>
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={handleExportExcel}
+            disabled={!filtered.length}
+            title="Export participants roster to Excel"
+          >
+            Export Excel
+          </button>
+          <Link to={`/admin/events/${id}/winners`} className="btn btn-outline btn-sm">
             Set winners
           </Link>
           <Link to={`/admin/events/${id}/edit`} className="btn btn-outline btn-sm">
@@ -104,9 +212,11 @@ export default function AdminEventParticipants() {
         </div>
       </header>
 
-      <div className="admin-kpi-grid admin-kpi-grid--compact">
+      <div className="admin-kpi-grid admin-kpi-grid--compact" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
         <article className="admin-kpi-card"><strong>{rows.length}</strong><span>Registrations</span></article>
-        <article className="admin-kpi-card"><strong>{participantCount}</strong><span>Participants (incl. teammates)</span></article>
+        <article className="admin-kpi-card"><strong>{participantCount}</strong><span>Participants (total)</span></article>
+        <article className="admin-kpi-card"><strong>{gateVerifiedCount} ({gateVerifiedRate}%)</strong><span>Gate / Desk Verified</span></article>
+        <article className="admin-kpi-card"><strong>{eventAttendedCount} ({eventAttendedRate}%)</strong><span>Event Arena Present</span></article>
       </div>
 
       <AdminTableToolbar search={search} onSearchChange={setSearch} searchPlaceholder="Name, reg #, team…">
@@ -120,8 +230,10 @@ export default function AdminEventParticipants() {
           <option value="all">All statuses</option>
           <option value="paid">Paid</option>
           <option value="pending">Payment pending</option>
-          <option value="attended">Checked in</option>
-          <option value="not_attended">Not checked in</option>
+          <option value="event_attended">Event: Present</option>
+          <option value="event_not_attended">Event: Absent</option>
+          <option value="gate_verified">Gate: Verified</option>
+          <option value="gate_pending">Gate: Pending</option>
         </select>
       </AdminTableToolbar>
 
@@ -142,7 +254,8 @@ export default function AdminEventParticipants() {
                 <th>Contact</th>
                 <th>Gender</th>
                 <th>Payment</th>
-                <th>Attendance</th>
+                <th>Gate Desk</th>
+                <th>Event Arena</th>
               </tr>
             </thead>
             <tbody>
@@ -150,6 +263,7 @@ export default function AdminEventParticipants() {
                 const members = r.team_members || [];
                 const teamSize =
                   r.registration_type === "team" ? 1 + members.length : 1;
+                const isGateVerified = Boolean(r.verification_attendance_marked || r.attendance_marked);
                 return (
                   <tr key={r.id}>
                     <td>{r.registration_number || "—"}</td>
@@ -184,8 +298,25 @@ export default function AdminEventParticipants() {
                     </td>
                     <td>{r.gender && r.gender !== "unspecified" ? r.gender : "—"}</td>
                     <td><StatusChip status={r.payment_status} /></td>
-                    <td>
-                      <StatusChip status={r.attendance_marked ? "checked_in" : "pending"} />
+                    <td data-label="Gate Desk">
+                      <span
+                        className={`admin-badge-status ${isGateVerified ? "admin-badge-status--active" : "admin-badge-status--draft"}`}
+                        title={isGateVerified ? "Verified and checked in at entrance desk" : "Not yet checked in at entrance"}
+                      >
+                        {isGateVerified ? "Gate Verified" : "Gate Pending"}
+                      </span>
+                    </td>
+                    <td data-label="Event Arena">
+                      <label className="admin-attendance-toggle">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(r.event_attendance_marked)}
+                          disabled={updatingId === r.id}
+                          onChange={(e) => handleEventAttendanceToggle(r, e.target.checked)}
+                          aria-label={`Event arena attendance for ${r.participant_name}`}
+                        />
+                        <StatusChip status={r.event_attendance_marked ? "checked_in" : "pending"} />
+                      </label>
                     </td>
                   </tr>
                 );

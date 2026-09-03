@@ -9,8 +9,10 @@ class ResultSerializer(ImageValidationMixin, serializers.ModelSerializer):
     event_category = serializers.CharField(source='event.category', read_only=True)
     event_venue = serializers.CharField(source='event.venue', read_only=True)
     event_date = serializers.DateField(source='event.event_date', read_only=True)
+    event_id = serializers.IntegerField(source='event.id', read_only=True)
+    is_result_published = serializers.BooleanField(source='event.is_result_published', read_only=True)
     winner_photo = serializers.FileField(required=False, allow_null=True)
 
     class Meta:
         model = Result
-        fields = '__all__'
+        fields = '__all__'

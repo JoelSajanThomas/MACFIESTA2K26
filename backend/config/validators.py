@@ -14,12 +14,25 @@ COMMON_IMAGE_EXTS = {
 
 
 def validate_phone_number(value):
+    """Validate Indian mobile numbers (must be exactly 10 digits starting with 6-9,
+    or +91 prefix with 10 digits)."""
     if not value:
         raise ValidationError("Phone number is required.")
-    digits = re.sub(r"\D", "", str(value))
-    if len(digits) < 10 or len(digits) > 15:
-        raise ValidationError("Enter a valid phone number (10–15 digits).")
-    return value.strip()
+    stripped = re.sub(r"\s+", "", str(value).strip())
+    digits = re.sub(r"\D", "", stripped)
+
+    # 10 digits starting with 6-9
+    if len(digits) == 10 and re.match(r"^[6-9]\d{9}$", digits):
+        return digits
+    # +91 prefix (12 digits total, remaining 10 start with 6-9)
+    if len(digits) == 12 and digits.startswith("91") and re.match(r"^[6-9]\d{9}$", digits[2:]):
+        return digits[2:]
+
+    if len(digits) > 10:
+        raise ValidationError("Mobile number cannot exceed 10 digits.")
+    if len(digits) < 10:
+        raise ValidationError("Mobile number must be exactly 10 digits.")
+    raise ValidationError("Enter a valid 10-digit mobile number starting with 6, 7, 8, or 9.")
 
 
 def validate_uploaded_image(image):

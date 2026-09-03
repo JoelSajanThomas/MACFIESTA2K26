@@ -27,16 +27,17 @@ class AccommodationBookingViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         if self.action in ["update", "partial_update", "destroy"]:
-            return [permissions.IsAuthenticated()]
+            return [HasModule("hospitality")()]
         return [permissions.AllowAny()]
 
     def get_queryset(self):
         user = self.request.user
-        if user.is_authenticated and (user.is_staff or user.is_superuser):
-            return AccommodationBooking.objects.all().select_related("hostel")
-        elif user.is_authenticated:
-            return AccommodationBooking.objects.filter(user=user).select_related("hostel")
-        return AccommodationBooking.objects.none()
+        if not user.is_authenticated:
+            return AccommodationBooking.objects.none()
+        from accounts.permissions import user_has_module
+        if user.is_superuser or (user.is_staff and user_has_module(user, "hospitality")):
+            return AccommodationBooking.objects.all().select_related("hostel", "user")
+        return AccommodationBooking.objects.filter(user=user).select_related("hostel", "user")
 
     def perform_create(self, serializer):
         user = self.request.user if self.request.user.is_authenticated else None

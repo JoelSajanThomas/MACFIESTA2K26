@@ -33,17 +33,20 @@ export default function AdminReports() {
 
   const summary = useMemo(() => {
     const total = rows.length;
-    const attended = rows.filter((r) => r.attendance_marked).length;
+    const gateVerified = rows.filter((r) => r.verification_attendance_marked || r.attendance_marked).length;
+    const eventAttended = rows.filter((r) => r.event_attendance_marked).length;
     const food = rows.filter((r) => r.food_preference && r.food_preference.toLowerCase() !== "none").length;
     const stay = rows.filter((r) => r.needs_accommodation).length;
     const paid = rows.filter((r) => r.payment_status === "paid").length;
-    return { total, attended, food, stay, paid };
+    return { total, gateVerified, eventAttended, food, stay, paid };
   }, [rows]);
 
   const filteredRows = useMemo(() => {
     return rows.filter((r) => {
-      if (attendanceFilter === "marked" && !r.attendance_marked) return false;
-      if (attendanceFilter === "unmarked" && r.attendance_marked) return false;
+      if (attendanceFilter === "gate_verified" && !r.verification_attendance_marked && !r.attendance_marked) return false;
+      if (attendanceFilter === "gate_pending" && (r.verification_attendance_marked || r.attendance_marked)) return false;
+      if (attendanceFilter === "event_attended" && !r.event_attendance_marked) return false;
+      if (attendanceFilter === "event_absent" && r.event_attendance_marked) return false;
       if (paymentFilter !== "all" && (r.payment_status || "").toLowerCase() !== paymentFilter.toLowerCase()) return false;
       if (foodFilter === "required" && (!r.food_preference || r.food_preference.toLowerCase() === "none")) return false;
       if (foodFilter === "none" && r.food_preference && r.food_preference.toLowerCase() !== "none") return false;
@@ -67,8 +70,9 @@ export default function AdminReports() {
       "College",
       "Event",
       "Payment",
-      "Attendance",
-      "Verified At",
+      "Gate Verification",
+      "Gate Verified At",
+      "Event Attendance",
       "Food",
       "Food Notes",
       "Accommodation",
@@ -81,8 +85,9 @@ export default function AdminReports() {
       r.college_name,
       r.event,
       r.payment_status,
-      r.attendance_marked ? "yes" : "no",
+      (r.verification_attendance_marked || r.attendance_marked) ? "Verified at Gate" : "Pending",
       r.verified_at || "",
+      r.event_attendance_marked ? "Present at Event" : "Absent",
       r.food_preference,
       r.food_notes || "",
       r.needs_accommodation ? "yes" : "no",
@@ -127,8 +132,12 @@ export default function AdminReports() {
           <span>Total Records</span>
         </article>
         <article className="admin-kpi-card">
-          <strong>{summary.attended}</strong>
-          <span>Attendance Verified</span>
+          <strong>{summary.gateVerified}</strong>
+          <span>Gate / Desk Verified</span>
+        </article>
+        <article className="admin-kpi-card">
+          <strong>{summary.eventAttended}</strong>
+          <span>Event Arena Present</span>
         </article>
         <article className="admin-kpi-card">
           <strong>{summary.paid}</strong>
@@ -152,8 +161,10 @@ export default function AdminReports() {
           aria-label="Filter by attendance"
         >
           <option value="all">All Attendance</option>
-          <option value="marked">Marked / Present</option>
-          <option value="unmarked">Unmarked / Absent</option>
+          <option value="gate_verified">Gate: Verified</option>
+          <option value="gate_pending">Gate: Pending</option>
+          <option value="event_attended">Event: Present</option>
+          <option value="event_absent">Event: Absent</option>
         </select>
 
         <select
@@ -187,7 +198,8 @@ export default function AdminReports() {
               <th>Participant</th>
               <th>Event</th>
               <th>Payment</th>
-              <th>Attendance</th>
+              <th>Gate Desk</th>
+              <th>Event Arena</th>
               <th>Food Plan</th>
               <th>Stay</th>
             </tr>
@@ -195,12 +207,14 @@ export default function AdminReports() {
           <tbody>
             {filteredRows.length === 0 ? (
               <tr>
-                <td colSpan="7" style={{ textAlign: "center", padding: "2.5rem 1rem", color: "rgba(255, 255, 255, 0.5)" }}>
+                <td colSpan="8" style={{ textAlign: "center", padding: "2.5rem 1rem", color: "rgba(255, 255, 255, 0.5)" }}>
                   No report records found matching your filters.
                 </td>
               </tr>
             ) : (
-              filteredRows.map((r) => (
+              filteredRows.map((r) => {
+                const isGateVerified = Boolean(r.verification_attendance_marked || r.attendance_marked);
+                return (
                 <tr key={r.registration_number}>
                   <td>
                     <strong style={{ fontFamily: "Space Grotesk, sans-serif", color: "#FFD700", letterSpacing: "0.05em" }}>
@@ -232,10 +246,19 @@ export default function AdminReports() {
                   <td>
                     <span
                       className={`status-chip ${
-                        r.attendance_marked ? "status-chip--confirmed" : "status-chip--pending"
+                        isGateVerified ? "status-chip--confirmed" : "status-chip--pending"
                       }`}
                     >
-                      {r.attendance_marked ? "Verified" : "Unmarked"}
+                      {isGateVerified ? "Gate Verified" : "Gate Pending"}
+                    </span>
+                  </td>
+                  <td>
+                    <span
+                      className={`status-chip ${
+                        r.event_attendance_marked ? "status-chip--confirmed" : "status-chip--pending"
+                      }`}
+                    >
+                      {r.event_attendance_marked ? "Arena Present" : "Unmarked"}
                     </span>
                   </td>
                   <td>
@@ -259,7 +282,8 @@ export default function AdminReports() {
                     </span>
                   </td>
                 </tr>
-              ))
+              );
+            })
             )}
           </tbody>
         </table>

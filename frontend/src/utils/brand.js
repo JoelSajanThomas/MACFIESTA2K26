@@ -47,9 +47,9 @@ export const BRAND = {
 
   socialLinks: {
     website: envStr("VITE_OFFICIAL_WEBSITE", "https://macfiesta.macfast.org/"),
-    instagram: envStr("VITE_INSTAGRAM_URL", ""),
-    youtube: envStr("VITE_YOUTUBE_URL", ""),
-    facebook: envStr("VITE_FACEBOOK_URL", ""),
+    instagram: envStr("VITE_INSTAGRAM_URL", "https://instagram.com/macfiesta2k26"),
+    youtube: envStr("VITE_YOUTUBE_URL", "https://youtube.com/@macfiesta4285?si=pxB1LrqPgitwLjly"),
+    facebook: envStr("VITE_FACEBOOK_URL", "https://facebook.com/macfiesta"),
   },
 
   logo: {

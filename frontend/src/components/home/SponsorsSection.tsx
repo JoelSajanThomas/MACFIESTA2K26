@@ -169,11 +169,11 @@ function SponsorCard({ partner, index }: SponsorCardProps) {
         transition={{ duration: 3 + index * 0.4, repeat: Infinity, ease: "easeInOut" }}
       >
         {partner.isImage ? (
-          <div className="relative w-full max-w-[160px] sm:max-w-[190px] h-20 sm:h-24 rounded-2xl overflow-hidden bg-white/95 border border-white/50 p-2 sm:p-2.5 flex items-center justify-center shadow-[0_0_25px_rgba(255,255,255,0.3)] transition-transform duration-300 group-hover:scale-105">
+          <div className="relative w-full max-w-[160px] sm:max-w-[190px] h-20 sm:h-24 p-1.5 sm:p-2 flex items-center justify-center transition-transform duration-300 group-hover:scale-105">
             <img
               src={partner.logo}
               alt={partner.name}
-              className="w-full h-full max-h-full max-w-full object-contain filter drop-shadow-sm transition-transform duration-300 group-hover:scale-105"
+              className="w-full h-full max-h-full max-w-full object-contain filter drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] transition-transform duration-300 group-hover:scale-105"
               onError={(e) => {
                 (e.target as HTMLImageElement).src = "/logo.png";
               }}

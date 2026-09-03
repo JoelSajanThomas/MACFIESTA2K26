@@ -18,6 +18,7 @@ export const ADMIN_NAV = [
   { to: "/admin/content/guests", label: "Guests", module: "guests", group: "Website" },
   { to: "/admin/content", label: "Website CMS", module: "content", end: true, group: "Website" },
   { to: "/admin/users", label: "Staff / Volunteers", module: "users", group: "Management", superuserOnly: true },
+  { to: "/admin/participant-list", label: "User List", module: "users", group: "Management", superuserOnly: true },
   { to: "/admin/reports", label: "Reports", module: "reports", group: "Management" },
 ];
 
@@ -333,6 +334,13 @@ export function pathAllowed(pathname, modules, committee = null, isSuperuser = f
       set.has("registrations") &&
       (!committee || ["hospitality", "food", "core"].includes(committee))
     );
+  }
+
+  if (pathname.startsWith("/admin/content")) {
+    if (isSuperuser || committee === "core") return true;
+    if (pathname.startsWith("/admin/content/sponsors")) return set.has("sponsors");
+    if (pathname.startsWith("/admin/content/guests")) return set.has("guests");
+    return set.has("content");
   }
 
   const match = ADMIN_NAV.find((item) => {

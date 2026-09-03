@@ -17,7 +17,7 @@ export default function AdminSchedule() {
 
   useEffect(() => {
     getEvents()
-      .then((res) => setEvents(res.data))
+      .then((res) => setEvents(Array.isArray(res.data) ? res.data : res.data?.results || []))
       .catch(() => setError("Could not load schedule."))
       .finally(() => setLoading(false));
   }, []);

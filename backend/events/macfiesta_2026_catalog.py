@@ -33,7 +33,6 @@ PLANNING_TARGETS = {
     "cold-investigation": "30–40 participants",
     "escape-room": "20–30 per available slots",
     "master-cook": "teams / slots as available",
-    "college-3v3-football": "16–32 teams",
     "ultimate-marketing-challenge": "15–25 teams",
 }
 
@@ -55,6 +54,8 @@ def _event(
     event_end_time,
     registration_fee,
     prize_pool,
+    min_team_size=1,
+    max_team_size=1,
 ):
     return {
         "slug": slug,
@@ -68,12 +69,14 @@ def _event(
         "event_end_time": event_end_time,
         "registration_fee": Decimal(registration_fee),
         "prize_pool": None if prize_pool is None else Decimal(prize_pool),
+        "min_team_size": min_team_size,
+        "max_team_size": max_team_size,
     }
 
 
 # ---------------------------------------------------------------------------
 # Day 1 — School Events (final list)
-# Fees not listed in PDF → 0 (TBD at desk). Prize pools from PDF.
+# Registration: Free (₹0.00). Prize pools from official document.
 # ---------------------------------------------------------------------------
 SCHOOL_EVENTS = [
     _event(
@@ -88,6 +91,8 @@ SCHOOL_EVENTS = [
         event_end_time=_t(12),
         registration_fee="0.00",
         prize_pool="3000.00",
+        min_team_size=1,
+        max_team_size=1,
     ),
     _event(
         slug="school-photography",
@@ -101,6 +106,8 @@ SCHOOL_EVENTS = [
         event_end_time=_t(13),
         registration_fee="0.00",
         prize_pool="3000.00",
+        min_team_size=1,
+        max_team_size=1,
     ),
     _event(
         slug="school-spot-dance",
@@ -114,10 +121,12 @@ SCHOOL_EVENTS = [
         event_end_time=_t(12),
         registration_fee="0.00",
         prize_pool="5000.00",
+        min_team_size=1,
+        max_team_size=1,
     ),
     _event(
         slug="school-treasure-hunt",
-        title="Infinity Quest: Hunt the Stones (Treasure Hunt)",
+        title="The Endgame Heist: Hunt for the Stones (Treasure Hunt)",
         category="general",
         audience="school",
         department="Major Attraction",
@@ -127,6 +136,8 @@ SCHOOL_EVENTS = [
         event_end_time=_t(13),
         registration_fee="0.00",
         prize_pool="5000.00",
+        min_team_size=3,
+        max_team_size=4,
     ),
     _event(
         slug="school-best-out-of-waste",
@@ -140,6 +151,8 @@ SCHOOL_EVENTS = [
         event_end_time=_t(13),
         registration_fee="0.00",
         prize_pool="3000.00",
+        min_team_size=2,
+        max_team_size=2,
     ),
     _event(
         slug="school-mystery-case",
@@ -153,6 +166,8 @@ SCHOOL_EVENTS = [
         event_end_time=_t(13),
         registration_fee="0.00",
         prize_pool="3000.00",
+        min_team_size=2,
+        max_team_size=2,
     ),
     _event(
         slug="school-3v3-football",
@@ -166,10 +181,12 @@ SCHOOL_EVENTS = [
         event_end_time=_t(13),
         registration_fee="0.00",
         prize_pool="3000.00",
+        min_team_size=3,
+        max_team_size=4,
     ),
     _event(
         slug="school-debate-extempore",
-        title="Superhero Showdown: Speak Your Mind (Debate / Extempore)",
+        title="Civil War: The Great Ideology Debate (Debate / Extempore)",
         category="general",
         audience="school",
         department="Supporting Event",
@@ -179,27 +196,33 @@ SCHOOL_EVENTS = [
         event_end_time=_t(12),
         registration_fee="0.00",
         prize_pool="3000.00",
+        min_team_size=1,
+        max_team_size=1,
     ),
     _event(
         slug="school-stark-expo",
-        title="STARK EXPO — Where Ideas Become Reality",
+        title="STARK EXPO",
         category="tech",
         audience="school",
-        department="School Projects",
+        department="Exhibition / Expo",
         description=(
-            "School Day most attractive event — Expo (AI / robotics / science). "
-            "Official display showcase for school projects."
+            "One Expo. Infinite Worlds of Discovery. "
+            "Featured showcase for school projects across Artificial Intelligence (AI), "
+            "Internet of Things (IoT), Science & Experiments, Biology & Life Sciences, "
+            "and Psychology & Human Behaviour."
         ),
         event_date=DAY1_DATE,
         event_time=_t(10),
         event_end_time=_t(16),
         registration_fee="0.00",
         prize_pool=None,
+        min_team_size=2,
+        max_team_size=4,
     ),
 ]
 
 # ---------------------------------------------------------------------------
-# Day 2 — College Events (final list)
+# Day 2 — College Events (Official 13 Events)
 # ---------------------------------------------------------------------------
 COLLEGE_EVENTS = [
     _event(
@@ -214,6 +237,8 @@ COLLEGE_EVENTS = [
         event_end_time=_t(16),
         registration_fee="200.00",
         prize_pool="15000.00",
+        min_team_size=1,
+        max_team_size=3,
     ),
     _event(
         slug="coding-challenge",
@@ -227,10 +252,12 @@ COLLEGE_EVENTS = [
         event_end_time=_t(12),
         registration_fee="100.00",
         prize_pool="5000.00",
+        min_team_size=1,
+        max_team_size=1,
     ),
     _event(
         slug="bgmi",
-        title="Battle of Wakanda (BGMI)",
+        title="Infinity War (BGMI)",
         category="sports",
         audience="college",
         department="Arena Zone",
@@ -240,6 +267,8 @@ COLLEGE_EVENTS = [
         event_end_time=_t(13),
         registration_fee="200.00",
         prize_pool="7000.00",
+        min_team_size=4,
+        max_team_size=4,
     ),
     _event(
         slug="efootball",
@@ -253,6 +282,8 @@ COLLEGE_EVENTS = [
         event_end_time=_t(13),
         registration_fee="100.00",
         prize_pool="7000.00",
+        min_team_size=1,
+        max_team_size=1,
     ),
     _event(
         slug="shark-tank",
@@ -266,6 +297,8 @@ COLLEGE_EVENTS = [
         event_end_time=_t(12),
         registration_fee="150.00",
         prize_pool="15000.00",
+        min_team_size=2,
+        max_team_size=2,
     ),
     _event(
         slug="photography",
@@ -279,6 +312,8 @@ COLLEGE_EVENTS = [
         event_end_time=_t(14),
         registration_fee="100.00",
         prize_pool="5000.00",
+        min_team_size=1,
+        max_team_size=1,
     ),
     _event(
         slug="reels-competition",
@@ -292,6 +327,8 @@ COLLEGE_EVENTS = [
         event_end_time=_t(14),
         registration_fee="100.00",
         prize_pool="5000.00",
+        min_team_size=1,
+        max_team_size=1,
     ),
     _event(
         slug="group-dance",
@@ -305,6 +342,8 @@ COLLEGE_EVENTS = [
         event_end_time=_t(12),
         registration_fee="150.00",
         prize_pool="5000.00",
+        min_team_size=4,
+        max_team_size=8,
     ),
     _event(
         slug="treasure-hunt",
@@ -318,6 +357,8 @@ COLLEGE_EVENTS = [
         event_end_time=_t(13),
         registration_fee="200.00",
         prize_pool="15000.00",
+        min_team_size=4,
+        max_team_size=4,
     ),
     _event(
         slug="cold-investigation",
@@ -331,6 +372,8 @@ COLLEGE_EVENTS = [
         event_end_time=_t(14),
         registration_fee="150.00",
         prize_pool="7000.00",
+        min_team_size=2,
+        max_team_size=4,
     ),
     _event(
         slug="escape-room",
@@ -344,6 +387,8 @@ COLLEGE_EVENTS = [
         event_end_time=_t(13),
         registration_fee="200.00",
         prize_pool="5000.00",
+        min_team_size=2,
+        max_team_size=4,
     ),
     _event(
         slug="master-cook",
@@ -357,19 +402,8 @@ COLLEGE_EVENTS = [
         event_end_time=_t(13),
         registration_fee="200.00",
         prize_pool="5000.00",
-    ),
-    _event(
-        slug="college-3v3-football",
-        title="Batman v Superman: Battle of Titans (3vs3 Football)",
-        category="sports",
-        audience="college",
-        department="Arena Zone",
-        description="College Day Arena Zone — 3vs3 football.",
-        event_date=DAY2_DATE,
-        event_time=_t(10),
-        event_end_time=_t(13),
-        registration_fee="200.00",
-        prize_pool="5000.00",
+        min_team_size=1,
+        max_team_size=1,
     ),
     _event(
         slug="ultimate-marketing-challenge",
@@ -383,13 +417,15 @@ COLLEGE_EVENTS = [
         event_end_time=_t(13),
         registration_fee="150.00",
         prize_pool="10000.00",
+        min_team_size=2,
+        max_team_size=4,
     ),
 ]
 
 OFFICIAL_EVENTS = SCHOOL_EVENTS + COLLEGE_EVENTS
 OFFICIAL_SLUGS = {e["slug"] for e in OFFICIAL_EVENTS}
 
-# Legacy school slug retired in favour of school-stark-expo
+# Legacy/retired slugs removed from the official catalog
 RETIRED_SLUGS = {
     "school-innovation-expo",
 }

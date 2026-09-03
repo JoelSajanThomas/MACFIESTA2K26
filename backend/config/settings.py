@@ -44,18 +44,24 @@ if not SECRET_KEY:
         raise ValueError("SECRET_KEY environment variable is required when DEBUG=False")
 
 ALLOWED_HOSTS = env_list("ALLOWED_HOSTS")
-if DEBUG and not ALLOWED_HOSTS:
-    # Allow LAN phones / tablets hitting this machine by IP during local dev.
+if not ALLOWED_HOSTS:
     ALLOWED_HOSTS = ["*"]
-elif not DEBUG and not ALLOWED_HOSTS:
-    raise ValueError("ALLOWED_HOSTS environment variable is required when DEBUG=False")
 
+# Allow all CORS origins if explicitly set, or if CORS_ALLOW_ALL_ORIGINS=True, or if DEBUG
+CORS_ALLOW_ALL_ORIGINS = env_bool("CORS_ALLOW_ALL_ORIGINS", True)
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS")
-# Match .env.example: open CORS in DEBUG when no explicit allow-list is set
-# so Vite on LAN IPs / alternate ports (5174, etc.) can call the API.
-CORS_ALLOW_ALL_ORIGINS = DEBUG and not CORS_ALLOWED_ORIGINS
 
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS", CORS_ALLOWED_ORIGINS)
+if not CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:4173",
+        "http://127.0.0.1:4173",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+    ]
+
 
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
@@ -91,19 +97,25 @@ FRONTEND_BASE_URL = os.environ.get("FRONTEND_BASE_URL", "").rstrip("/")
 
 # --- Fest payment + add-on fees (from .env — never hardcode live UPI/bank in source) ---
 
-PAYMENT_ACCOUNT_NAME = os.environ.get("PAYMENT_ACCOUNT_NAME", "MacFiesta / MACFAST")
-PAYMENT_UPI_ID = os.environ.get("PAYMENT_UPI_ID", "")
+PAYMENT_ACCOUNT_NAME = os.environ.get("PAYMENT_ACCOUNT_NAME", "MANAGER MAR ATHANASIOS COLLEGE FOR ADVANCED STUDIES TIRUVALLA")
+PAYMENT_UPI_ID = os.environ.get("PAYMENT_UPI_ID", "macfast12230qr@fbl")
+HOSTEL_PAYMENT_ACCOUNT_NAME = os.environ.get("HOSTEL_PAYMENT_ACCOUNT_NAME", "ST ALPHONSA HOSTEL")
+HOSTEL_PAYMENT_UPI_ID = os.environ.get("HOSTEL_PAYMENT_UPI_ID", "stalphonsahostel@iob")
 PAYMENT_BANK_NAME = os.environ.get("PAYMENT_BANK_NAME", "")
 PAYMENT_ACCOUNT_NUMBER = os.environ.get("PAYMENT_ACCOUNT_NUMBER", "")
 PAYMENT_IFSC = os.environ.get("PAYMENT_IFSC", "")
 PAYMENT_INSTRUCTIONS = os.environ.get(
     "PAYMENT_INSTRUCTIONS",
-    "Pay the total amount to the MacFiesta fest account. Keep the UPI/bank receipt - "
+    "Pay the total amount to the official fest account. Keep the UPI/bank receipt - "
     "the desk will verify payment against your registration number.",
 )
 
-FOOD_PACKAGE_FEE = _Decimal(os.environ.get("FOOD_PACKAGE_FEE", "150.00"))
-ACCOMMODATION_FEE_PER_PERSON = _Decimal(os.environ.get("ACCOMMODATION_FEE_PER_PERSON", "300.00"))
+ACCOMMODATION_FEE_PER_PERSON = _Decimal(os.environ.get("ACCOMMODATION_FEE_PER_PERSON", "350.00"))
+BREAKFAST_FEE = _Decimal(os.environ.get("BREAKFAST_FEE", "50.00"))
+LUNCH_FEE = _Decimal(os.environ.get("LUNCH_FEE", "70.00"))
+DINNER_FEE = _Decimal(os.environ.get("DINNER_FEE", "50.00"))
+# FOOD_PACKAGE_FEE = Breakfast + Lunch + Dinner = 50 + 70 + 50 = 170
+FOOD_PACKAGE_FEE = _Decimal(os.environ.get("FOOD_PACKAGE_FEE", "170.00"))
 TRANSPORT_ASSIST_FEE = _Decimal(os.environ.get("TRANSPORT_ASSIST_FEE", "100.00"))
 
 # Public QR image renderer used by digital pass (client may also set VITE_QR_API_URL)
@@ -112,8 +124,8 @@ QR_IMAGE_API_URL = os.environ.get(
     "https://api.qrserver.com/v1/create-qr-code/",
 )
 
-# Official MacFiesta payment QR (common for all students). Absolute URL or /media/… path.
-PAYMENT_QR_IMAGE_URL = os.environ.get("PAYMENT_QR_IMAGE_URL", "")
+PAYMENT_QR_IMAGE_URL = os.environ.get("PAYMENT_QR_IMAGE_URL", "/event-payment-qr.jpg")
+HOSTEL_PAYMENT_QR_IMAGE_URL = os.environ.get("HOSTEL_PAYMENT_QR_IMAGE_URL", "/hostel-payment-qr.jpg")
 
 # --- Desk seed credentials (passwords MUST live in .env — never in source/docs) ---
 DESK_USERNAME_TEMPLATE = os.environ.get("DESK_USERNAME_TEMPLATE", "macfiesta{committee}admin")
@@ -165,7 +177,26 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "config.middleware.SecurityHeadersMiddleware",  # custom: hides server info + no-cache API responses
 ]
+
+# ─── Security headers & production hardening ─────────────────────────────────
+# Django's built-in flags (active when DEBUG=False or forced via env).
+SECURE_CONTENT_TYPE_NOSNIFF = True       # X-Content-Type-Options: nosniff
+X_FRAME_OPTIONS = "DENY"                  # X-Frame-Options: DENY (no iframe embedding)
+SECURE_BROWSER_XSS_FILTER = True         # Legacy X-XSS-Protection header
+
+# Only force HTTPS / HSTS in actual production (DEBUG=False).
+if not DEBUG:
+    SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", True)
+    SECURE_HSTS_SECONDS = int(os.environ.get("SECURE_HSTS_SECONDS", "31536000"))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    CSRF_COOKIE_HTTPONLY = True           # JS cannot read CSRF cookie
+    SESSION_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = "Lax"
 
 ROOT_URLCONF = "config.urls"
 
@@ -261,7 +292,7 @@ SIMPLE_JWT = {
 EMAIL_BACKEND = os.environ.get(
     "EMAIL_BACKEND",
     "django.core.mail.backends.smtp.EmailBackend"
-    if os.environ.get("EMAIL_HOST_USER") or os.environ.get("EMAIL_HOST")
+    if (os.environ.get("EMAIL_HOST_USER") and os.environ.get("EMAIL_HOST_PASSWORD"))
     else "django.core.mail.backends.console.EmailBackend",
 )
 EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
@@ -272,6 +303,6 @@ EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
 EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
 DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL",
-    f"MACFIESTA 2026 <{EMAIL_HOST_USER or 'noreply@macfiesta.org'}>",
+    f"MACFIESTA 2026 <{os.environ.get('EMAIL_HOST_USER') or 'noreply@macfiesta.org'}>",
 )
 

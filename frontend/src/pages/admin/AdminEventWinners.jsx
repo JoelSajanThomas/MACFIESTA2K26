@@ -10,6 +10,7 @@ import {
   getAdminRegistrations,
   getEvent,
   getResults,
+  invalidateApiGetCache,
   updateEvent,
   updateResult,
 } from "../../services/api";
@@ -68,7 +69,10 @@ export default function AdminEventWinners() {
         });
         setPicks(next);
       })
-      .catch(() => setError("Could not load winners form."))
+      .catch((err) => {
+        const msg = err.response?.data?.detail || "Could not load winners form.";
+        setError(msg);
+      })
       .finally(() => setLoading(false));
   }
 
@@ -99,50 +103,60 @@ export default function AdminEventWinners() {
     return new Set(values).size !== values.length;
   }
 
-  async function saveDraft() {
+  async function persistWinners() {
     if (duplicateWarning()) {
       setError("The same participant/team cannot occupy multiple places.");
-      return;
+      return false;
     }
+    for (const place of PLACES) {
+      const value = picks[place.key];
+      const existing = results.find((r) => r.position === place.key);
+      if (!value) {
+        if (existing) await deleteResult(existing.id);
+        continue;
+      }
+      let participant_name;
+      let college_name;
+      if (value.startsWith("manual:")) {
+        const raw = value.slice(7);
+        const [name, college] = raw.split("|");
+        participant_name = name;
+        college_name = college;
+      } else {
+        const reg = regs.find((r) => String(r.id) === value);
+        if (!reg) continue;
+        participant_name =
+          reg.registration_type === "team" && reg.team_name
+            ? `${reg.team_name} (${reg.participant_name})`
+            : reg.participant_name;
+        college_name = reg.college_name;
+      }
+      const payload = {
+        event: Number(id),
+        position: place.key,
+        participant_name,
+        college_name,
+        remarks: "",
+      };
+      if (existing) await updateResult(existing.id, payload);
+      else await createResult(payload);
+    }
+    invalidateApiGetCache("results");
+    invalidateApiGetCache("events");
+    return true;
+  }
+
+  async function saveDraft() {
     setBusy(true);
     setError("");
     try {
-      for (const place of PLACES) {
-        const value = picks[place.key];
-        const existing = results.find((r) => r.position === place.key);
-        if (!value) {
-          if (existing) await deleteResult(existing.id);
-          continue;
-        }
-        let participant_name;
-        let college_name;
-        if (value.startsWith("manual:")) {
-          const raw = value.slice(7);
-          const [name, college] = raw.split("|");
-          participant_name = name;
-          college_name = college;
-        } else {
-          const reg = regs.find((r) => String(r.id) === value);
-          if (!reg) continue;
-          participant_name =
-            reg.registration_type === "team" && reg.team_name
-              ? `${reg.team_name} (${reg.participant_name})`
-              : reg.participant_name;
-          college_name = reg.college_name;
-        }
-        const payload = {
-          event: Number(id),
-          position: place.key,
-          participant_name,
-          college_name,
-          remarks: "",
-        };
-        if (existing) await updateResult(existing.id, payload);
-        else await createResult(payload);
+      const ok = await persistWinners();
+      if (ok) {
+        await load();
       }
-      await load();
-    } catch {
-      setError("Could not save winners. Check that you have Results permission.");
+    } catch (err) {
+      const msg = err.response?.data?.detail || Object.values(err.response?.data || {})[0] || "Could not save winners. Check that you have Results permission.";
+      setError(typeof msg === "string" ? msg : JSON.stringify(msg));
     } finally {
       setBusy(false);
     }
@@ -150,12 +164,30 @@ export default function AdminEventWinners() {
 
   async function applyPublish(publish) {
     setBusy(true);
+    setError("");
     try {
+      if (publish) {
+        const hasAnyPick = Object.values(picks).some(Boolean);
+        if (hasAnyPick) {
+          const ok = await persistWinners();
+          if (!ok) {
+            setBusy(false);
+            return;
+          }
+        }
+      }
       await updateEvent(id, { is_result_published: publish });
       setEvent((e) => ({ ...e, is_result_published: publish }));
       setConfirmPublish(null);
-    } catch {
-      setError("Could not update publish state.");
+      invalidateApiGetCache("events");
+      invalidateApiGetCache("results");
+      await load();
+    } catch (err) {
+      const msg =
+        err.response?.data?.detail ||
+        (err.response?.data && typeof err.response.data === "object" ? Object.values(err.response.data)[0] : null) ||
+        "Could not update publish state.";
+      setError(typeof msg === "string" ? msg : JSON.stringify(msg));
     } finally {
       setBusy(false);
     }
@@ -166,6 +198,7 @@ export default function AdminEventWinners() {
   if (!event) return <EmptyState title="Event not found" message="This event could not be loaded." />;
 
   const state = resultState(event, results);
+  const hasWinnersSelected = results.length > 0 || Object.values(picks).some(Boolean);
 
   return (
     <div className="admin-ops-page admin-event-winners">
@@ -226,8 +259,9 @@ export default function AdminEventWinners() {
           <button
             type="button"
             className="btn btn-outline"
-            disabled={busy || results.length === 0}
+            disabled={busy || !hasWinnersSelected}
             onClick={() => setConfirmPublish(true)}
+            title={!hasWinnersSelected ? "Select at least 1 winner to publish" : "Publish winners to public results"}
           >
             Publish results
           </button>

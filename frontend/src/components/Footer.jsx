@@ -4,8 +4,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   RiInstagramFill,
   RiYoutubeFill,
-  RiLinkedinBoxFill,
-  RiTwitterXFill,
+  RiFacebookCircleFill,
   RiMapPinLine,
   RiPhoneLine,
   RiMailLine,
@@ -32,9 +31,8 @@ const LIVE_FEEDS = [
 
 const SOCIAL_LINKS = [
   { platform: "instagram", label: "Instagram", url: "https://instagram.com/macfiesta2k26", icon: RiInstagramFill },
-  { platform: "youtube", label: "YouTube", url: "https://youtube.com/@macfiesta", icon: RiYoutubeFill },
-  { platform: "linkedin", label: "LinkedIn", url: "https://linkedin.com/school/macfast", icon: RiLinkedinBoxFill },
-  { platform: "twitter", label: "Twitter", url: "https://twitter.com/macfiesta", icon: RiTwitterXFill },
+  { platform: "facebook", label: "Facebook", url: "https://facebook.com/macfiesta", icon: RiFacebookCircleFill },
+  { platform: "youtube", label: "YouTube", url: "https://youtube.com/@macfiesta4285?si=pxB1LrqPgitwLjly", icon: RiYoutubeFill },
 ];
 
 /**
@@ -431,18 +429,26 @@ export default function Footer() {
             <div className="flex gap-2 pt-0.5">
               {SOCIAL_LINKS.map((link) => {
                 const Icon = link.icon;
+                const dynamicUrl =
+                  link.platform === "instagram"
+                    ? (settings?.instagram_url || link.url)
+                    : link.platform === "facebook"
+                    ? (settings?.facebook_url || link.url)
+                    : link.platform === "youtube"
+                    ? (settings?.youtube_url || link.url)
+                    : link.url;
                 return (
                   <motion.a
                     whileHover={{ scale: 1.12 }}
                     whileTap={{ scale: 0.95 }}
                     key={link.platform}
-                    href={link.url}
+                    href={dynamicUrl}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-2 bg-white/5 border border-white/10 rounded-xl text-white/60 hover:text-arc-cyan hover:border-arc-cyan/40 hover:bg-arc-cyan/10 transition-all shadow-sm"
                     aria-label={`Follow on ${link.label}`}
                   >
-                    <Icon size={15} />
+                    <Icon size={16} />
                   </motion.a>
                 );
               })}
