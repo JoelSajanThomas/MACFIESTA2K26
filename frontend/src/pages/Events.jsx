@@ -15,6 +15,7 @@ import {
   RiUserLine,
   RiTeamLine,
   RiFilter3Line,
+  RiPhoneLine,
 } from "react-icons/ri";
 import { getEvents } from "../services/api";
 import { ALL_EVENTS } from "../lib/eventsData";
@@ -291,7 +292,7 @@ export default function Events() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: Math.min(idx * 0.04, 0.4) }}
-                className={`marvel-card group overflow-hidden rounded-2xl flex flex-col justify-between h-[520px] relative border ${item.borderClass || "border-arc-cyan/20 hover:border-arc-cyan"} shadow-xl bg-[#0A0D1A]/90`}
+                className={`marvel-card group overflow-hidden rounded-2xl flex flex-col justify-between min-h-[550px] relative border ${item.borderClass || "border-arc-cyan/20 hover:border-arc-cyan"} shadow-xl bg-[#0A0D1A]/90`}
               >
                 {/* Event Cover Image & MCU Badge */}
                 <div className="relative h-48 w-full overflow-hidden bg-black/60 shrink-0">
@@ -322,7 +323,7 @@ export default function Events() {
                           : "bg-white/10 text-white/80 border-white/20"
                       }`}
                     >
-                      {item.type === "squad" ? `👥 Squad (${item.maxTeamSize}P)` : "👤 Solo"}
+                      {item.type === "squad" ? (item.maxTeamSize || item.max_team_size ? `👥 Squad (${item.maxTeamSize || item.max_team_size}P)` : "👥 Squad") : "👤 Solo"}
                     </span>
                     <span
                       className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-full font-excon-black border ${
@@ -373,6 +374,32 @@ export default function Events() {
                         <span className="font-medium">{item.time}</span>
                       </div>
                     </div>
+
+                    {/* Official In-Charge Badge */}
+                    {item.coordinator?.name && (
+                      <div className="flex items-center justify-between gap-1.5 text-[11px] bg-white/[0.04] border border-white/10 rounded-xl px-2.5 py-1.5 mt-2 text-white/80">
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <RiUserLine className="text-arc-cyan text-xs shrink-0" />
+                          <span className="text-white/50 text-[10px] uppercase font-bold shrink-0">In-Charge:</span>
+                          <span className="font-bold text-white truncate text-xs">{item.coordinator.name}</span>
+                          {item.coordinator.department && (
+                            <span className="text-[10px] text-metallic-gold font-mono shrink-0 hidden sm:inline">
+                              • {item.coordinator.department}
+                            </span>
+                          )}
+                        </div>
+                        {item.coordinator.phone && (
+                          <a
+                            href={`tel:${item.coordinator.phone.replace(/[^0-9+]/g, "")}`}
+                            onClick={(e) => e.stopPropagation()}
+                            className="shrink-0 text-arc-cyan hover:text-white p-1 rounded-md hover:bg-arc-cyan/20 transition-all ml-1"
+                            title={`Call In-Charge ${item.coordinator.name}`}
+                          >
+                            <RiPhoneLine size={13} />
+                          </a>
+                        )}
+                      </div>
+                    )}
                   </div>
 
                   {/* Actions */}

@@ -32,7 +32,9 @@ export interface Event {
   coordinator: {
     name: string;
     phone: string;
-    email: string;
+    email?: string;
+    department?: string;
+    team?: { name: string; detail?: string; phone: string }[];
   };
   category: "general" | "technical" | "cultural" | "gaming" | "sports" | "management" | "media";
   type: "solo" | "duo" | "trio" | "squad" | "group";

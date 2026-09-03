@@ -12,6 +12,10 @@ import {
   RiCheckboxCircleLine,
   RiCompass3Line,
   RiUserStarLine,
+  RiPhoneLine,
+  RiMailLine,
+  RiUserLine,
+  RiShieldUserLine,
 } from "react-icons/ri";
 import { getCurrentUser, getEvent, getEvents, isLoggedIn } from "../services/api";
 import { ALL_EVENTS } from "../lib/eventsData";
@@ -77,9 +81,11 @@ export default function EventDetails() {
                     "Report to the assigned arena 15 minutes before mission start.",
                   ]),
           coordinator: {
-            name: d.coordinator_name || local?.coordinator?.name || "Prof. Alexander / S.H.I.E.L.D. Staff",
-            phone: d.coordinator_phone || local?.coordinator?.phone || "+91 94470 12345",
+            name: d.coordinator_name || local?.coordinator?.name || "Event In-Charge",
+            phone: d.coordinator_phone || local?.coordinator?.phone || "+91 85909 39674",
             email: d.coordinator_email || local?.coordinator?.email || "fest@macfast.org",
+            department: local?.coordinator?.department || "",
+            team: local?.coordinator?.team || [],
           },
           manpower: local?.manpower || [],
           possibleProblems: local?.possibleProblems || [],
@@ -396,31 +402,101 @@ export default function EventDetails() {
               </div>
             </div>
 
-            {/* Coordinator Card */}
-            <div className="marvel-card p-6 rounded-3xl border border-white/10 space-y-4 bg-[#0A0D1A]/90">
-              <div className="flex items-center gap-2 text-metallic-gold text-xs font-bold uppercase tracking-wider font-excon-bold">
-                <RiContactsLine />
-                <span>Mission Commander</span>
+            {/* Official Event In-Charge & Committee Command Card */}
+            <div className="marvel-card p-6 rounded-3xl border border-arc-cyan/30 space-y-5 bg-[#0A0D1A]/95 shadow-2xl relative overflow-hidden">
+              <div className="absolute top-0 right-0 w-32 h-32 bg-arc-cyan/10 rounded-full blur-2xl pointer-events-none" />
+
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2 text-arc-cyan text-xs font-bold uppercase tracking-wider font-excon-bold">
+                  <RiShieldUserLine className="text-base" />
+                  <span>Event In-Charge &amp; Committee</span>
+                </div>
+                <span className="text-[9px] font-mono uppercase bg-arc-cyan/10 text-arc-cyan px-2 py-0.5 rounded border border-arc-cyan/30 font-bold">
+                  Official
+                </span>
               </div>
 
-              <div className="space-y-2 text-xs font-excon">
-                <div>
-                  <span className="block text-white/50 text-[10px] uppercase font-bold">Faculty / Student In-Charge</span>
-                  <span className="block text-white font-bold text-sm font-excon-bold mt-0.5">{event.coordinator?.name}</span>
+              {/* Lead Coordinator */}
+              <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] uppercase font-bold text-white/50 tracking-wider block">
+                      Student In-Charge / Lead
+                    </span>
+                    <h4 className="text-base font-black text-white font-excon-bold">
+                      {event.coordinator?.name}
+                    </h4>
+                    {event.coordinator?.department && (
+                      <span className="inline-block text-[11px] text-metallic-gold font-bold font-mono">
+                        {event.coordinator?.department}
+                      </span>
+                    )}
+                  </div>
+                  <div className="w-9 h-9 rounded-xl bg-arc-cyan/10 border border-arc-cyan/30 flex items-center justify-center text-arc-cyan shrink-0">
+                    <RiUserLine size={18} />
+                  </div>
                 </div>
-                <div>
-                  <span className="block text-white/50 text-[10px] uppercase font-bold">Helpline</span>
-                  <a href={`tel:${event.coordinator?.phone}`} className="text-arc-cyan font-mono hover:underline font-bold">
-                    {event.coordinator?.phone}
-                  </a>
-                </div>
-                <div>
-                  <span className="block text-white/50 text-[10px] uppercase font-bold">Inquiry Email</span>
-                  <a href={`mailto:${event.coordinator?.email}`} className="text-metallic-gold font-mono hover:underline">
-                    {event.coordinator?.email}
-                  </a>
+
+                {/* Quick Helpline Actions */}
+                <div className="pt-2 flex flex-wrap gap-2 border-t border-white/10">
+                  {event.coordinator?.phone && (
+                    <a
+                      href={`tel:${event.coordinator.phone.replace(/[^0-9+]/g, "")}`}
+                      className="flex-1 min-w-[140px] flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-arc-cyan/15 hover:bg-arc-cyan text-arc-cyan hover:text-black font-mono font-bold text-xs transition-all border border-arc-cyan/40 hover:shadow-[0_0_15px_#00D4FF]"
+                    >
+                      <RiPhoneLine size={14} />
+                      <span>{event.coordinator.phone}</span>
+                    </a>
+                  )}
+                  {event.coordinator?.email && (
+                    <a
+                      href={`mailto:${event.coordinator.email}`}
+                      className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-white/5 hover:bg-white/15 text-white/70 hover:text-white font-mono text-xs transition-all border border-white/10"
+                      title={`Email ${event.coordinator.email}`}
+                    >
+                      <RiMailLine size={14} />
+                    </a>
+                  )}
                 </div>
               </div>
+
+              {/* Full Committee Team Roster (e.g. for Treasure Hunt or Joint In-Charges) */}
+              {event.coordinator?.team && event.coordinator.team.length > 0 && (
+                <div className="space-y-2 pt-1">
+                  <span className="text-[10px] uppercase font-bold text-metallic-gold tracking-wider flex items-center gap-1">
+                    <RiTeamLine />
+                    <span>Event Organizing Team ({event.coordinator.team.length} Coordinators)</span>
+                  </span>
+                  <div className="space-y-2 max-h-56 overflow-y-auto pr-1 select-scrollbar">
+                    {event.coordinator.team.map((member, idx) => (
+                      <div
+                        key={idx}
+                        className="flex items-center justify-between p-2.5 rounded-xl bg-black/40 border border-white/5 hover:border-white/20 transition-all text-xs"
+                      >
+                        <div className="min-w-0 pr-2">
+                          <span className="block font-bold text-white truncate">{member.name}</span>
+                          {member.detail && (
+                            <span className="block text-[10px] text-white/50 font-mono">{member.detail}</span>
+                          )}
+                        </div>
+                        {member.phone && (
+                          <a
+                            href={`tel:${member.phone.replace(/[^0-9+]/g, "")}`}
+                            className="shrink-0 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-arc-cyan/10 hover:bg-arc-cyan text-arc-cyan hover:text-black font-mono font-bold text-[11px] transition-all border border-arc-cyan/30"
+                          >
+                            <RiPhoneLine size={11} />
+                            <span>Call</span>
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <p className="text-[10px] text-white/40 leading-relaxed font-mono">
+                Contact the event in-charge for reporting times, workstations, rules verification, and mission coordination.
+              </p>
             </div>
 
             {/* Directory Back Link */}

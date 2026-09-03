@@ -38,7 +38,6 @@ const History = lazy(() => import("./pages/History"));
 const Contact = lazy(() => import("./pages/Contact"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
-const Committees = lazy(() => import("./pages/Committees"));
 const PassPage = lazy(() =>
   import("./pages/PassAndCertificate").then((m) => ({ default: m.ParticipantPass }))
 );
@@ -112,7 +111,7 @@ function AppRoutes() {
       <Route path="/terms" element={<Terms />} />
       <Route path="/privacy" element={<Privacy />} />
       <Route path="/sponsors" element={<Sponsors />} />
-      <Route path="/committees" element={<Committees />} />
+      <Route path="/committees" element={<Navigate to="/events" replace />} />
       <Route path="/desks" element={<Navigate to="/login" replace />} />
       <Route path="/desk/:committeeSlug/login" element={<Navigate to="/login" replace />} />
       <Route path="/volunteer/login" element={<Navigate to="/login" replace />} />
