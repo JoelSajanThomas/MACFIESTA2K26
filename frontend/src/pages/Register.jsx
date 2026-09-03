@@ -72,6 +72,7 @@ export default function Register() {
     full_name: "",
     email: "",
     phone: "",
+    gender: "male",
     college_name: "",
     password: "",
     password_confirm: "",
@@ -176,6 +177,7 @@ export default function Register() {
         full_name: name,
         email: email,
         phone: form.phone.trim(),
+        gender: form.gender || "male",
         college_name: college,
         password: form.password,
         password_confirm: form.password_confirm,
@@ -189,6 +191,7 @@ export default function Register() {
           college_name: payload.college_name,
           phone: payload.phone,
           email: payload.email,
+          gender: form.gender || "male",
         });
         notifyAuthChange();
 
@@ -343,6 +346,37 @@ export default function Register() {
                 {!phoneError && form.phone && form.phone.length === 10 && (
                   <p className="text-[11px] text-emerald-400 mt-1 font-mono">✓ Valid 10-digit mobile number</p>
                 )}
+              </div>
+
+              {/* Gender Selection */}
+              <div>
+                <label className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold">
+                  Gender *
+                </label>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {[
+                    { id: "male", label: "Male", symbol: "♂" },
+                    { id: "female", label: "Female", symbol: "♀" },
+                    { id: "others", label: "Others", symbol: "⚧" },
+                  ].map((opt) => {
+                    const isSelected = form.gender === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setForm((prev) => ({ ...prev, gender: opt.id }))}
+                        className={`py-2.5 px-3 rounded-xl border text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all font-excon-bold cursor-pointer ${
+                          isSelected
+                            ? "bg-arc-cyan text-black border-arc-cyan shadow-[0_0_15px_rgba(0,212,255,0.4)] ring-1 ring-arc-cyan"
+                            : "bg-white/5 text-white/70 border-white/10 hover:border-white/30 hover:text-white"
+                        }`}
+                      >
+                        <span className="text-sm font-black">{opt.symbol}</span>
+                        <span>{opt.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               <button

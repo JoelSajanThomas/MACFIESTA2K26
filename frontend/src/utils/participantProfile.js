@@ -8,6 +8,7 @@ export function saveParticipantProfile(profile) {
       college_name: String(profile?.college_name || "").trim(),
       phone: String(profile?.phone || "").trim(),
       email: String(profile?.email || "").trim(),
+      gender: String(profile?.gender || "male").trim(),
     };
     localStorage.setItem(PROFILE_KEY, JSON.stringify(next));
   } catch {
@@ -26,6 +27,7 @@ export function loadParticipantProfile() {
       college_name: String(data.college_name || "").trim(),
       phone: String(data.phone || "").trim(),
       email: String(data.email || "").trim(),
+      gender: String(data.gender || "male").trim(),
     };
   } catch {
     return null;

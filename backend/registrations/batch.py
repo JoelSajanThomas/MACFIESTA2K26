@@ -102,6 +102,14 @@ def _create_one_registration(
     default_team_name = f"{base['participant_name']}'s Team"
     resolved_team_name = (base.get("team_name") or default_team_name).strip() if is_team_event else ""
 
+    raw_gender = str(base.get("gender") or "").strip().lower()
+    if raw_gender in ("female", "f"):
+        gender = "female"
+    elif raw_gender in ("others", "other", "o"):
+        gender = "other"
+    else:
+        gender = "male"
+
     create_kwargs = {
         "user": user,
         "event": event,
@@ -111,6 +119,7 @@ def _create_one_registration(
         "college_name": base["college_name"],
         "email": base["email"],
         "phone": base["phone"],
+        "gender": gender,
         "food_preference": food if apply_addons else "none",
         "food_notes": (base.get("food_notes") or "") if apply_addons else "",
         "needs_accommodation": needs_acc,

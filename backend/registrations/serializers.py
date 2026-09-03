@@ -87,6 +87,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
     is_team_full = serializers.BooleanField(read_only=True)
     is_team_paid = serializers.BooleanField(read_only=True)
     total_team_members_count = serializers.IntegerField(read_only=True)
+    gender = serializers.CharField(required=False, allow_blank=True, default="male")
 
     class Meta:
         model = Registration
@@ -219,6 +220,16 @@ class RegistrationSerializer(serializers.ModelSerializer):
         raise serializers.ValidationError(
             "Enter a valid 10-digit mobile number starting with 6, 7, 8, or 9."
         )
+
+    def validate_gender(self, value):
+        val = (value or "").strip().lower()
+        if val in ("female", "f"):
+            return "female"
+        if val in ("others", "other", "o"):
+            return "other"
+        if val in ("male", "m"):
+            return "male"
+        return "unspecified"
 
     def validate(self, attrs):
         user = self.context.get("request").user if self.context.get("request") else None

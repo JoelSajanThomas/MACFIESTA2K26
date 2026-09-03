@@ -96,6 +96,7 @@ export default function Checkout() {
     register_number: "",
     college_name: saved?.college_name || "",
     phone: saved?.phone || "",
+    gender: saved?.gender || "male",
     food_breakfast: false,
     food_lunch: false,
     food_dinner: false,
@@ -344,6 +345,7 @@ export default function Checkout() {
         email: account?.email || "",
         college_name: college,
         phone: phone,
+        gender: form.gender || "male",
         food_preference: foodPreferencePayload,
         food_notes: form.food_notes
           ? `${form.food_diet_type.toUpperCase()} | ${form.food_notes}`
@@ -355,6 +357,13 @@ export default function Checkout() {
         accommodation_notes: form.accommodation_notes,
         needs_transport: false,
         transport_note: "",
+      });
+      saveParticipantProfile({
+        full_name: account?.full_name || account?.username || "",
+        college_name: college,
+        phone: phone,
+        email: account?.email || "",
+        gender: form.gender || "male",
       });
       clearCart();
       setCartIds([]);
@@ -847,6 +856,37 @@ export default function Checkout() {
                 {!phoneError && form.phone && form.phone.length === 10 && (
                   <p className="text-[11px] text-emerald-400 mt-1 font-mono">✓ Valid 10-digit mobile number</p>
                 )}
+              </div>
+
+              {/* Gender Selection */}
+              <div>
+                <label className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold">
+                  Gender *
+                </label>
+                <div className="grid grid-cols-3 gap-2.5">
+                  {[
+                    { id: "male", label: "Male", symbol: "♂" },
+                    { id: "female", label: "Female", symbol: "♀" },
+                    { id: "others", label: "Others", symbol: "⚧" },
+                  ].map((opt) => {
+                    const isSelected = (form.gender || "male") === opt.id;
+                    return (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => setForm((prev) => ({ ...prev, gender: opt.id }))}
+                        className={`py-2.5 px-3 rounded-xl border text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all font-excon-bold cursor-pointer ${
+                          isSelected
+                            ? "bg-metallic-gold text-black border-metallic-gold shadow-[0_0_15px_rgba(212,175,55,0.4)] ring-1 ring-metallic-gold"
+                            : "bg-white/5 text-white/70 border-white/10 hover:border-white/30 hover:text-white"
+                        }`}
+                      >
+                        <span className="text-sm font-black">{opt.symbol}</span>
+                        <span>{opt.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 

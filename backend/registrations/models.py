@@ -41,6 +41,7 @@ class Registration(models.Model):
         ("male", "Male"),
         ("female", "Female"),
         ("other", "Other"),
+        ("others", "Others"),
     ]
 
     ACCOMMODATION_STATUS_CHOICES = [

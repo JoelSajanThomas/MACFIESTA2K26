@@ -9,6 +9,7 @@ export interface User {
   phone: string;
   college: string;
   department: string;
+  gender?: "male" | "female" | "others" | "other" | string;
   year: string;
   role: "student" | "admin" | "volunteer";
   profilePhoto?: string;
@@ -52,6 +53,7 @@ export interface Registration {
   userId: string;
   eventId: string;
   teamName?: string;
+  gender?: "male" | "female" | "others" | "other" | string;
   teamMembers?: TeamMember[];
   paymentStatus: "pending" | "completed" | "failed" | "refunded" | "cancelled_no_refund";
   status?: "active" | "cancelled";
@@ -68,6 +70,7 @@ export interface TeamMember {
   email: string;
   phone: string;
   college: string;
+  gender?: "male" | "female" | "others" | "other" | string;
 }
 
 export interface Score {

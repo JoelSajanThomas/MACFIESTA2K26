@@ -73,10 +73,19 @@ class SignupSerializer(serializers.Serializer):
     full_name = serializers.CharField(max_length=150)
     college_name = serializers.CharField(max_length=200)
     phone = serializers.CharField(max_length=20)
+    gender = serializers.CharField(required=False, allow_blank=True, max_length=20, default="male")
     password = serializers.CharField(write_only=True, min_length=8)
     password_confirm = serializers.CharField(write_only=True)
     # Legacy clients may still send username; ignored when present.
     username = serializers.CharField(required=False, allow_blank=True, max_length=150)
+
+    def validate_gender(self, value):
+        val = (value or "").strip().lower()
+        if val in ("female", "f"):
+            return "female"
+        if val in ("others", "other", "o"):
+            return "other"
+        return "male"
 
     def validate_email(self, value):
         email = value.strip().lower()
@@ -131,6 +140,7 @@ class SignupSerializer(serializers.Serializer):
         validated_data.pop("username", None)
         college_name = validated_data.pop("college_name", "")
         phone = validated_data.pop("phone", "")
+        gender = validated_data.pop("gender", "male") or "male"
         full_name = validated_data.pop("full_name", "") or ""
         email = validated_data["email"]
         first_name = full_name
@@ -147,6 +157,7 @@ class SignupSerializer(serializers.Serializer):
         # Stash participant details for checkout prefill (no separate student profile yet).
         user._signup_college_name = college_name
         user._signup_phone = phone
+        user._signup_gender = gender
         return user
 
 
@@ -164,6 +175,7 @@ class SignupView(APIView):
 
         college_name = getattr(user, "_signup_college_name", "") or ""
         phone = getattr(user, "_signup_phone", "") or ""
+        gender = getattr(user, "_signup_gender", "male") or "male"
         if college_name:
             try:
                 from registrations.institutions import ensure_institution
@@ -182,6 +194,7 @@ class SignupView(APIView):
                     "full_name": user.get_full_name(),
                     "college_name": college_name,
                     "phone": phone,
+                    "gender": gender,
                     "is_staff": user.is_staff,
                     "is_superuser": user.is_superuser,
                 },
