@@ -173,9 +173,36 @@ export const SPONSOR_TIERS = [
 ];
 
 export const TESTIMONIALS = [
-  { quote: "Last year's main stage lineup kept the whole campus buzzing till midnight.", name: "Priya N.", role: "Inter-college Delegate" },
-  { quote: "MacFiesta Pro made registration tracking and publishing results straightforward.", name: "Arun K.", role: "Fest Coordinator" },
-  { quote: "The tech arena and cultural night back-to-back — that's what a national fest should feel like.", name: "Cultural Club", role: "MACFAST" },
+  {
+    quote: "The 24-hour hackathon was hands down the best organized we've attended this season. Dedicated gigabit fiber, midnight refreshments, and judges who actually grilled our architecture. That cash prize cleared directly to our account without delays!",
+    name: "Adithya Menon",
+    role: "CET Trivandrum • Hackathon Winner",
+  },
+  {
+    quote: "The acoustic setup and stage lighting at the MACFAST open-air amphitheatre were unbelievable. Our 14-member dance crew had crystal-clear monitor audio and the crowd energy was pure adrenaline. Defending our title next year!",
+    name: "Sneha Elizabeth",
+    role: "St. Teresa's Ernakulam • Synchro Dance Lead",
+  },
+  {
+    quote: "Most college fests struggle with esports, but MacFiesta's LAN gaming arena had 240Hz monitors, zero latency, and live spectator casting. The hospitality team even arranged clean campus accommodation for our entire 5-man squad without hassle.",
+    name: "Gautham Krishna",
+    role: "TKM College of Engg • Valorant Champions",
+  },
+  {
+    quote: "Coming all the way from Bangalore, we were amazed by the operational smoothness. The digital QR entry pass took literally 5 seconds to scan at Mission Control, food was great, and the Best Manager stress rounds were genuinely industry-standard.",
+    name: "Meera Nambiar",
+    role: "Christ University Bangalore • Best Manager Finalist",
+  },
+  {
+    quote: "The sound engineering on the main stage was world-class. Monster subs, crystal-clear vocal monitors, and a 3,000+ crowd screaming every chorus with us till night. MacFiesta sets the benchmark for South Indian collegiate festivals.",
+    name: "Kevin George",
+    role: "Mar Ivanios Trivandrum • Battle of the Bands",
+  },
+  {
+    quote: "The campus-wide Marvel Infinity Hunt was pure genius! Cryptic riddles hidden across MACFAST campus kept dozens of teams sprinting for 4 straight hours. The volunteer coordination and clue validation were incredible.",
+    name: "Devika R.",
+    role: "St. Joseph's Devagiri • Treasure Hunt Winner",
+  },
 ];
 
 export const FAQ_ITEMS = [
