@@ -70,11 +70,13 @@ export default function MobileBottomBar() {
 
   if (isStandalone) return null;
 
-  const isPassActive = pathname?.startsWith("/register");
-  const dashHref = user
-    ? user.is_staff || user.is_superuser
-      ? "/admin"
-      : "/student-dashboard"
+  const isAuth = Boolean(user || isLoggedIn());
+  const centerHref = isAuth
+    ? (user?.is_staff || user?.is_superuser ? "/admin" : "/student-dashboard")
+    : "/register";
+  const isPassActive = pathname?.startsWith(centerHref);
+  const dashHref = isAuth
+    ? (user?.is_staff || user?.is_superuser ? "/admin" : "/student-dashboard")
     : "/login";
 
   const rightTabs = user
@@ -153,9 +155,9 @@ export default function MobileBottomBar() {
           {/* Center Elevated Arc Reactor Pass Button */}
           <div className="relative -mt-6 mx-1 shrink-0">
             <Link
-              to="/register"
+              to={centerHref}
               className="group relative flex flex-col items-center focus:outline-none"
-              aria-label="Festival Entry Pass"
+              aria-label={isAuth ? "Agent Dashboard" : "Festival Entry Pass"}
             >
               {/* Pulsing Backlight Glow */}
               <div className="absolute -inset-1 rounded-full bg-marvel-red/30 blur-md group-hover:bg-marvel-red/50 transition-colors animate-pulse" />

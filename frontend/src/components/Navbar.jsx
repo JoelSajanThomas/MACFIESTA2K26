@@ -41,6 +41,7 @@ export default function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [user, setUser] = useState(null);
+  const isAuth = Boolean(user || isLoggedIn());
 
   const dropdownRef = useRef(null);
   const location = useLocation();
@@ -206,13 +207,13 @@ export default function Navbar() {
 
           {/* Desktop Right Auth / Action Buttons */}
           <div className="hidden lg:flex items-center gap-2.5 font-space">
-            {user ? (
+            {isAuth ? (
               <div className="flex items-center gap-2">
                 <Link
-                  to={user.is_staff || user.is_superuser ? "/admin" : "/student-dashboard"}
+                  to={user?.is_staff || user?.is_superuser ? "/admin" : "/student-dashboard"}
                   className="px-4 py-1.5 text-[11px] font-black text-black bg-arc-cyan rounded-full hover:bg-white transition-all uppercase tracking-wider shadow-[0_0_15px_#00D4FF]"
                 >
-                  {user.is_staff || user.is_superuser ? "Command Console" : "Agent HUD"}
+                  {user?.is_staff || user?.is_superuser ? "Command Console" : "Agent HUD"}
                 </Link>
                 <button
                   type="button"
@@ -243,7 +244,7 @@ export default function Navbar() {
 
           {/* Mobile Menu Toggle */}
           <div className="flex items-center gap-2 lg:hidden">
-            {!user ? (
+            {!isAuth ? (
               <Link
                 to="/login"
                 className="px-2.5 py-1 text-[10px] font-black text-black bg-metallic-gold rounded-full tracking-wider uppercase shadow-[0_0_10px_rgba(212,175,55,0.4)]"
@@ -252,7 +253,7 @@ export default function Navbar() {
               </Link>
             ) : (
               <Link
-                to={user.is_staff || user.is_superuser ? "/admin" : "/student-dashboard"}
+                to={user?.is_staff || user?.is_superuser ? "/admin" : "/student-dashboard"}
                 className="px-2.5 py-1 text-[10px] font-bold bg-marvel-red text-white rounded-full tracking-wider uppercase shadow-[0_0_10px_#ED1D24]"
               >
                 HUD
@@ -345,39 +346,31 @@ export default function Navbar() {
 
             {/* Mobile Footer Actions */}
             <div className="pt-3 border-t border-white/10 flex flex-col gap-3 relative z-10 font-space pb-[max(1rem,env(safe-area-inset-bottom))] w-full">
-              {user ? (
+              {isAuth ? (
                 <>
-                  {/* User Profile Card */}
-                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.04] border border-white/10">
-                    {/* Avatar */}
-                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-arc-cyan/30 to-metallic-gold/30 border border-arc-cyan/40 flex items-center justify-center shrink-0 shadow-[0_0_14px_rgba(0,212,255,0.3)]">
-                      <span className="text-sm font-black text-arc-cyan font-excon-black uppercase">
-                        {(user.first_name?.[0] || user.username?.[0] || "A").toUpperCase()}
-                      </span>
+                  {/* User Profile Mini Bar */}
+                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.04] border border-white/10 mb-3">
+                    <div className="w-9 h-9 rounded-full bg-arc-cyan/20 border border-arc-cyan/40 flex items-center justify-center text-arc-cyan font-black text-xs shrink-0">
+                      {(user?.full_name || user?.username || "A").slice(0, 1).toUpperCase()}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-black text-white uppercase font-excon-bold truncate">
-                        {user.first_name && user.last_name
-                          ? `${user.first_name} ${user.last_name}`
-                          : user.first_name || user.username || "Agent"}
+                    <div className="flex-1 min-w-0 text-left">
+                      <p className="text-xs font-bold text-white truncate font-excon-bold">
+                        {user?.full_name || user?.username || "Agent"}
                       </p>
-                      <p className="text-[10px] text-white/50 font-mono truncate">{user.email || ""}</p>
-                      {(user.is_staff || user.is_superuser) && (
-                        <span className="inline-flex items-center gap-1 text-[9px] px-1.5 py-0.5 rounded bg-marvel-red/20 text-marvel-red border border-marvel-red/30 font-bold uppercase mt-0.5">
-                          <RiShieldUserLine className="text-[9px]" /> Staff
-                        </span>
-                      )}
+                      <p className="text-[10px] text-white/50 truncate font-mono">
+                        {user?.email || "Authenticated Agent"}
+                      </p>
                     </div>
                   </div>
 
                   {/* Dashboard + Logout */}
                   <div className="grid grid-cols-2 gap-2 w-full">
                     <Link
-                      to={user.is_staff || user.is_superuser ? "/admin" : "/student-dashboard"}
+                      to={user?.is_staff || user?.is_superuser ? "/admin" : "/student-dashboard"}
                       onClick={closeMobile}
                       className="flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-black bg-gradient-to-r from-arc-cyan to-arc-cyan/80 text-black rounded-full tracking-wider uppercase shadow-[0_0_15px_rgba(0,212,255,0.35)]"
                     >
-                      {user.is_staff || user.is_superuser ? (
+                      {user?.is_staff || user?.is_superuser ? (
                         <><RiShieldUserLine className="text-xs" /><span>Console</span></>
                       ) : (
                         <><RiDashboardLine className="text-xs" /><span>My HUD</span></>

@@ -14,9 +14,11 @@ import {
   RiVolumeUpFill,
   RiVolumeMuteFill,
   RiMegaphoneLine,
+  RiDashboardLine,
 } from "react-icons/ri";
 import { useFestivalControl } from "@/lib/festivalStore";
-import { getAnnouncements } from "../../services/api";
+import { getAnnouncements, isLoggedIn, getCurrentUser } from "../../services/api";
+import { AUTH_CHANGE_EVENT } from "../../utils/auth";
 import { ANNOUNCEMENT_PLACEHOLDERS } from "../../utils/constants";
 
 /* ─── Reference Design Framer Motion Animation Variants ─── */
@@ -77,6 +79,8 @@ export function HeroSection() {
   const navigate = useNavigate();
   const { settings } = useFestivalControl();
   const [isPlaying, setIsPlaying] = useState(false);
+  const [userLoggedIn, setUserLoggedIn] = useState<boolean>(() => isLoggedIn());
+  const [currentUser, setCurrentUser] = useState<any>(null);
   const [announcements, setAnnouncements] = useState<any[]>(ANNOUNCEMENT_PLACEHOLDERS);
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const sectionRef = useRef<HTMLElement | null>(null);
@@ -102,6 +106,23 @@ export function HeroSection() {
     navigate(path);
     window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   };
+
+  useEffect(() => {
+    const syncAuth = () => {
+      const logged = isLoggedIn();
+      setUserLoggedIn(logged);
+      if (logged) {
+        getCurrentUser()
+          .then((res: any) => setCurrentUser(res.data))
+          .catch(() => {});
+      } else {
+        setCurrentUser(null);
+      }
+    };
+    syncAuth();
+    window.addEventListener(AUTH_CHANGE_EVENT, syncAuth);
+    return () => window.removeEventListener(AUTH_CHANGE_EVENT, syncAuth);
+  }, []);
 
   useEffect(() => {
     getAnnouncements()
@@ -418,16 +439,29 @@ export function HeroSection() {
               className="flex flex-row justify-center lg:justify-start items-center gap-2 sm:gap-3.5 pt-1.5 sm:pt-2 w-full max-w-[340px] sm:max-w-md mx-auto lg:mx-0 relative z-30 pointer-events-auto"
             >
               <div className="flex-1 min-w-0">
-                <button
-                  type="button"
-                  onClick={handleNavigate("/register")}
-                  className="group font-space flex items-center justify-center gap-1 sm:gap-2 px-2.5 sm:px-5 py-2.5 sm:py-3 rounded-full bg-[#F01A21] hover:bg-[#d8141b] text-white font-bold tracking-[0.05em] sm:tracking-[0.14em] uppercase border-0 outline-none shadow-[0_4px_20px_rgba(240,26,33,0.4)] hover:shadow-[0_6px_28px_rgba(240,26,33,0.65)] transition-all duration-300 w-full text-center cursor-pointer relative z-30 pointer-events-auto select-none hover:scale-[1.03] active:scale-[0.97]"
-                >
-                  <span className="relative z-10 font-bold tracking-[0.05em] sm:tracking-[0.14em] uppercase text-[11px] sm:text-xs md:text-sm whitespace-nowrap pointer-events-none">
-                    {settings.registrationOpen ? "Register Now" : "Closed"}
-                  </span>
-                  <RiPlayLine className="group-hover:translate-x-1 transition-transform relative z-10 shrink-0 text-xs sm:text-sm pointer-events-none" />
-                </button>
+                {userLoggedIn ? (
+                  <button
+                    type="button"
+                    onClick={handleNavigate(currentUser?.is_staff || currentUser?.is_superuser ? "/admin" : "/student-dashboard")}
+                    className="group font-space flex items-center justify-center gap-1 sm:gap-2 px-2.5 sm:px-5 py-2.5 sm:py-3 rounded-full bg-[#00D4FF] hover:bg-[#33ddff] text-black font-black tracking-[0.05em] sm:tracking-[0.14em] uppercase border-0 outline-none shadow-[0_4px_20px_rgba(0,212,255,0.4)] hover:shadow-[0_6px_28px_rgba(0,212,255,0.7)] transition-all duration-300 w-full text-center cursor-pointer relative z-30 pointer-events-auto select-none hover:scale-[1.03] active:scale-[0.97]"
+                  >
+                    <RiDashboardLine className="text-sm sm:text-base pointer-events-none" />
+                    <span className="relative z-10 font-black tracking-[0.05em] sm:tracking-[0.14em] uppercase text-[11px] sm:text-xs md:text-sm whitespace-nowrap pointer-events-none">
+                      {currentUser?.is_staff || currentUser?.is_superuser ? "Command Console" : "Agent HUD"}
+                    </span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleNavigate("/register")}
+                    className="group font-space flex items-center justify-center gap-1 sm:gap-2 px-2.5 sm:px-5 py-2.5 sm:py-3 rounded-full bg-[#F01A21] hover:bg-[#d8141b] text-white font-bold tracking-[0.05em] sm:tracking-[0.14em] uppercase border-0 outline-none shadow-[0_4px_20px_rgba(240,26,33,0.4)] hover:shadow-[0_6px_28px_rgba(240,26,33,0.65)] transition-all duration-300 w-full text-center cursor-pointer relative z-30 pointer-events-auto select-none hover:scale-[1.03] active:scale-[0.97]"
+                  >
+                    <span className="relative z-10 font-bold tracking-[0.05em] sm:tracking-[0.14em] uppercase text-[11px] sm:text-xs md:text-sm whitespace-nowrap pointer-events-none">
+                      {settings.registrationOpen ? "Register Now" : "Closed"}
+                    </span>
+                    <RiPlayLine className="group-hover:translate-x-1 transition-transform relative z-10 shrink-0 text-xs sm:text-sm pointer-events-none" />
+                  </button>
+                )}
               </div>
 
               <div className="flex-1 min-w-0">

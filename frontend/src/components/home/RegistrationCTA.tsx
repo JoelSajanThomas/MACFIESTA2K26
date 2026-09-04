@@ -1,12 +1,35 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { RiPlayLine, RiCalendarCheckLine, RiShieldFlashLine } from "react-icons/ri";
+import { RiPlayLine, RiCalendarCheckLine, RiShieldFlashLine, RiDashboardLine } from "react-icons/ri";
 import { Reveal } from "@/components/ui/Reveal";
+import { isLoggedIn, getCurrentUser } from "@/services/api";
+import { AUTH_CHANGE_EVENT } from "@/utils/auth";
 
 export function RegistrationCTA() {
+  const [userLoggedIn, setUserLoggedIn] = useState(() => isLoggedIn());
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const syncAuth = () => {
+      const logged = isLoggedIn();
+      setUserLoggedIn(logged);
+      if (logged) {
+        getCurrentUser()
+          .then((res) => setUser(res.data))
+          .catch(() => {});
+      } else {
+        setUser(null);
+      }
+    };
+    syncAuth();
+    window.addEventListener(AUTH_CHANGE_EVENT, syncAuth);
+    return () => window.removeEventListener(AUTH_CHANGE_EVENT, syncAuth);
+  }, []);
+
   return (
     <section className="relative bg-transparent section-padding overflow-hidden border-t border-white/10 min-h-[480px] flex items-center justify-center">
       {/* Background Marvel Artwork Accent */}
@@ -27,12 +50,25 @@ export function RegistrationCTA() {
         {/* Zoom-in glass container */}
         <Reveal y={60} duration={0.7} margin="-100px">
           <div className="glass-aurora border border-white/15 p-6 sm:p-12 rounded-3xl shadow-[0_0_60px_rgba(0,0,0,0.9)] space-y-8 max-w-4xl mx-auto">
-            {/* Limited slots badge */}
+            {/* Limited slots / Agent Access badge */}
             <div
-              className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-metallic-gold/40 bg-metallic-gold/10 text-metallic-gold text-xs font-bold tracking-[0.2em] uppercase shadow-[0_0_15px_rgba(212,175,55,0.25)] font-space"
+              className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full border text-xs font-bold tracking-[0.2em] uppercase font-space ${
+                userLoggedIn
+                  ? "border-arc-cyan/40 bg-arc-cyan/10 text-arc-cyan shadow-[0_0_15px_rgba(0,212,255,0.25)]"
+                  : "border-metallic-gold/40 bg-metallic-gold/10 text-metallic-gold shadow-[0_0_15px_rgba(212,175,55,0.25)]"
+              }`}
             >
-              <RiCalendarCheckLine className="animate-bounce text-metallic-gold" />
-              <span>LIMITED REGISTRATION SLOTS REMAINING</span>
+              {userLoggedIn ? (
+                <>
+                  <RiShieldFlashLine className="text-arc-cyan" />
+                  <span>AGENT ACCESS ACTIVE • SECURE MISSION CONTROL</span>
+                </>
+              ) : (
+                <>
+                  <RiCalendarCheckLine className="animate-bounce text-metallic-gold" />
+                  <span>LIMITED REGISTRATION SLOTS REMAINING</span>
+                </>
+              )}
             </div>
 
             <div className="space-y-4">
@@ -83,10 +119,27 @@ export function RegistrationCTA() {
                 transition={{ type: "spring", stiffness: 400, damping: 17 }}
                 className="flex-1 min-w-0"
               >
-                <Link href="/signup" className="btn-urgency w-full px-2.5 sm:px-10 py-2.5 sm:py-4 group font-space flex items-center justify-center gap-1.5 sm:gap-2 shadow-[0_0_25px_rgba(237,29,36,0.5)] hover:shadow-[0_0_40px_rgba(237,29,36,0.8)] transition-shadow duration-300">
-                  <span className="relative z-10 font-bold tracking-[0.08em] sm:tracking-[0.16em] uppercase text-[10.5px] sm:text-sm truncate">Register Pass</span>
-                  <RiPlayLine className="group-hover:translate-x-1 transition-transform text-xs sm:text-lg relative z-10 shrink-0" />
-                </Link>
+                {userLoggedIn ? (
+                  <Link
+                    href={user?.is_staff || user?.is_superuser ? "/admin" : "/student-dashboard"}
+                    className="btn-urgency w-full px-2.5 sm:px-10 py-2.5 sm:py-4 group font-space flex items-center justify-center gap-1.5 sm:gap-2 shadow-[0_0_25px_rgba(0,212,255,0.4)] hover:shadow-[0_0_40px_rgba(0,212,255,0.7)] transition-shadow duration-300 !bg-arc-cyan !text-black"
+                  >
+                    <RiDashboardLine className="text-base shrink-0" />
+                    <span className="relative z-10 font-black tracking-[0.08em] sm:tracking-[0.16em] uppercase text-[10.5px] sm:text-sm truncate">
+                      {user?.is_staff || user?.is_superuser ? "Command Console" : "Agent HUD"}
+                    </span>
+                  </Link>
+                ) : (
+                  <Link
+                    href="/signup"
+                    className="btn-urgency w-full px-2.5 sm:px-10 py-2.5 sm:py-4 group font-space flex items-center justify-center gap-1.5 sm:gap-2 shadow-[0_0_25px_rgba(237,29,36,0.5)] hover:shadow-[0_0_40px_rgba(237,29,36,0.8)] transition-shadow duration-300"
+                  >
+                    <span className="relative z-10 font-bold tracking-[0.08em] sm:tracking-[0.16em] uppercase text-[10.5px] sm:text-sm truncate">
+                      Register Pass
+                    </span>
+                    <RiPlayLine className="group-hover:translate-x-1 transition-transform text-xs sm:text-lg relative z-10 shrink-0" />
+                  </Link>
+                )}
               </motion.div>
 
               <motion.div

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -8,7 +8,7 @@ import {
   RiEyeLine,
   RiEyeOffLine,
 } from "react-icons/ri";
-import { login, getCurrentUser, storeAuthTokens } from "../services/api";
+import { login, getCurrentUser, storeAuthTokens, isLoggedIn } from "../services/api";
 import { notifyAuthChange } from "../utils/auth";
 import { defaultAdminPath, volunteerHomePath } from "../utils/committeeAccess";
 import { BackgroundVideo } from "../components/ui/BackgroundVideo";
@@ -18,6 +18,12 @@ export default function Login() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const nextPath = useMemo(() => searchParams.get("next") || "", [searchParams]);
+
+  useEffect(() => {
+    if (isLoggedIn()) {
+      navigate(nextPath || "/student-dashboard", { replace: true });
+    }
+  }, [navigate, nextPath]);
 
   const [form, setForm] = useState({ username: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);

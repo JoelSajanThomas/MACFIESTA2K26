@@ -461,16 +461,31 @@ export default function Footer() {
               <RiShieldFlashLine className="text-xs" /> Tactical Actions
             </h4>
             <div className="space-y-2">
-              <Link
-                to="/register"
-                className="group flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 hover:border-marvel-red/50 transition-all text-xs"
-              >
-                <div className="flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-marvel-red shadow-[0_0_6px_#ED1D24]" />
-                  <span className="font-bold text-white group-hover:text-marvel-red transition-colors">Claim Pass</span>
-                </div>
-                <span className="text-[10px] text-white/40 group-hover:translate-x-0.5 transition-transform">REGISTER →</span>
-              </Link>
+              {isLoggedIn() || currentUser ? (
+                <Link
+                  to={currentUser?.is_staff || currentUser?.is_superuser ? "/admin" : "/student-dashboard"}
+                  className="group flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 hover:border-arc-cyan/50 transition-all text-xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-arc-cyan shadow-[0_0_6px_#00D4FF]" />
+                    <span className="font-bold text-white group-hover:text-arc-cyan transition-colors">
+                      {currentUser?.is_staff || currentUser?.is_superuser ? "Command Console" : "Agent Dashboard"}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-white/40 group-hover:translate-x-0.5 transition-transform">HUD →</span>
+                </Link>
+              ) : (
+                <Link
+                  to="/register"
+                  className="group flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 hover:border-marvel-red/50 transition-all text-xs"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-marvel-red shadow-[0_0_6px_#ED1D24]" />
+                    <span className="font-bold text-white group-hover:text-marvel-red transition-colors">Claim Pass</span>
+                  </div>
+                  <span className="text-[10px] text-white/40 group-hover:translate-x-0.5 transition-transform">REGISTER →</span>
+                </Link>
+              )}
 
               <Link
                 to="/brochure"

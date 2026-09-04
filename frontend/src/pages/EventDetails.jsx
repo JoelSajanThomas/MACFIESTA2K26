@@ -15,7 +15,7 @@ import {
   RiShieldUserLine,
   RiExternalLinkLine,
 } from "react-icons/ri";
-import { getCurrentUser, getEvent, getEvents, isLoggedIn } from "../services/api";
+import { getCurrentUser, getEvent, getEvents, getMyRegistrations, isLoggedIn } from "../services/api";
 import { ALL_EVENTS } from "../lib/eventsData";
 import { BackgroundVideo } from "../components/ui/BackgroundVideo";
 import CreateTeamModal from "../components/CreateTeamModal";
@@ -29,14 +29,32 @@ export default function EventDetails() {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showTeamModal, setShowTeamModal] = useState(false);
+  const [isAlreadyRegistered, setIsAlreadyRegistered] = useState(false);
 
   useEffect(() => {
     if (isLoggedIn()) {
       getCurrentUser()
         .then((res) => setCurrentUser(res.data))
         .catch(() => {});
+
+      getMyRegistrations()
+        .then((res) => {
+          const list = Array.isArray(res.data) ? res.data : res.data?.results || [];
+          const match = list.some((r) => {
+            const regEventId = String(r.event || r.event_id || "");
+            const regEventSlug = r.event_slug || r.eventData?.slug || "";
+            return (
+              (event?._id && regEventId === String(event._id)) ||
+              (event?.id && regEventId === String(event.id)) ||
+              (event?.slug && (regEventSlug === event.slug || idOrSlug === regEventSlug)) ||
+              (idOrSlug && (regEventId === String(idOrSlug) || regEventSlug === idOrSlug))
+            );
+          });
+          setIsAlreadyRegistered(match);
+        })
+        .catch(() => {});
     }
-  }, []);
+  }, [event, idOrSlug]);
 
   const loadEvent = useCallback(() => {
     const isNum = /^\d+$/.test(idOrSlug);
@@ -298,10 +316,16 @@ export default function EventDetails() {
                   <span>{isExternalReg ? "⚡ Official Hackathon Portal" : "Fast-Track Pass"}</span>
                 </span>
                 <h3 className="text-xl font-black text-white uppercase font-excon-black">
-                  {isExternalReg ? "Hackathon Registration" : (isTeamEvent ? "Assemble Squad" : "Enroll & Pay Online")}
+                  {isAlreadyRegistered
+                    ? "Mission Clearance Confirmed"
+                    : isExternalReg
+                    ? "Hackathon Registration"
+                    : (isTeamEvent ? "Assemble Squad" : "Enroll & Pay Online")}
                 </h3>
                 <p className="text-xs text-white/60">
-                  {isExternalReg
+                  {isAlreadyRegistered
+                    ? "You are officially registered for this mission. Access your verified tournament pass, team roster, and schedule in your Agent HUD."
+                    : isExternalReg
                     ? "Registrations for Avengers: Code Assemble (Vibe Coding Hackathon) are officially hosted directly at hackathon.macfast.org."
                     : (isTeamEvent
                         ? "Create your squad, assign yourself as Captain, invite team members, and track independent payments."
@@ -311,7 +335,15 @@ export default function EventDetails() {
                 </p>
               </div>
 
-              {isExternalReg ? (
+              {isAlreadyRegistered ? (
+                <Link
+                  to="/student-dashboard"
+                  className="w-full py-3.5 bg-arc-cyan hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_20px_#00D4FF] font-excon-black cursor-pointer text-center flex items-center justify-center gap-2"
+                >
+                  <RiCheckboxCircleLine className="text-base" />
+                  <span>Mission Registered · View In Dashboard</span>
+                </Link>
+              ) : isExternalReg ? (
                 <a
                   href={externalUrl}
                   target="_blank"
@@ -327,9 +359,13 @@ export default function EventDetails() {
                   onClick={handleRegisterClick}
                   className="w-full py-3.5 bg-metallic-gold hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_20px_rgba(212,175,55,0.4)] font-excon-black cursor-pointer text-center block"
                 >
-                  {isTeamEvent
-                    ? (isFree ? "Claim Free Squad Pass" : `Register Squad & Pay Online · ${feeDisplay}`)
-                    : (isFree ? "Claim Free Mission Pass" : `Register & Pay Online · ${feeDisplay}`)}
+                  {isLoggedIn()
+                    ? (isTeamEvent
+                        ? (isFree ? "Claim Free Squad Pass" : `Assemble Squad & Pay Online · ${feeDisplay}`)
+                        : (isFree ? "Claim Free Mission Pass" : `Enroll & Pay Online · ${feeDisplay}`))
+                    : (isTeamEvent
+                        ? (isFree ? "Claim Free Squad Pass" : `Register Squad & Pay Online · ${feeDisplay}`)
+                        : (isFree ? "Claim Free Mission Pass" : `Register & Pay Online · ${feeDisplay}`))}
                 </button>
               )}
 

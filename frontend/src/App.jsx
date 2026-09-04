@@ -123,6 +123,7 @@ function AppRoutes() {
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/change-password" element={<ChangePassword />} />
       <Route path="/student-dashboard" element={<StudentDashboard />} />
+      <Route path="/dashboard" element={<Navigate to="/student-dashboard" replace />} />
       <Route path="/pass/:id" element={<PassPage />} />
       <Route path="/certificates/:resultId" element={<CertificateRoute />} />
       <Route path="/admin-dashboard" element={<AdminDashboard />} />

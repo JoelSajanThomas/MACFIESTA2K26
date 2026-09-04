@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -11,7 +11,7 @@ import {
   RiEyeLine,
   RiEyeOffLine,
 } from "react-icons/ri";
-import { registerAccount, getCurrentUser, storeAuthTokens } from "../services/api";
+import { registerAccount, getCurrentUser, storeAuthTokens, isLoggedIn } from "../services/api";
 import { notifyAuthChange } from "../utils/auth";
 import { saveParticipantProfile } from "../utils/participantProfile";
 import { BackgroundVideo } from "../components/ui/BackgroundVideo";
@@ -66,6 +66,12 @@ export default function Register() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const nextPath = useMemo(() => searchParams.get("next") || "", [searchParams]);
+
+  useEffect(() => {
+    if (isLoggedIn()) {
+      navigate(nextPath || "/student-dashboard", { replace: true });
+    }
+  }, [navigate, nextPath]);
 
   const [step, setStep] = useState(1);
   const [form, setForm] = useState({
