@@ -245,13 +245,40 @@ class RegistrationSerializer(serializers.ModelSerializer):
         if not event and self.instance:
             event = self.instance.event
 
-        if not self.instance and user and event:
-            from .models import Registration
+        if not self.instance and event:
+            if not event.is_registration_open:
+                raise serializers.ValidationError({"event": f"Registration is closed for {event.title}."})
 
-            if Registration.objects.filter(user=user, event=event, cancelled_at__isnull=True).exists():
+            if user and Registration.objects.filter(user=user, event=event, cancelled_at__isnull=True).exists():
                 raise serializers.ValidationError({"event": "You are already registered for this event."})
 
         return attrs
+
+    def create(self, validated_data):
+        from .services import next_waitlist_position
+        event = validated_data.get("event")
+
+        confirmed_count = event.registrations.filter(
+            is_waiting_list=False, cancelled_at__isnull=True
+        ).count()
+        is_waiting = False
+        wait_pos = None
+        if confirmed_count >= event.max_participants:
+            if getattr(event, "waiting_list_enabled", True):
+                is_waiting = True
+                wait_pos = next_waitlist_position(event)
+            else:
+                raise serializers.ValidationError({"event": f"{event.title} has reached maximum capacity."})
+
+        validated_data["is_waiting_list"] = is_waiting
+        validated_data["waitlist_position"] = wait_pos
+        validated_data["approval_status"] = "pending" if is_waiting else "approved"
+        if "payment_status" not in validated_data:
+            fee = getattr(event, "registration_fee", 0) or 0
+            validated_data["payment_status"] = "waived" if fee <= 0 else "pending"
+            validated_data["payment_amount"] = fee
+
+        return super().create(validated_data)
 
 
 class AdminRegistrationSerializer(serializers.ModelSerializer):

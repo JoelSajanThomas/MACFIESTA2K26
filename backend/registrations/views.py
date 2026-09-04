@@ -333,6 +333,7 @@ class RegistrationViewSet(
             payment_amount=Decimal(registration.event.registration_fee or 0),
         )
 
+        registration = Registration.objects.prefetch_related("team_members").get(pk=registration.pk)
         return Response(RegistrationSerializer(registration, context={"request": request}).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"], url_path="team/remove-member")
@@ -354,6 +355,7 @@ class RegistrationViewSet(
             return Response({"detail": "Captain cannot be removed from the team."}, status=status.HTTP_400_BAD_REQUEST)
 
         member.delete()
+        registration = Registration.objects.prefetch_related("team_members").get(pk=registration.pk)
         return Response(RegistrationSerializer(registration, context={"request": request}).data)
 
     @action(detail=True, methods=["post"], url_path="team/member-payment")
