@@ -1082,8 +1082,8 @@ export const ALL_EVENTS: FestivalEventItem[] = [
       name: "Jeswin Rony & Jerin George",
       phone: "+91 92074 32334",
       team: [
-        { name: "Jeswin Rony", role: "Student In-Charge / Lead", phone: "+91 92074 32334" },
-        { name: "Jerin George", role: "Student In-Charge / Lead", phone: "+91 73568 02019" },
+        { name: "Jeswin Rony", detail: "Student In-Charge / Lead", phone: "+91 92074 32334" },
+        { name: "Jerin George", detail: "Student In-Charge / Lead", phone: "+91 73568 02019" },
       ],
     },
     teamSizeText: "Team participation (2 members per team)",

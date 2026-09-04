@@ -35,7 +35,7 @@ export interface Event {
     phone: string;
     email?: string;
     department?: string;
-    team?: { name: string; detail?: string; phone: string }[];
+    team?: { name: string; detail?: string; role?: string; phone: string }[];
   };
   category: "general" | "technical" | "cultural" | "gaming" | "sports" | "management" | "media";
   type: "solo" | "duo" | "trio" | "squad" | "group";

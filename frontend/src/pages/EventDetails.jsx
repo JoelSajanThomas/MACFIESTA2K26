@@ -509,8 +509,8 @@ export default function EventDetails() {
                       >
                         <div className="min-w-0 pr-2">
                           <span className="block font-bold text-white truncate">{member.name}</span>
-                          {member.detail && (
-                            <span className="block text-[10px] text-white/50 font-mono">{member.detail}</span>
+                          {(member.detail || member.role) && (
+                            <span className="block text-[10px] text-white/50 font-mono">{member.detail || member.role}</span>
                           )}
                         </div>
                         {member.phone && (
