@@ -4,11 +4,17 @@
  * CSS-based music visualizer bars with festival gradient colors.
  * Purely decorative — creates an animated equalizer effect.
  */
-export function MusicVisualizer({ isPlaying = false }: { isPlaying?: boolean }) {
-  const bars = 12;
-
+export function MusicVisualizer({
+  isPlaying = false,
+  bars = 8,
+  className = "h-6 sm:h-7",
+}: {
+  isPlaying?: boolean;
+  bars?: number;
+  className?: string;
+}) {
   return (
-    <div className="flex items-end gap-[3px] h-8 md:h-12" aria-hidden="true">
+    <div className={`flex items-end gap-[2.5px] sm:gap-[3px] ${className}`} aria-hidden="true">
       {Array.from({ length: bars }).map((_, i) => {
         const delay = `${(i * 0.08).toFixed(2)}s`;
         // Deterministic pseudo-random values based on index to avoid hydration mismatch
@@ -27,10 +33,9 @@ export function MusicVisualizer({ isPlaying = false }: { isPlaying?: boolean }) 
             style={{
               height: heightStyle,
               background: `linear-gradient(to top, 
-                ${i % 5 === 0 ? "#EAB308" :
-                  i % 5 === 1 ? "#7C3AED" :
-                    i % 5 === 2 ? "#06B6D4" :
-                      i % 5 === 3 ? "#EC4899" : "#F97316"
+                ${i % 4 === 0 ? "#00D4FF" :
+                  i % 4 === 1 ? "#ED1D24" :
+                    i % 4 === 2 ? "#FFD700" : "#0066FF"
                 },
                 transparent
               )`,

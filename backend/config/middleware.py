@@ -1,4 +1,4 @@
-﻿"""
+"""
 MacFiesta Pro — custom middleware.
 
 SecurityHeadersMiddleware

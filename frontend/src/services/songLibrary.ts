@@ -1,0 +1,236 @@
+/**
+ * Song Library Service
+ * Provides track interfaces, pre-bundled fallbacks, and runtime manifest loading.
+ */
+
+export interface SongHighlight {
+  startTime: number;
+  dropTime: number;
+  endTime: number;
+  description: string;
+}
+
+export interface SongTrack {
+  id: string;
+  filename: string;
+  url: string;
+  title: string;
+  artist: string;
+  duration: number;
+  theme: string;
+  heroBadge: string;
+  accentColor: string;
+  secondaryColor?: string;
+  coverImage?: string;
+  highlight: SongHighlight;
+}
+
+export interface SongManifest {
+  updatedAt: string;
+  totalTracks: number;
+  defaultCrossfadeSeconds: number;
+  supportedFormats: string[];
+  songs: SongTrack[];
+}
+
+/**
+ * Pre-bundled fallback playlist so the audio engine can immediately initialize
+ * even before the manifest HTTP request completes or if running in offline mode.
+ */
+export const DEFAULT_PLAYLIST: SongTrack[] = [
+  {
+    id: "track-1",
+    filename: "DC (1).m4a.mpeg",
+    url: "/songs/DC%20(1).m4a.mpeg",
+    title: "Highway to Hell",
+    artist: "AC/DC",
+    duration: 208,
+    theme: "Iron Man",
+    heroBadge: "IRON MAN • WAR MACHINE",
+    accentColor: "#FF3333",
+    secondaryColor: "#FF8800",
+    coverImage: "/MARVEL/Iron Man.jpg",
+    highlight: {
+      startTime: 0,
+      dropTime: 44,
+      endTime: 68,
+      description: "Legendary opening guitar riff into soaring chorus",
+    },
+  },
+  {
+    id: "track-2",
+    filename: "DC (2).m4a.mpeg",
+    url: "/songs/DC%20(2).m4a.mpeg",
+    title: "Back In Black",
+    artist: "AC/DC",
+    duration: 254,
+    theme: "Iron Man",
+    heroBadge: "IRON MAN • MARK VII",
+    accentColor: "#ED1D24",
+    secondaryColor: "#FFD700",
+    coverImage: "/MARVEL/Iron Man.jpg",
+    highlight: {
+      startTime: 5,
+      dropTime: 26,
+      endTime: 75,
+      description: "Signature heavy guitar groove and vocal explosion",
+    },
+  },
+  {
+    id: "track-3",
+    filename: "DC.m4a.mpeg",
+    url: "/songs/DC.m4a.mpeg",
+    title: "Thunderstruck",
+    artist: "AC/DC",
+    duration: 293,
+    theme: "Thor",
+    heroBadge: "THOR • GOD OF THUNDER",
+    accentColor: "#00D4FF",
+    secondaryColor: "#FFFFFF",
+    coverImage: "/MARVEL/Iron Man.jpg",
+    highlight: {
+      startTime: 18,
+      dropTime: 33,
+      endTime: 86,
+      description: "Iconic guitar build into thunderous drum drop and battle chant",
+    },
+  },
+  {
+    id: "track-4",
+    filename: "Immigrant Song (Remaster)   Led Zeppelin.m4a.mpeg",
+    url: "/songs/Immigrant%20Song%20(Remaster)%20%20%20Led%20Zeppelin.m4a.mpeg",
+    title: "Immigrant Song",
+    artist: "Led Zeppelin",
+    duration: 147,
+    theme: "Thor Ragnarok",
+    heroBadge: "THOR • RAGNAROK",
+    accentColor: "#00E5FF",
+    secondaryColor: "#FFD700",
+    coverImage: "/MARVEL/Iron Man.jpg",
+    highlight: {
+      startTime: 0,
+      dropTime: 12,
+      endTime: 65,
+      description: "Viking battle cry into lightning driving rhythm",
+    },
+  },
+  {
+    id: "track-5",
+    filename: "Into the Spider-Verse)   Sunflower (Spider-Man.m4a.mpeg",
+    url: "/songs/Into%20the%20Spider-Verse)%20%20%20Sunflower%20(Spider-Man.m4a.mpeg",
+    title: "Sunflower",
+    artist: "Post Malone & Swae Lee",
+    duration: 162,
+    theme: "Spider-Man",
+    heroBadge: "SPIDER-MAN • MULTIVERSE",
+    accentColor: "#ED1D24",
+    secondaryColor: "#00A8FF",
+    coverImage: "/MARVEL/Spider-man.png",
+    highlight: {
+      startTime: 28,
+      dropTime: 42,
+      endTime: 90,
+      description: "Soaring melodic hook and chorus",
+    },
+  },
+  {
+    id: "track-6",
+    filename: "Loser   Tame Impala.m4a.mpeg",
+    url: "/songs/Loser%20%20%20Tame%20Impala.m4a.mpeg",
+    title: "Loser",
+    artist: "Beck / Tame Impala",
+    duration: 268,
+    theme: "Guardians of the Galaxy",
+    heroBadge: "STAR-LORD • AWESOME MIX",
+    accentColor: "#FF7B00",
+    secondaryColor: "#00D4FF",
+    coverImage: "/MARVEL/MCU Multiverse Saga.jpg",
+    highlight: {
+      startTime: 38,
+      dropTime: 52,
+      endTime: 96,
+      description: "Psychedelic groovy drop and funky chorus",
+    },
+  },
+  {
+    id: "track-7",
+    filename: "oh yeah    Steve Lacy.m4a.mpeg",
+    url: "/songs/oh%20yeah%20%20%20%20Steve%20Lacy.m4a.mpeg",
+    title: "Bad Habit (Sunshine)",
+    artist: "Steve Lacy",
+    duration: 171,
+    theme: "Spider-Man",
+    heroBadge: "MILES MORALES • BROOKLYN",
+    accentColor: "#E0218A",
+    secondaryColor: "#FFD700",
+    coverImage: "/MARVEL/Spider-man.png",
+    highlight: {
+      startTime: 20,
+      dropTime: 38,
+      endTime: 78,
+      description: "Viral catchy hook and infectious guitar chords",
+    },
+  },
+  {
+    id: "track-8",
+    filename: "Pray For Me   Kendrick Lamar   The Weeknd.m4a.mpeg",
+    url: "/songs/Pray%20For%20Me%20%20%20Kendrick%20Lamar%20%20%20The%20Weeknd.m4a.mpeg",
+    title: "Pray For Me",
+    artist: "The Weeknd & Kendrick Lamar",
+    duration: 209,
+    theme: "Black Panther",
+    heroBadge: "BLACK PANTHER • WAKANDA",
+    accentColor: "#9D4EDD",
+    secondaryColor: "#00D4FF",
+    coverImage: "/MARVEL/MCU Multiverse Saga.jpg",
+    highlight: {
+      startTime: 34,
+      dropTime: 48,
+      endTime: 96,
+      description: "Wakanda bass drop into Weeknd & Kendrick hook",
+    },
+  },
+  {
+    id: "track-9",
+    filename: "ULTRA NATÉ - Movin To The Sun.mp3",
+    url: "/songs/ULTRA%20NAT%C3%89%20-%20Movin%20To%20The%20Sun.mp3",
+    title: "Movin' To The Sun",
+    artist: "Ultra Naté",
+    duration: 158,
+    theme: "Avengers Anthem",
+    heroBadge: "AVENGERS • ASSEMBLE",
+    accentColor: "#FFD700",
+    secondaryColor: "#ED1D24",
+    coverImage: "/logo.png",
+    highlight: {
+      startTime: 28,
+      dropTime: 45,
+      endTime: 90,
+      description: "High-energy festival dance drop and main theme",
+    },
+  },
+];
+
+/**
+ * Loads songs dynamically from manifest.json with fallback.
+ */
+export async function loadSongLibrary(): Promise<SongTrack[]> {
+  try {
+    const res = await fetch(`/songs/manifest.json?v=${Date.now()}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data: SongManifest = await res.json();
+    if (Array.isArray(data.songs) && data.songs.length > 0) {
+      return data.songs;
+    }
+  } catch {
+    // ignore error and return default
+  }
+  return DEFAULT_PLAYLIST;
+}
+
+export function formatTime(seconds: number): string {
+  if (isNaN(seconds) || seconds < 0) return "0:00";
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, "0")}`;
+}

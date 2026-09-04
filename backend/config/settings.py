@@ -313,4 +313,5 @@ DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL",
     f"MACFIESTA 2026 <{os.environ.get('EMAIL_HOST_USER') or 'macfiesta@macfast.org'}>",
 )
+EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT", "10"))
 

@@ -16,6 +16,7 @@ import ParticleAtmosphere from "./components/cinematic/ParticleAtmosphere";
 import JarvisAssistant from "./components/ui/JarvisAssistant";
 import { MaintenanceGuard } from "./components/layout/MaintenanceGuard";
 import { LoadingProvider, useLoading } from "./providers/LoadingProvider";
+import { AudioPlayerProvider } from "./context/AudioPlayerContext";
 import "./App.css";
 import "./styles/mobile-install.css";
 import "./styles/admin-simple-ui.css";
@@ -250,7 +251,9 @@ function AppShell() {
 export default function App() {
   return (
     <LoadingProvider>
-      <AppShell />
+      <AudioPlayerProvider>
+        <AppShell />
+      </AudioPlayerProvider>
     </LoadingProvider>
   );
 }

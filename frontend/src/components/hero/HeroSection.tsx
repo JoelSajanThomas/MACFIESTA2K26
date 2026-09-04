@@ -2,17 +2,13 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Link, useNavigate } from "react-router-dom";
 import { CountdownTimer } from "./CountdownTimer";
-import { MusicVisualizer } from "./MusicVisualizer";
+import { AvengersAudioHud } from "../audio/AvengersAudioHud";
 import {
   RiPlayLine,
   RiShieldFlashLine,
   RiFlashlightLine,
   RiCompass3Line,
   RiArrowDownLine,
-  RiPlayFill,
-  RiPauseFill,
-  RiVolumeUpFill,
-  RiVolumeMuteFill,
   RiMegaphoneLine,
   RiDashboardLine,
 } from "react-icons/ri";
@@ -78,17 +74,10 @@ const heroYearSlideVariants = {
 export function HeroSection() {
   const navigate = useNavigate();
   const { settings } = useFestivalControl();
-  const [isPlaying, setIsPlaying] = useState(false);
   const [userLoggedIn, setUserLoggedIn] = useState<boolean>(() => isLoggedIn());
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [announcements, setAnnouncements] = useState<any[]>(ANNOUNCEMENT_PLACEHOLDERS);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
   const sectionRef = useRef<HTMLElement | null>(null);
-  const removeFallbackListenersRef = useRef<(() => void) | null>(null);
-
-  const isPlayingRef = useRef(false);
-  const userMutedRef = useRef(false);
-  const maxVolume = 0.4;
 
   const preloadAnnouncements = () => {
     import("../../pages/Announcements");
@@ -157,177 +146,7 @@ export function HeroSection() {
   const contentY = useTransform(scrollYProgress, [0, 1], ["0%", "60%"]);
   const contentOpacity = useTransform(scrollYProgress, [0, 0.8], [1, 0]);
 
-  const setPlayState = (val: boolean) => {
-    setIsPlaying(val);
-    isPlayingRef.current = val;
-  };
 
-  useEffect(() => {
-    // Only initialize and play if on homepage
-    if (typeof window !== "undefined" && window.location.pathname !== "/") {
-      return;
-    }
-
-    const audio = new Audio(encodeURI("/ULTRA NATÉ - Movin To The Sun.mp3"));
-    audio.loop = true;
-    audio.volume = maxVolume;
-    audioRef.current = audio;
-
-    let fadeRaf: number;
-    let isDisposed = false;
-
-    const stopAudio = () => {
-      isDisposed = true;
-      if (audioRef.current) {
-        try {
-          audioRef.current.pause();
-          audioRef.current.currentTime = 0;
-          audioRef.current.src = "";
-          audioRef.current.load();
-        } catch { }
-        audioRef.current = null;
-      }
-      setPlayState(false);
-    };
-
-    const updateVolumeOnScroll = () => {
-      if (!audioRef.current || userMutedRef.current || isDisposed) return;
-      if (typeof window !== "undefined" && window.location.pathname !== "/") {
-        stopAudio();
-        return;
-      }
-
-      const fadeDistance = Math.max(320, window.innerHeight * 0.65);
-      const scrollY = window.scrollY;
-      const factor = Math.max(0, Math.min(1, 1 - scrollY / fadeDistance));
-      const targetVol = maxVolume * factor;
-
-      audio.volume = Math.max(0, Math.min(maxVolume, targetVol));
-
-      if (factor <= 0.02) {
-        if (!audio.paused) {
-          audio.pause();
-          setPlayState(false);
-        }
-      } else {
-        if (audio.paused && !userMutedRef.current && !isDisposed) {
-          audio.play().then(() => {
-            if (!isDisposed && window.location.pathname === "/") {
-              setPlayState(true);
-            } else {
-              audio.pause();
-            }
-          }).catch(() => { });
-        } else if (!audio.paused && !isPlayingRef.current) {
-          setPlayState(true);
-        }
-      }
-    };
-
-    const handleScroll = () => {
-      cancelAnimationFrame(fadeRaf);
-      fadeRaf = requestAnimationFrame(updateVolumeOnScroll);
-    };
-
-    const removeFallbackListeners = () => {
-      window.removeEventListener("click", handleInteraction);
-      window.removeEventListener("keydown", handleInteraction);
-      window.removeEventListener("touchstart", handleInteraction);
-      removeFallbackListenersRef.current = null;
-    };
-
-    const handleInteraction = () => {
-      removeFallbackListeners();
-      if (userMutedRef.current || isDisposed) return;
-      if (typeof window !== "undefined" && window.location.pathname !== "/") {
-        stopAudio();
-        return;
-      }
-
-      audio.play().then(() => {
-        if (!isDisposed && window.location.pathname === "/") {
-          setPlayState(true);
-          updateVolumeOnScroll();
-        } else {
-          audio.pause();
-        }
-      }).catch(() => { });
-    };
-
-    removeFallbackListenersRef.current = removeFallbackListeners;
-
-    const startPlayback = () => {
-      if (userMutedRef.current || isDisposed) return;
-      if (typeof window !== "undefined" && window.location.pathname !== "/") {
-        stopAudio();
-        return;
-      }
-
-      audio.play().then(() => {
-        if (!isDisposed && window.location.pathname === "/") {
-          setPlayState(true);
-          updateVolumeOnScroll();
-        } else {
-          audio.pause();
-        }
-      }).catch(() => {
-        window.addEventListener("click", handleInteraction);
-        window.addEventListener("keydown", handleInteraction);
-        window.addEventListener("touchstart", handleInteraction);
-      });
-    };
-
-    const onGlobalStop = () => {
-      stopAudio();
-    };
-    window.addEventListener("macfiesta:stop-hero-audio", onGlobalStop);
-
-    const mountDelay = setTimeout(() => {
-      if (!isDisposed && window.location.pathname === "/") {
-        startPlayback();
-      }
-    }, 100);
-
-    window.addEventListener("scroll", handleScroll, { passive: true });
-
-    return () => {
-      isDisposed = true;
-      clearTimeout(mountDelay);
-      cancelAnimationFrame(fadeRaf);
-      window.removeEventListener("scroll", handleScroll);
-      window.removeEventListener("macfiesta:stop-hero-audio", onGlobalStop);
-      if (removeFallbackListenersRef.current) {
-        removeFallbackListenersRef.current();
-      }
-      stopAudio();
-    };
-  }, []);
-
-  const togglePlay = (e?: React.MouseEvent | React.TouchEvent) => {
-    e?.stopPropagation?.();
-    if (removeFallbackListenersRef.current) {
-      removeFallbackListenersRef.current();
-    }
-    if (!audioRef.current) return;
-
-    const audio = audioRef.current;
-
-    if (isPlaying) {
-      audio.pause();
-      setPlayState(false);
-      userMutedRef.current = true;
-    } else {
-      userMutedRef.current = false;
-      const fadeDistance = Math.max(320, window.innerHeight * 0.65);
-      const factor = Math.max(0, Math.min(1, 1 - window.scrollY / fadeDistance));
-      audio.volume = maxVolume * Math.max(0.1, factor);
-      audio.play().then(() => {
-        setPlayState(true);
-      }).catch(() => {
-        setPlayState(false);
-      });
-    }
-  };
 
   const scrollToNext = () => {
     window.scrollBy({ top: window.innerHeight, behavior: "smooth" });
@@ -483,63 +302,52 @@ export function HeroSection() {
               initial={{ opacity: 0, scale: 0.92, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="stark-panel p-3.5 sm:p-5 rounded-2xl w-full max-w-[320px] sm:max-w-[350px] space-y-2.5 sm:space-y-3.5 flex flex-col items-center justify-center shadow-[0_0_40px_rgba(0,0,0,0.8),0_0_20px_rgba(0,212,255,0.15)] relative border-glow-flow mx-auto lg:mx-0"
+              className="relative w-full max-w-[340px] sm:max-w-[365px] rounded-2xl p-3.5 sm:p-4.5 space-y-2.5 sm:space-y-3 flex flex-col items-center justify-center mx-auto lg:mx-0 overflow-hidden bg-black/20 backdrop-blur-xl border border-white/20 shadow-[0_12px_40px_rgba(0,0,0,0.5),0_0_25px_rgba(0,212,255,0.12),0_0_15px_rgba(237,29,36,0.1)] border-glow-flow"
             >
-              {/* Corner HUD Markers */}
-              <div className="absolute -top-1 -left-1 w-4 h-4 border-t-2 border-l-2 border-arc-cyan/70 rounded-tl" />
-              <div className="absolute -top-1 -right-1 w-4 h-4 border-t-2 border-r-2 border-arc-cyan/70 rounded-tr" />
-              <div className="absolute -bottom-1 -left-1 w-4 h-4 border-b-2 border-l-2 border-marvel-red/70 rounded-bl" />
-              <div className="absolute -bottom-1 -right-1 w-4 h-4 border-b-2 border-r-2 border-marvel-red/70 rounded-br" />
+              {/* Top Dynamic Marvel vs DC Beam */}
+              <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-marvel-red/80 via-arc-cyan to-marvel-red/80 pointer-events-none z-20" />
 
-              <div className="w-full text-center space-y-0.5">
-                <h3
-                  className="text-[10px] sm:text-xs font-bold text-arc-cyan tracking-[0.2em] sm:tracking-[0.25em] uppercase flex items-center justify-center gap-1.5 font-orbitron"
-                >
-                  <RiFlashlightLine className="shrink-0" /> S.H.I.E.L.D. COUNTDOWN
+              {/* Ambient Energy Glows (Marvel Red top-left, DC/Arc Cyan bottom-right) */}
+              <div className="absolute -top-14 -left-14 w-36 h-36 rounded-full bg-marvel-red/15 blur-[50px] pointer-events-none" />
+              <div className="absolute -bottom-14 -right-14 w-36 h-36 rounded-full bg-arc-cyan/15 blur-[50px] pointer-events-none" />
+
+              {/* Corner HUD Markers with Marvel vs DC dual glow */}
+              <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-marvel-red rounded-tl shadow-[0_0_8px_#ED1D24] z-20 pointer-events-none" />
+              <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-arc-cyan rounded-tr shadow-[0_0_8px_#00D4FF] z-20 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-arc-cyan rounded-bl shadow-[0_0_8px_#00D4FF] z-20 pointer-events-none" />
+              <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-marvel-red rounded-br shadow-[0_0_8px_#ED1D24] z-20 pointer-events-none" />
+
+              {/* Header: Marvel vs DC Clash Badge & Protocol Title */}
+              <div className="w-full text-center space-y-1 relative z-10">
+                <div className="flex items-center justify-center gap-1.5 font-orbitron text-[8px] sm:text-[8.5px] font-black uppercase tracking-[0.2em]">
+                  <span className="px-2 py-0.5 rounded-full bg-marvel-red/20 text-marvel-red border border-marvel-red/50 shadow-[0_0_8px_rgba(237,29,36,0.35)]">
+                    MARVEL
+                  </span>
+                  <span className="text-white/30 text-[7px] font-bold">VS</span>
+                  <span className="px-2 py-0.5 rounded-full bg-arc-cyan/20 text-arc-cyan border border-arc-cyan/50 shadow-[0_0_8px_rgba(0,212,255,0.35)]">
+                    DC
+                  </span>
+                </div>
+
+                <h3 className="text-[10.5px] sm:text-xs font-bold text-white tracking-[0.22em] uppercase flex items-center justify-center gap-1.5 font-orbitron">
+                  <RiFlashlightLine className="text-arc-cyan shrink-0 drop-shadow-[0_0_6px_#00D4FF]" />
+                  <span className="bg-gradient-to-r from-white via-arc-cyan to-white bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(0,212,255,0.5)]">
+                    MULTIVERSE COUNTDOWN
+                  </span>
                 </h3>
-                <p className="text-[11px] sm:text-xs font-semibold text-metallic-gold font-space">
+
+                <p className="text-[10px] sm:text-[11px] font-semibold text-metallic-gold/90 font-space tracking-wider drop-shadow-[0_0_6px_rgba(255,215,0,0.3)]">
                   {settings.motto}
                 </p>
               </div>
 
-              <div className="flex justify-center w-full">
+              <div className="flex justify-center w-full relative z-10">
                 <CountdownTimer />
               </div>
 
-              <button
-                type="button"
-                onClick={togglePlay}
-                className="w-full pt-2 sm:pt-3 border-t border-white/10 flex items-center justify-between gap-2 group cursor-pointer text-left focus:outline-none select-none rounded-b-xl hover:bg-white/[0.03] transition-colors -mx-1 px-1"
-                aria-label={isPlaying ? "Pause theme music" : "Play theme music"}
-              >
-                <div className="flex items-center gap-2.5 sm:gap-3">
-                  <div
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border transition-all duration-300 shadow-lg flex items-center justify-center shrink-0 ${isPlaying
-                        ? "bg-marvel-red border-marvel-red text-white shadow-[0_0_15px_#ED1D24] group-hover:scale-110"
-                        : "bg-white/10 border-white/20 text-arc-cyan hover:border-arc-cyan group-hover:scale-110"
-                      }`}
-                  >
-                    {isPlaying ? (
-                      <RiPauseFill className="text-sm sm:text-base text-white drop-shadow-[0_0_6px_#FFFFFF]" />
-                    ) : (
-                      <RiPlayFill className="text-sm sm:text-base text-arc-cyan ml-0.5 drop-shadow-[0_0_6px_#00D4FF]" />
-                    )}
-                  </div>
-                  <div className="text-left font-space">
-                    <p className="text-[8px] sm:text-[9px] text-white/45 tracking-widest uppercase flex items-center gap-1">
-                      {isPlaying ? <RiVolumeUpFill className="text-arc-cyan text-xs shrink-0" /> : <RiVolumeMuteFill className="text-white/40 text-xs shrink-0" />}
-                      <span>AVENGERS AUDIO HUD</span>
-                    </p>
-                    <p
-                      className={`text-[10px] sm:text-xs font-bold transition-colors duration-300 font-excon-bold flex items-center gap-1.5 ${isPlaying ? "text-arc-cyan animate-pulse" : "text-white/45"
-                        }`}
-                    >
-                      {isPlaying ? "BEATS ONLINE • TAP TO PAUSE" : "AUDIO MUTED • TAP TO PLAY"}
-                    </p>
-                  </div>
-                </div>
-                <MusicVisualizer isPlaying={isPlaying} />
-              </button>
+              <div className="w-full relative z-10">
+                <AvengersAudioHud />
+              </div>
             </motion.div>
           </div>
 

@@ -1,6 +1,7 @@
 import logging
 import re
 import secrets
+import threading
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -206,23 +207,30 @@ class SignupView(APIView):
     def _send_welcome_email(self, user):
         if not user.email:
             return
-        display = (user.get_full_name() or "").strip() or user.email
-        subject = "Welcome to MacFiesta Pro"
-        message = (
-            f"Hi {display},\n\n"
-            "Your MacFiesta Pro account is ready. You can now register for events.\n\n"
-            "If you did not create this account, contact the fest desk.\n"
-        )
-        try:
-            send_mail(
-                subject,
-                message,
-                getattr(settings, "DEFAULT_FROM_EMAIL", "macfiesta@macfast.org"),
-                [user.email],
-                fail_silently=True,
+        email = user.email
+        display = (user.get_full_name() or "").strip() or email
+        user_id = user.id
+        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "macfiesta@macfast.org")
+
+        def _worker():
+            subject = "Welcome to MacFiesta Pro"
+            message = (
+                f"Hi {display},\n\n"
+                "Your MacFiesta Pro account is ready. You can now register for events.\n\n"
+                "If you did not create this account, contact the fest desk.\n"
             )
-        except Exception:
-            logger.exception("Failed to send welcome email to user_id=%s", user.id)
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    from_email,
+                    [email],
+                    fail_silently=True,
+                )
+            except Exception:
+                logger.exception("Failed to send welcome email to user_id=%s", user_id)
+
+        threading.Thread(target=_worker, daemon=True).start()
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):

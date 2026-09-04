@@ -15,9 +15,11 @@ import {
   RiDashboardLine,
   RiShieldUserLine,
   RiUserLine,
+  RiInstagramLine,
 } from "react-icons/ri";
 import { getCurrentUser, isLoggedIn } from "../services/api";
 import { AUTH_CHANGE_EVENT, logout, isUnauthorized } from "../utils/auth";
+import { BRAND } from "../utils/brand";
 
 const mainNavItems = [
   { href: "/", label: "MISSION CONTROL" },
@@ -225,13 +227,15 @@ export default function Navbar() {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Link
-                  to="/register"
-                  className="px-3.5 py-1.5 text-[11px] font-bold text-arc-cyan border border-arc-cyan/60 rounded-full hover:bg-arc-cyan/15 transition-all uppercase tracking-wider flex items-center gap-1 shadow-[0_0_12px_rgba(0,212,255,0.25)] hover:shadow-[0_0_18px_rgba(0,212,255,0.5)]"
+                <a
+                  href={BRAND.socialLinks.instagram || "https://www.instagram.com/macfiestaofficial/"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="px-3.5 py-1.5 text-[11px] font-bold text-arc-cyan border border-arc-cyan/60 rounded-full hover:bg-arc-cyan/15 transition-all uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_12px_rgba(0,212,255,0.25)] hover:shadow-[0_0_18px_rgba(0,212,255,0.5)] cursor-pointer"
                 >
-                  <RiShieldFlashLine className="text-xs" />
-                  <span>S.H.I.E.L.D. LINK</span>
-                </Link>
+                  <RiInstagramLine className="text-xs" />
+                  <span>FOLLOW US</span>
+                </a>
                 <Link
                   to="/login"
                   className="px-3.5 py-1.5 text-[11px] font-black text-black bg-metallic-gold rounded-full hover:bg-white transition-all duration-300 tracking-wider uppercase shadow-[0_0_15px_rgba(212,175,55,0.5)] hover:shadow-[0_0_22px_rgba(212,175,55,0.8)]"
