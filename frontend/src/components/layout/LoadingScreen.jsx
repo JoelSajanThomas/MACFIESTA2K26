@@ -1,8 +1,7 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useLoading } from "../../providers/LoadingProvider";
 import { motion, AnimatePresence } from "framer-motion";
 import { startBackgroundPreload } from "../../utils/framePreloader";
-import { isLowEndDevice } from "../../utils/deviceCapabilities";
 
 // ─── Gold palette ─────────────────────────────────────────────────────────────
 const GOLD = ["#D4AF37", "#F5D76E", "#FFE680", "#C8960C", "#FFC200", "#FFFFFF"];
@@ -26,7 +25,7 @@ function spawnBurst(cx, cy, count) {
 }
 
 /**
- * Original MACFIESTA Loading Screen with session cache and adaptive scaling.
+ * Original MACFIESTA Loading Screen from C:\Users\joels\Desktop\MACFIESTA
  */
 export default function LoadingScreen({ skip = false }) {
   const [isMounted, setIsMounted] = useState(false);
@@ -39,34 +38,11 @@ export default function LoadingScreen({ skip = false }) {
   const burstRef = useRef([]);
   const burstFiredRef = useRef(false);
 
-  const enterSite = useCallback(() => {
-    setProgress(100);
-    setIsDismissed(true);
-    markDone();
-    try {
-      sessionStorage.setItem("macfiesta_visited", "true");
-    } catch {
-      // ignore
-    }
-  }, [markDone]);
-
-  // ── Mount: check session cache & conditionally preload ───────────────────
+  // ── Mount: activate background preloading immediately ────────────────────
   useEffect(() => {
-    try {
-      if (sessionStorage.getItem("macfiesta_visited") === "true") {
-        setIsDismissed(true);
-        markDone();
-        return;
-      }
-    } catch {
-      // ignore storage error
-    }
-
     setIsMounted(true);
-    if (!isLowEndDevice()) {
-      startBackgroundPreload("frames");
-    }
-  }, [markDone]);
+    startBackgroundPreload("frames");
+  }, []);
 
   // ── Canvas: ambient dust + burst particles ───────────────────────────────
   useEffect(() => {
@@ -84,9 +60,8 @@ export default function LoadingScreen({ skip = false }) {
     resize();
     window.addEventListener("resize", resize);
 
-    // Ambient floating dust (scaled down on low-end/mobile devices)
-    const isLow = isLowEndDevice();
-    const dust = Array.from({ length: isLow ? 14 : 65 }, () => ({
+    // Ambient floating dust
+    const dust = Array.from({ length: 70 }, () => ({
       x: Math.random() * window.innerWidth,
       y: Math.random() * window.innerHeight,
       vx: (Math.random() - 0.5) * 0.35,
@@ -168,27 +143,24 @@ export default function LoadingScreen({ skip = false }) {
     if (!isMounted || skip || isDone) return undefined;
 
     // Brief pause then show logo
-    const t1 = setTimeout(() => setPhase("reveal"), 250);
+    const t1 = setTimeout(() => setPhase("reveal"), 300);
 
-    // Progress bar fills smoothly and auto-enters on low-end / mobile
+    // Progress bar fills to 100% and holds — DO NOT auto-enter site
     const pInt = setInterval(() => {
       setProgress((p) => {
         if (p >= 100) {
           clearInterval(pInt);
-          if (isLowEndDevice()) {
-            setTimeout(() => enterSite(), 400);
-          }
           return 100;
         }
-        return Math.min(100, p + Math.floor(Math.random() * 14) + 12);
+        return Math.min(100, p + Math.floor(Math.random() * 12) + 8);
       });
-    }, 60);
+    }, 80);
 
     return () => {
       clearTimeout(t1);
       clearInterval(pInt);
     };
-  }, [isMounted, skip, isDone, enterSite]);
+  }, [isMounted, skip, isDone]);
 
   // ── Fire burst when logo reveals ─────────────────────────────────────────
   useEffect(() => {
@@ -197,13 +169,12 @@ export default function LoadingScreen({ skip = false }) {
 
     const cx = window.innerWidth / 2;
     const cy = window.innerHeight / 2;
-    const isLow = isLowEndDevice();
 
     const t1 = setTimeout(() => {
-      burstRef.current.push(...spawnBurst(cx, cy, isLow ? 40 : 180));
+      burstRef.current.push(...spawnBurst(cx, cy, 200));
     }, 380);
     const t2 = setTimeout(() => {
-      burstRef.current.push(...spawnBurst(cx, cy, isLow ? 25 : 80));
+      burstRef.current.push(...spawnBurst(cx, cy, 90));
     }, 950);
 
     return () => {
@@ -381,9 +352,13 @@ export default function LoadingScreen({ skip = false }) {
                 />
               </div>
 
-              {/* Enter button — click to enter immediately */}
+              {/* Enter button — user must click to enter */}
               <button
-                onClick={enterSite}
+                onClick={() => {
+                  setProgress(100);
+                  setIsDismissed(true);
+                  markDone();
+                }}
                 className="text-[12px] sm:text-[13px] tracking-[0.25em] uppercase font-bold text-black bg-gradient-to-r from-[#F5D76E] via-[#D4AF37] to-[#FFE680] hover:brightness-110 active:scale-95 px-7 py-2.5 rounded-full transition-all duration-300 cursor-pointer mt-1 shadow-[0_0_20px_rgba(212,175,55,0.45)] hover:shadow-[0_0_30px_rgba(212,175,55,0.75)]"
                 style={{ fontFamily: "var(--font-orbitron, 'Orbitron', sans-serif)" }}
               >

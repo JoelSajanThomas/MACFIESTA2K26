@@ -11,7 +11,6 @@ import {
   subscribeToPreload,
   loadSingleFrame,
 } from "../../utils/framePreloader";
-import { isLowEndDevice, isMobileOrTouch } from "../../utils/deviceCapabilities";
 
 interface Marvel3DScrollCanvasProps {
   initialSequence?: "frames" | "frames2";
@@ -40,8 +39,7 @@ export function Marvel3DScrollCanvas({
   const updateCanvasDimensions = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const isLow = isLowEndDevice();
-    const dpr = isLow ? 1 : Math.min(window.devicePixelRatio || 1, 1.5);
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const w = window.innerWidth;
     const h = window.innerHeight;
     const targetW = Math.round(w * dpr);
@@ -181,10 +179,8 @@ export function Marvel3DScrollCanvas({
     return () => window.removeEventListener("resize", handleResize);
   }, [drawFrame, updateCanvasDimensions]);
 
-  // Mouse move tilt handler (desktop pointer devices only)
+  // Mouse move tilt handler
   useEffect(() => {
-    if (isMobileOrTouch()) return undefined;
-
     let ticking = false;
     const handleMouseMove = (e: MouseEvent) => {
       if (!ticking) {
@@ -238,12 +234,6 @@ export function Marvel3DScrollCanvas({
     const renderLoop = () => {
       if (!isRunning) return;
 
-      // Pause GPU cycles when the tab is backgrounded
-      if (typeof document !== "undefined" && document.hidden) {
-        rafRef.current = requestAnimationFrame(renderLoop);
-        return;
-      }
-
       const diff = targetFrameRef.current - currentFrameRef.current;
       if (Math.abs(diff) > 0.001) {
         // Exponential damping filter (0.13 factor) for natural fluid momentum and smooth flow
@@ -255,17 +245,15 @@ export function Marvel3DScrollCanvas({
         drawFrameRef.current(frameToDraw);
       }
 
-      // Smooth mouse tilt with overscan safety (desktop only)
-      if (!isMobileOrTouch()) {
-        const tilt = mouseTiltRef.current;
-        const diffTiltX = tilt.targetX - tilt.x;
-        const diffTiltY = tilt.targetY - tilt.y;
-        if (Math.abs(diffTiltX) > 0.005 || Math.abs(diffTiltY) > 0.005) {
-          tilt.x += diffTiltX * 0.08;
-          tilt.y += diffTiltY * 0.08;
-          if (containerRef.current) {
-            containerRef.current.style.transform = `perspective(1200px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg) scale(1.06)`;
-          }
+      // Smooth mouse tilt with overscan safety
+      const tilt = mouseTiltRef.current;
+      const diffTiltX = tilt.targetX - tilt.x;
+      const diffTiltY = tilt.targetY - tilt.y;
+      if (Math.abs(diffTiltX) > 0.005 || Math.abs(diffTiltY) > 0.005) {
+        tilt.x += diffTiltX * 0.08;
+        tilt.y += diffTiltY * 0.08;
+        if (containerRef.current) {
+          containerRef.current.style.transform = `perspective(1200px) rotateX(${tilt.y}deg) rotateY(${tilt.x}deg) scale(1.06)`;
         }
       }
 
