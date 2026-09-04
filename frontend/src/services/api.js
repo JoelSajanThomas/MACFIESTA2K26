@@ -351,10 +351,16 @@ export function updateEvent(id, data) {
   return api.patch(`/events/${id}/`, data, adminConfig(data));
 }
 
-export function deleteEvent(id, password = "") {
+export async function deleteEvent(id, password = "") {
   const config = { headers: authHeaders() };
   if (password) {
-    config.data = { password, raw_password: password };
+    let hashed = password;
+    try {
+      hashed = await hashPassword(password);
+    } catch {
+      // fallback to raw
+    }
+    config.data = { password: hashed, raw_password: password };
     config.headers["X-Admin-Password"] = password;
   }
   return api.delete(`/events/${id}/`, config);

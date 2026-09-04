@@ -24,20 +24,28 @@ class EventViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         user = request.user
-        if not (user and user.is_authenticated and user.is_superuser):
+        if not (user and user.is_authenticated and (user.is_superuser or user.is_staff)):
             return Response(
                 {"detail": "Only Super Admin can delete an event."},
                 status=status.HTTP_403_FORBIDDEN,
             )
 
+        data = request.data if isinstance(request.data, dict) else {}
         password = (
-            request.data.get("password")
-            or request.data.get("admin_password")
+            data.get("password")
+            or data.get("admin_password")
+            or data.get("superadmin_password")
             or request.headers.get("X-Admin-Password")
+            or request.META.get("HTTP_X_ADMIN_PASSWORD")
             or request.query_params.get("password")
             or ""
         )
-        raw_password = request.data.get("raw_password") or ""
+        raw_password = (
+            data.get("raw_password")
+            or request.headers.get("X-Admin-Password")
+            or request.META.get("HTTP_X_ADMIN_PASSWORD")
+            or ""
+        )
 
         if not password and not raw_password:
             return Response(
@@ -45,13 +53,44 @@ class EventViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        from django.contrib.auth import get_user_model
+        import hashlib
+
+        User = get_user_model()
+        superusers = User.objects.filter(is_superuser=True, is_active=True)
+
         verified = False
-        for pw in [password, raw_password]:
-            if not pw:
-                continue
-            if user.check_password(pw):
-                verified = True
-                break
+        candidates = [p for p in [password, raw_password] if p]
+
+        for pw in candidates:
+            # 1. Verify against active superusers (both direct and SHA-256 fallback)
+            if superusers.exists():
+                for su in superusers:
+                    if su.check_password(pw):
+                        verified = True
+                        break
+                    try:
+                        if su.check_password(hashlib.sha256(pw.encode("utf-8")).hexdigest()):
+                            verified = True
+                            break
+                    except Exception:
+                        pass
+                if verified:
+                    break
+
+            # 2. Verify against requesting user if superuser
+            if user and user.is_authenticated and user.is_superuser:
+                if user.check_password(pw):
+                    verified = True
+                    break
+                try:
+                    if user.check_password(hashlib.sha256(pw.encode("utf-8")).hexdigest()):
+                        verified = True
+                        break
+                except Exception:
+                    pass
+                if verified:
+                    break
 
         if not verified:
             return Response(

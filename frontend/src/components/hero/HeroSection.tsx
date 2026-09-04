@@ -20,6 +20,7 @@ import { useFestivalControl } from "@/lib/festivalStore";
 import { getAnnouncements, isLoggedIn, getCurrentUser } from "../../services/api";
 import { AUTH_CHANGE_EVENT } from "../../utils/auth";
 import { ANNOUNCEMENT_PLACEHOLDERS } from "../../utils/constants";
+import { isLowEndDevice } from "../../utils/deviceCapabilities";
 
 /* ─── Reference Design Framer Motion Animation Variants ─── */
 const customEase: [number, number, number, number] = [0.16, 1, 0.3, 1];
@@ -162,16 +163,25 @@ export function HeroSection() {
     isPlayingRef.current = val;
   };
 
-  useEffect(() => {
-    // Only initialize and play if on homepage
-    if (typeof window !== "undefined" && window.location.pathname !== "/") {
-      return;
-    }
-
+  const getOrCreateAudio = () => {
+    if (audioRef.current) return audioRef.current;
     const audio = new Audio(encodeURI("/ULTRA NATÉ - Movin To The Sun.mp3"));
     audio.loop = true;
     audio.volume = maxVolume;
     audioRef.current = audio;
+    return audio;
+  };
+
+  useEffect(() => {
+    // Only initialize if on homepage
+    if (typeof window !== "undefined" && window.location.pathname !== "/") {
+      return;
+    }
+
+    // On mobile or low-end devices: skip automatic audio download entirely
+    if (isLowEndDevice()) {
+      return;
+    }
 
     let fadeRaf: number;
     let isDisposed = false;
@@ -202,23 +212,23 @@ export function HeroSection() {
       const factor = Math.max(0, Math.min(1, 1 - scrollY / fadeDistance));
       const targetVol = maxVolume * factor;
 
-      audio.volume = Math.max(0, Math.min(maxVolume, targetVol));
+      audioRef.current.volume = Math.max(0, Math.min(maxVolume, targetVol));
 
       if (factor <= 0.02) {
-        if (!audio.paused) {
-          audio.pause();
+        if (!audioRef.current.paused) {
+          audioRef.current.pause();
           setPlayState(false);
         }
       } else {
-        if (audio.paused && !userMutedRef.current && !isDisposed) {
-          audio.play().then(() => {
+        if (audioRef.current.paused && !userMutedRef.current && !isDisposed) {
+          audioRef.current.play().then(() => {
             if (!isDisposed && window.location.pathname === "/") {
               setPlayState(true);
-            } else {
-              audio.pause();
+            } else if (audioRef.current) {
+              audioRef.current.pause();
             }
           }).catch(() => { });
-        } else if (!audio.paused && !isPlayingRef.current) {
+        } else if (!audioRef.current.paused && !isPlayingRef.current) {
           setPlayState(true);
         }
       }
@@ -244,6 +254,7 @@ export function HeroSection() {
         return;
       }
 
+      const audio = getOrCreateAudio();
       audio.play().then(() => {
         if (!isDisposed && window.location.pathname === "/") {
           setPlayState(true);
@@ -263,6 +274,7 @@ export function HeroSection() {
         return;
       }
 
+      const audio = getOrCreateAudio();
       audio.play().then(() => {
         if (!isDisposed && window.location.pathname === "/") {
           setPlayState(true);
@@ -282,11 +294,12 @@ export function HeroSection() {
     };
     window.addEventListener("macfiesta:stop-hero-audio", onGlobalStop);
 
+    // Graceful delay for high-end desktop to not block initial paint
     const mountDelay = setTimeout(() => {
       if (!isDisposed && window.location.pathname === "/") {
         startPlayback();
       }
-    }, 100);
+    }, 1500);
 
     window.addEventListener("scroll", handleScroll, { passive: true });
 
@@ -308,9 +321,8 @@ export function HeroSection() {
     if (removeFallbackListenersRef.current) {
       removeFallbackListenersRef.current();
     }
-    if (!audioRef.current) return;
 
-    const audio = audioRef.current;
+    const audio = getOrCreateAudio();
 
     if (isPlaying) {
       audio.pause();

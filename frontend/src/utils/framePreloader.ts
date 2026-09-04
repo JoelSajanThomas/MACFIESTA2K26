@@ -1,3 +1,5 @@
+import { isLowEndDevice } from "./deviceCapabilities";
+
 // Global High-Speed Frame Cache & Preload Manager
 export const TOTAL_FRAMES = 156;
 
@@ -117,8 +119,9 @@ async function processQueue(seq: string, queue: number[], concurrency: number) {
 }
 
 /**
- * Start aggressive background preloading immediately.
- * This runs while user is on LoadingScreen or browsing.
+ * Start background preloading with adaptive device scaling.
+ * On low-end/mobile devices: only Frame 1 is loaded (saves 11.7 MB bandwidth & avoids RAM exhaustion).
+ * On high-end desktop: keyframes and priority batches are preloaded at gentle concurrency.
  */
 export function startBackgroundPreload(seq = "frames"): Promise<void> {
   if (preloadingPromises[seq]) {
@@ -126,27 +129,33 @@ export function startBackgroundPreload(seq = "frames"): Promise<void> {
   }
 
   preloadingPromises[seq] = (async () => {
-    // 1. Load Frame 1 with maximum priority
+    // 1. Always load Frame 1 first (hero image)
     await loadSingleFrame(seq, 1, true);
 
-    // 2. Priority Batch: Hero frames (1 to 30) with high concurrency
-    const heroFrames: number[] = [];
-    for (let i = 2; i <= Math.min(30, TOTAL_FRAMES); i++) {
-      heroFrames.push(i);
+    // If mobile, data-saver, or low-end device: STOP HERE!
+    // Do not flood the device with 155 additional images.
+    if (isLowEndDevice()) {
+      return;
     }
-    await processQueue(seq, heroFrames, 12);
 
-    // 3. Keyframes stride 5 (evenly covers full scroll length)
+    // 2. Desktop High-End: Priority Keyframes (stride 10 first to cover scroll range lightly)
     const keyframes: number[] = [];
-    for (let i = 35; i <= TOTAL_FRAMES; i += 5) {
+    for (let i = 5; i <= TOTAL_FRAMES; i += 10) {
       keyframes.push(i);
     }
     if (keyframes[keyframes.length - 1] !== TOTAL_FRAMES) {
       keyframes.push(TOTAL_FRAMES);
     }
-    await processQueue(seq, keyframes, 8);
+    await processQueue(seq, keyframes, 3);
 
-    // 4. Fill all remaining frames
+    // 3. Hero intro frames (2 to 20) with gentle concurrency
+    const heroFrames: number[] = [];
+    for (let i = 2; i <= Math.min(20, TOTAL_FRAMES); i++) {
+      heroFrames.push(i);
+    }
+    await processQueue(seq, heroFrames, 3);
+
+    // 4. Fill remaining frames quietly in the background
     const remaining: number[] = [];
     const cache = globalFrameCache[seq];
     for (let i = 1; i <= TOTAL_FRAMES; i++) {
@@ -154,7 +163,7 @@ export function startBackgroundPreload(seq = "frames"): Promise<void> {
         remaining.push(i);
       }
     }
-    await processQueue(seq, remaining, 6);
+    await processQueue(seq, remaining, 2);
   })();
 
   return preloadingPromises[seq]!;
@@ -163,8 +172,21 @@ export function startBackgroundPreload(seq = "frames"): Promise<void> {
 // Automatically start preloading when this module is evaluated in the browser
 if (typeof window !== "undefined") {
   if ("requestIdleCallback" in window) {
-    (window as any).requestIdleCallback(() => startBackgroundPreload("frames"));
+    (window as any).requestIdleCallback(() => {
+      // Don't auto-load full frame sequence if low-end device
+      if (!isLowEndDevice()) {
+        startBackgroundPreload("frames");
+      } else {
+        loadSingleFrame("frames", 1, false);
+      }
+    });
   } else {
-    setTimeout(() => startBackgroundPreload("frames"), 100);
+    setTimeout(() => {
+      if (!isLowEndDevice()) {
+        startBackgroundPreload("frames");
+      } else {
+        loadSingleFrame("frames", 1, false);
+      }
+    }, 500);
   }
 }

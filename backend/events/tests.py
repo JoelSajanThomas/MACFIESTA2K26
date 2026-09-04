@@ -297,3 +297,91 @@ class ComprehensiveAuditTests(TestCase):
         )
         self.assertEqual(ok_post.status_code, status.HTTP_201_CREATED)
         self.assertEqual(ok_post.data["title"], "DJ Night")
+
+    def test_event_deletion_with_plain_superadmin_password(self):
+        empty_event = Event.objects.create(
+            title="Event to Delete Plain",
+            slug="event-to-delete-plain",
+            event_date="2026-03-20",
+        )
+        self.client.force_authenticate(user=self.superuser)
+        res = self.client.delete(
+            f"/api/events/{empty_event.id}/",
+            {"password": "SuperPassword123!"},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Event.objects.filter(id=empty_event.id).exists())
+
+    def test_event_deletion_with_sha256_superadmin_account(self):
+        import hashlib
+        plain_secret = "CustomSuperPass999!"
+        sha_user = User.objects.create_superuser(
+            username="sha_superadmin",
+            email="sha_super@macfast.org",
+            password=hashlib.sha256(plain_secret.encode("utf-8")).hexdigest(),
+        )
+        empty_event = Event.objects.create(
+            title="Event to Delete SHA256",
+            slug="event-to-delete-sha256",
+            event_date="2026-03-20",
+        )
+        self.client.force_authenticate(user=sha_user)
+        # Client enters plain password in modal; backend validates against client-side SHA256 account
+        res = self.client.delete(
+            f"/api/events/{empty_event.id}/",
+            {"password": plain_secret},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Event.objects.filter(id=empty_event.id).exists())
+
+    def test_event_deletion_with_invalid_password_denied(self):
+        empty_event = Event.objects.create(
+            title="Event Should Not Delete",
+            slug="event-should-not-delete",
+            event_date="2026-03-20",
+        )
+        self.client.force_authenticate(user=self.superuser)
+        res = self.client.delete(
+            f"/api/events/{empty_event.id}/",
+            {"password": "WrongPassword123!"},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertIn("Incorrect Super Admin password", res.data["detail"])
+        self.assertTrue(Event.objects.filter(id=empty_event.id).exists())
+
+    def test_event_deletion_with_x_admin_password_header(self):
+        empty_event = Event.objects.create(
+            title="Event To Delete Header",
+            slug="event-to-delete-header",
+            event_date="2026-03-20",
+        )
+        self.client.force_authenticate(user=self.superuser)
+        res = self.client.delete(
+            f"/api/events/{empty_event.id}/",
+            HTTP_X_ADMIN_PASSWORD="SuperPassword123!",
+        )
+        self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertFalse(Event.objects.filter(id=empty_event.id).exists())
+
+    def test_event_deletion_prevented_when_active_registrations_exist(self):
+        Registration.objects.create(
+            user=self.student,
+            event=self.event,
+            participant_name="Tony Stark",
+            college_name="Stark Industries",
+            email="tony@stark.com",
+            phone="9876543210",
+        )
+        self.client.force_authenticate(user=self.superuser)
+        res = self.client.delete(
+            f"/api/events/{self.event.id}/",
+            {"password": "SuperPassword123!"},
+            format="json",
+        )
+        self.assertEqual(res.status_code, status.HTTP_409_CONFLICT)
+        self.assertIn("registration(s) still exist", res.data["detail"])
+        self.assertTrue(Event.objects.filter(id=self.event.id).exists())
+

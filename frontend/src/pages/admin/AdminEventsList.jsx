@@ -171,6 +171,7 @@ export default function AdminEventsList() {
     setDeleteError("");
     try {
       await deleteEvent(deleteEventTarget.id, deletePassword);
+      invalidateApiGetCache("events");
       setEvents((prev) => prev.filter((e) => e.id !== deleteEventTarget.id));
       setDeleteEventTarget(null);
       setDeletePassword("");

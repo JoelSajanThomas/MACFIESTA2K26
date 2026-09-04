@@ -415,7 +415,15 @@ class ChangePasswordSerializer(serializers.Serializer):
 
     def validate(self, attrs):
         user = self.context["request"].user
-        if not user.check_password(attrs["current_password"]):
+        curr = attrs.get("current_password", "")
+        curr_verified = user.check_password(curr)
+        if not curr_verified and curr:
+            try:
+                import hashlib
+                curr_verified = user.check_password(hashlib.sha256(curr.encode("utf-8")).hexdigest())
+            except Exception:
+                pass
+        if not curr_verified:
             raise serializers.ValidationError({"current_password": "Current password is incorrect."})
         if attrs["password"] != attrs["password_confirm"]:
             raise serializers.ValidationError({"password_confirm": "Passwords do not match."})

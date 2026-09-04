@@ -1,6 +1,5 @@
-"use client";
-
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import { isLowEndDevice } from "../../utils/deviceCapabilities";
 
 interface BackgroundVideoProps {
   src: string;
@@ -10,14 +9,32 @@ interface BackgroundVideoProps {
   gradientOverlay?: boolean;
 }
 
+const DEFAULT_LOOP = "/assets/image all/ref-ui/cinematic-loop.mp4";
+
 export function BackgroundVideo({
   src,
-  fallbackSrc = "/MARVEL/Video Project 4.mp4",
+  fallbackSrc = DEFAULT_LOOP,
   opacity = "opacity-75",
   className = "",
   gradientOverlay = true,
 }: BackgroundVideoProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [isLow, setIsLow] = useState(false);
+
+  useEffect(() => {
+    setIsLow(isLowEndDevice());
+  }, []);
+
+  // Map non-existent legacy paths to valid existing cinematic loop
+  const resolveSrc = (url: string) => {
+    if (!url || url.includes("Video Project")) {
+      return DEFAULT_LOOP;
+    }
+    return url;
+  };
+
+  const finalSrc = resolveSrc(src);
+  const finalFallback = resolveSrc(fallbackSrc);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -44,7 +61,7 @@ export function BackgroundVideo({
         window.addEventListener("scroll", handleInteraction, { once: true, passive: true });
       });
     }
-  }, [src]);
+  }, [finalSrc, isLow]);
 
   const getMimeType = (url: string) => {
     const clean = url.split("?")[0].toLowerCase();
@@ -55,27 +72,29 @@ export function BackgroundVideo({
 
   return (
     <div className={`absolute inset-0 z-0 overflow-hidden pointer-events-none ${opacity} ${className}`}>
-      <video
-        ref={videoRef}
-        autoPlay
-        loop
-        muted
-        playsInline
-        preload="auto"
-        disablePictureInPicture
-        disableRemotePlayback
-        className="w-full h-full object-cover object-center"
-        style={{
-          transform: "translate3d(0, 0, 0)",
-          willChange: "transform",
-          backfaceVisibility: "hidden",
-        }}
-      >
-        <source src={encodeURI(src)} type={getMimeType(src)} />
-        {fallbackSrc && fallbackSrc !== src && (
-          <source src={encodeURI(fallbackSrc)} type={getMimeType(fallbackSrc)} />
-        )}
-      </video>
+      {!isLow && (
+        <video
+          ref={videoRef}
+          autoPlay
+          loop
+          muted
+          playsInline
+          preload="metadata"
+          disablePictureInPicture
+          disableRemotePlayback
+          className="w-full h-full object-cover object-center"
+          style={{
+            transform: "translate3d(0, 0, 0)",
+            willChange: "transform",
+            backfaceVisibility: "hidden",
+          }}
+        >
+          <source src={encodeURI(finalSrc)} type={getMimeType(finalSrc)} />
+          {finalFallback && finalFallback !== finalSrc && (
+            <source src={encodeURI(finalFallback)} type={getMimeType(finalFallback)} />
+          )}
+        </video>
+      )}
 
       {gradientOverlay && (
         <>

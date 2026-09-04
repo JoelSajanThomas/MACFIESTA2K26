@@ -1,9 +1,15 @@
+import { isLowEndDevice } from "../../utils/deviceCapabilities";
+
 /**
  * CSS particle + hex-grid atmosphere adapted from MACFIESTA.rar ParticleBackground.
- * No Three.js — lightweight and performant.
+ * Lightweight and adaptively scaled for low-end devices.
  */
 export default function ParticleAtmosphere() {
-  const particles = Array.from({ length: 28 }, (_, i) => ({
+  const isLow = typeof window !== "undefined" && isLowEndDevice();
+  const particleCount = isLow ? 8 : 28;
+  const hexCount = isLow ? 2 : 6;
+
+  const particles = Array.from({ length: particleCount }, (_, i) => ({
     id: i,
     left: (i * 31 + 17) % 100,
     top: (i * 43 + 11) % 100,
@@ -13,7 +19,7 @@ export default function ParticleAtmosphere() {
     type: i % 5,
   }));
 
-  const hexagons = Array.from({ length: 6 }, (_, i) => ({
+  const hexagons = Array.from({ length: hexCount }, (_, i) => ({
     id: i,
     left: (i * 41 + 5) % 90 + 5,
     top: (i * 37 + 15) % 80 + 10,
