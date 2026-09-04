@@ -70,7 +70,7 @@ Possible Problems & Solutions
 Committee Approach
 Run a 10-minute briefing and sample submission before starting the timer. Display remaining time, maintain an incident log, lock submissions at the end, and export the final scoreboard. Do not reveal hidden test cases during the competition.""",
 
-    "bgmi": """Infinity War — BGMI Tournament
+    "bgmi": """Battle of Wakanda — BGMI Tournament
 "One Battleground. One Survivor."
 
 Rules & Regulations
@@ -348,14 +348,14 @@ Run multiple full test sessions before the event. Brief teams on safety and proh
 "Enter Hungry. Leave Legendary."
 
 Rules & Regulations
-1. Individual participation only. Each participant must prepare and present their own dish or task.
+1. Team participation only; each team consists of 2 members. Each team must prepare and present their own dish or task.
 2. The competition will be conducted in multiple rounds. Each round will have a different cooking challenge or task, and the details will be disclosed only at the beginning of that round. The college will provide the ingredients required for each round.
 3. Participants must bring their own pans, vessels, knives, cutting boards, spoons, mixing bowls, and any other necessary cooking utensils or equipment. All preparation, cooking, plating, and workstation cleaning must be completed within the time announced for each round.
 4. Participants must disclose major allergens in every dish and must not use spoiled, unsafe, prohibited, or unlabeled ingredients.
 5. Hands, utensils, cutting boards, and work surfaces must be kept clean. Raw and ready-to-eat foods must be separated to prevent cross-contamination.
 6. Pre-cooked, pre-prepared, or partially prepared food must not be brought. Only safe and approved cooking equipment may be used. Open flames and high-risk equipment are prohibited unless specifically arranged and supervised.
 7. Appropriate clothing, tied hair, closed footwear, and safe knife handling are mandatory. Running and horseplay are prohibited.
-8. Each participant must complete and present the required dish or task before the time for that round expires. Qualification or elimination for subsequent rounds will follow the format announced by the organizers.
+8. Each team must complete and present the required dish or task before the time for that round expires. Qualification or elimination for subsequent rounds will follow the format announced by the organizers.
 9. Judges may refuse to taste food that appears unsafe, undercooked, contaminated, or allergen-unclear.
 10. Judging will consider taste, creativity, presentation, hygiene, proper use of the provided ingredients, and overall performance. Judges' decision is final.
 

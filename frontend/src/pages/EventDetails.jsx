@@ -231,7 +231,7 @@ export default function EventDetails() {
             <div className="p-4 space-y-1">
               <span className="block text-[10px] uppercase font-bold text-white/50 tracking-wider font-excon-bold">Prize Pool / Bounty</span>
               <span className="block text-base sm:text-lg font-black text-metallic-gold font-excon-black">
-                {event.prizePool ? `₹${Number(event.prizePool).toLocaleString("en-IN")}` : (isExpo ? "Grand Showcase" : "Certificates & Trophy")}
+                {event.prizePool ? `₹${Number(event.prizePool).toLocaleString("en-IN")}` : (isExpo ? "No Prize Pool (Free Expo)" : "Certificates & Trophy")}
               </span>
             </div>
             <div className="p-4 space-y-1">
@@ -248,6 +248,68 @@ export default function EventDetails() {
             </div>
           </div>
         </div>
+
+        {/* Highlight for STARK EXPO */}
+        {isExpo && (
+          <div className="rounded-3xl border-2 border-arc-cyan/60 bg-gradient-to-r from-arc-cyan/15 via-[#0A0D1A]/95 to-purple-900/15 p-6 sm:p-8 space-y-4 shadow-2xl">
+            <div className="flex items-center gap-2 text-arc-cyan font-bold text-xs uppercase tracking-widest font-mono">
+              <span>⭐ School Event Most Attractive Event</span>
+            </div>
+            <h3 className="text-xl sm:text-2xl font-black text-white uppercase font-excon-black">
+              STARK EXPO · One Expo. Infinite Worlds of Discovery.
+            </h3>
+            <div className="p-4 rounded-2xl bg-black/60 border border-arc-cyan/40 text-sm text-white/90 leading-relaxed space-y-1">
+              <p className="text-amber-300 font-bold">
+                ⚠️ PRIZE POOL IS NOT THERE:
+              </p>
+              <p>
+                Highlighting this in the school event section: this is <strong>not a competition</strong>, just a <strong>free expo / exhibition</strong> for students to gain hands-on experience on different modern domains!
+              </p>
+            </div>
+            <div className="space-y-2 pt-1">
+              <span className="text-xs uppercase font-bold text-metallic-gold tracking-wider font-mono block">
+                The Expo Includes:
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2.5">
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
+                  <span className="text-lg">🤖</span>
+                  <div>
+                    <strong className="text-xs text-white block">Artificial Intelligence (AI)</strong>
+                    <span className="text-[10px] text-white/60">Generative tools &amp; models</span>
+                  </div>
+                </div>
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
+                  <span className="text-lg">🌐</span>
+                  <div>
+                    <strong className="text-xs text-white block">Internet of Things (IoT)</strong>
+                    <span className="text-[10px] text-white/60">Connected sensors &amp; devices</span>
+                  </div>
+                </div>
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
+                  <span className="text-lg">🔬</span>
+                  <div>
+                    <strong className="text-xs text-white block">Science &amp; Experiments</strong>
+                    <span className="text-[10px] text-white/60">Physics &amp; chemistry demos</span>
+                  </div>
+                </div>
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
+                  <span className="text-lg">🧬</span>
+                  <div>
+                    <strong className="text-xs text-white block">Biology &amp; Life Sciences</strong>
+                    <span className="text-[10px] text-white/60">Living systems &amp; biology</span>
+                  </div>
+                </div>
+                <div className="p-3 rounded-xl bg-white/5 border border-white/10 flex items-center gap-2">
+                  <span className="text-lg">🧠</span>
+                  <div>
+                    <strong className="text-xs text-white block">Psychology &amp; Human Behaviour</strong>
+                    <span className="text-[10px] text-white/60">Cognitive &amp; mental challenges</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Content Columns */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">

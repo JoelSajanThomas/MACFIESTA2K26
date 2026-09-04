@@ -93,7 +93,7 @@ export default function Rules() {
   // PDF Document 1: Pages 19-20 Materials Required by Event
   const materialsByEvent = [
     {
-      event: "AI Prompt - Image Creation",
+      event: "Multiverse: Imagine It (AI Prompt - Image Creation)",
       venue: "Computer Lab",
       items: [
         "College computers / laptops with stable power",
@@ -104,7 +104,7 @@ export default function Rules() {
       ],
     },
     {
-      event: "Mobile Photography",
+      event: "SpiderLens: Freeze the Moment (Photography)",
       venue: "Campus Trail",
       items: [
         "Official submission folder / form",
@@ -114,7 +114,7 @@ export default function Rules() {
       ],
     },
     {
-      event: "Spot Dance - Individual Competition",
+      event: "HeroVerse Dance-Off (Spot Dance)",
       venue: "Open Air Arena",
       items: [
         "High-output sound system and stage speakers",
@@ -124,7 +124,7 @@ export default function Rules() {
       ],
     },
     {
-      event: "Treasure Hunt - Infinity Quest: Hunt the Stones",
+      event: "The Endgame Heist: Hunt for the Stones (Treasure Hunt)",
       venue: "Campus Perimeter",
       items: [
         "Printed clue sets (primary sealed envelopes)",
@@ -136,7 +136,7 @@ export default function Rules() {
       ],
     },
     {
-      event: "Best Out of Waste",
+      event: "Groot's Green Mission (Best Out of Waste)",
       venue: "Ecology Hall",
       items: [
         "Cardboard sheets and corrugated scraps",
@@ -149,7 +149,7 @@ export default function Rules() {
       ],
     },
     {
-      event: "Mystery Case / Detective Challenge - Gotham: Mystery Files",
+      event: "Gotham: Mystery Files (Mystery Case / Detective Challenge)",
       venue: "Room 102",
       items: [
         "Printed case files and witness dossier packets",
@@ -158,7 +158,7 @@ export default function Rules() {
       ],
     },
     {
-      event: "3v3 Football - Justice League: Mini Clash",
+      event: "Justice League: Mini Clash (3v3 Football)",
       venue: "Junior Turf",
       items: [
         "Match footballs (standard size and verified inflation)",
@@ -169,7 +169,7 @@ export default function Rules() {
       ],
     },
     {
-      event: "Debate / Extempore - Superhero Showdown",
+      event: "Civil War: The Great Ideology Debate (Debate / Extempore)",
       venue: "Senate Hall B",
       items: [
         "Printed topic cards (sealed draw bowl)",
@@ -204,37 +204,37 @@ export default function Rules() {
     "Route-safety and restricted boundary checklist",
   ];
 
-  // PDF Document 1: Page 23 Innovation Expo
+  // STARK EXPO Domains & Pavilions
   const expoRooms = [
     {
-      room: "Room 1",
-      title: "Robotics Zone",
-      details: "Robots, Arduino projects, line-following autonomous robots, and robotic arms.",
-      badge: "Automation",
+      room: "Pavilion 1",
+      title: "Artificial Intelligence (AI)",
+      details: "AI image generation, interactive machine learning, neural networks, chatbots, and generative models.",
+      badge: "AI & Neural Tech",
     },
     {
-      room: "Room 2",
-      title: "AI Zone",
-      details: "AI image generation, interactive chatbots, computer vision models, and live AI demonstrations.",
-      badge: "Artificial Intelligence",
+      room: "Pavilion 2",
+      title: "Internet of Things (IoT)",
+      details: "Smart microcontrollers, sensor arrays, home automation, and connected embedded prototypes.",
+      badge: "Connected IoT",
     },
     {
-      room: "Room 3",
-      title: "Science Zone",
-      details: "Hands-on science experiments, physics/chemistry demonstration models, and working interactive projects.",
-      badge: "Fundamental Sciences",
+      room: "Pavilion 3",
+      title: "Science & Experiments",
+      details: "Working physics models, interactive chemistry experiments, and fundamental scientific principles.",
+      badge: "Core Science",
     },
     {
-      room: "Room 5",
-      title: "Green Tech Zone",
-      details: "Recycling innovations, renewable energy models, smart agriculture prototypes, and sustainability initiatives.",
-      badge: "Sustainability",
+      room: "Pavilion 4",
+      title: "Biology & Life Sciences",
+      details: "Life sciences exhibits, biological systems, genetics illustrations, and living environment models.",
+      badge: "Bio Sciences",
     },
     {
-      room: "Room 6",
-      title: "Coding & Tech Zone",
-      details: "Applications, full-stack websites, indie games, interactive algorithms, and software showcases.",
-      badge: "Software",
+      room: "Pavilion 5",
+      title: "Psychology & Human Behaviour",
+      details: "Cognitive perception challenges, behavioural science experiments, and psychological reasoning puzzles.",
+      badge: "Human Behaviour",
     },
   ];
 
@@ -538,16 +538,22 @@ export default function Rules() {
             {/* Expo Overview */}
             <div className="p-6 sm:p-8 rounded-3xl border border-arc-cyan/30 bg-black/25 backdrop-blur-md space-y-5">
               <div className="flex items-center justify-between flex-wrap gap-2 border-b border-white/10 pb-3">
-                <div>
-                  <h2 className="text-xl font-black uppercase text-white font-excon-black">
-                    MACFIESTA Inter-School Innovation Expo
+                <div className="space-y-1">
+                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-arc-cyan/20 text-arc-cyan text-xs font-bold uppercase tracking-wider font-mono">
+                    ⭐ School Event Most Attractive Event
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black uppercase text-white font-excon-black">
+                    STARK EXPO
                   </h2>
-                  <p className="text-xs text-white/60 font-mono mt-0.5">
-                    Interactive showcase across 5 themed discovery rooms open to all visiting students.
+                  <p className="text-sm text-metallic-gold font-mono font-bold">
+                    Tag line : One Expo. Infinite Worlds of Discovery.
+                  </p>
+                  <p className="text-xs text-amber-300 font-mono mt-2 bg-amber-400/10 border border-amber-400/30 p-2.5 rounded-xl">
+                    ℹ️ <strong>STAR EXPO – PRIZE POOL IS NOT THERE:</strong> Highlighting this in the school event section: this is not a competition, just a free expo / exhibition for students to gain hands-on experience on different domains!
                   </p>
                 </div>
                 <span className="px-3 py-1 rounded-full bg-arc-cyan/20 text-arc-cyan text-xs font-bold border border-arc-cyan/30">
-                  Free Access · Day 1
+                  Free Access · Non-Competitive
                 </span>
               </div>
 

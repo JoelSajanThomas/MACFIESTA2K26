@@ -56,7 +56,12 @@ export default function Events() {
             const isSchool = apiEvt.audience === "school" || (apiEvt.slug && apiEvt.slug.startsWith("school-"));
             const scope = isSchool ? "school" : "college";
             const fee = Number(apiEvt.registration_fee) || 0;
-            const prize = apiEvt.prize_pool ? Number(apiEvt.prize_pool) : (isSchool ? 5000 : 15000);
+            const isExpo = apiEvt.slug === "school-stark-expo" || (apiEvt.slug && apiEvt.slug.includes("stark-expo"));
+            const prize = isExpo
+              ? null
+              : apiEvt.prize_pool
+              ? Number(apiEvt.prize_pool)
+              : (isSchool ? 3000 : 10000);
 
             const local = ALL_EVENTS.find((e) => e.slug === apiEvt.slug || String(e._id) === String(apiEvt.id));
             
@@ -288,9 +293,70 @@ export default function Events() {
             <span>Showing {filteredEvents.length} Active Missions</span>
           </div>
           <span className="text-metallic-gold hidden sm:inline-block">
-            {selectedScope === "school" ? "School Pass: Free Entry (₹0)" : "College Total Bounty: ₹1,15,000+"}
+            {selectedScope === "school" ? "School Pass: Free Entry (₹0)" : "College Total Bounty: ₹1,11,000"}
           </span>
         </div>
+
+        {/* Featured School Event Highlight: STARK EXPO */}
+        {(selectedScope === "school" || selectedScope === "all") && (
+          <div className="relative overflow-hidden rounded-3xl border-2 border-arc-cyan/50 bg-gradient-to-br from-arc-cyan/20 via-[#0A0D1A]/95 to-purple-900/20 p-6 sm:p-8 shadow-[0_0_40px_rgba(0,212,255,0.2)]">
+            <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+              <div className="space-y-3 max-w-3xl">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-arc-cyan/20 text-arc-cyan text-xs font-black uppercase tracking-widest border border-arc-cyan/40 font-mono">
+                  <span>⭐ School Event Most Attractive Event</span>
+                </div>
+                <h2 className="text-2xl sm:text-3xl font-black uppercase text-white font-excon-black tracking-tight flex items-center gap-3">
+                  <span>STARK EXPO</span>
+                  <span className="text-xs px-2.5 py-1 rounded bg-metallic-gold/20 text-metallic-gold border border-metallic-gold/40 font-mono font-bold tracking-normal">
+                    Free Walk-in
+                  </span>
+                </h2>
+                <p className="text-sm font-bold text-metallic-gold font-mono">
+                  Tag line : One Expo. Infinite Worlds of Discovery.
+                </p>
+                <div className="p-3.5 rounded-2xl bg-black/60 border border-arc-cyan/30 text-xs text-white/90 leading-relaxed space-y-1.5">
+                  <p className="text-arc-cyan font-black text-[11px] uppercase tracking-wider font-mono">
+                    ✦ Highlighting in the school event section:
+                  </p>
+                  <p className="text-white/85 text-xs sm:text-sm">
+                    <strong>STAR EXPO – PRIZE POOL IS NOT THERE.</strong> This is <span className="underline decoration-arc-cyan underline-offset-2">not a competition</span>, just a free expo / exhibition for students to gain hands-on experience on different domains!
+                  </p>
+                </div>
+                <div className="space-y-1.5 pt-1">
+                  <span className="text-[10px] uppercase font-bold text-white/50 tracking-wider font-mono block">The Expo Includes:</span>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15 text-xs text-white font-medium flex items-center gap-1.5">
+                      <span>🤖</span> Artificial Intelligence (AI)
+                    </span>
+                    <span className="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15 text-xs text-white font-medium flex items-center gap-1.5">
+                      <span>🌐</span> Internet of Things (IoT)
+                    </span>
+                    <span className="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15 text-xs text-white font-medium flex items-center gap-1.5">
+                      <span>🔬</span> Science &amp; Experiments
+                    </span>
+                    <span className="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15 text-xs text-white font-medium flex items-center gap-1.5">
+                      <span>🧬</span> Biology &amp; Life Sciences
+                    </span>
+                    <span className="px-2.5 py-1 rounded-lg bg-white/10 border border-white/15 text-xs text-white font-medium flex items-center gap-1.5">
+                      <span>🧠</span> Psychology &amp; Human Behaviour
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="shrink-0 flex flex-col gap-2.5 w-full lg:w-auto">
+                <Link
+                  to="/events/school-stark-expo"
+                  className="px-6 py-3 rounded-full bg-arc-cyan hover:bg-white text-black font-black text-xs uppercase tracking-wider transition-all shadow-[0_0_20px_rgba(0,212,255,0.5)] font-excon-black text-center"
+                >
+                  Explore STARK EXPO Pavilion →
+                </Link>
+                <span className="text-[11px] text-center text-white/60 font-mono">
+                  Day 1 (24 Sept) · Open to All School Students
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Mission Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
@@ -370,13 +436,34 @@ export default function Events() {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-1.5">
                           <RiTrophyLine className="text-metallic-gold text-base shrink-0" />
-                          <span>Prize Pool: <strong className="text-white font-black font-excon-black">{typeof item.prizePool === "number" ? `₹${item.prizePool.toLocaleString("en-IN")}` : item.prizePool}</strong></span>
+                          <span>
+                            Prize Pool:{" "}
+                            <strong className="text-white font-black font-excon-black">
+                              {item.slug === "school-stark-expo" || item.prizePool === null
+                                ? "No Prize Pool (Free Expo)"
+                                : typeof item.prizePool === "number"
+                                ? `₹${item.prizePool.toLocaleString("en-IN")}`
+                                : item.prizePool}
+                            </strong>
+                          </span>
                         </div>
                         <div className="flex items-center gap-1 text-[11px] font-bold text-arc-cyan">
                           <RiTicketLine className="shrink-0" />
                           <span className="font-mono">{feeDisplay}</span>
                         </div>
                       </div>
+
+                      {item.slug === "school-stark-expo" && (
+                        <div className="p-2.5 rounded-xl bg-arc-cyan/10 border border-arc-cyan/30 text-[11px] text-arc-cyan leading-snug space-y-1">
+                          <p className="font-bold text-white">
+                            ✨ Free Experiential Exhibition (Not a Competition)
+                          </p>
+                          <p className="text-[10px] text-white/75 font-mono">
+                            Domains: AI • IoT • Science • Biology • Psychology
+                          </p>
+                        </div>
+                      )}
+
                       <div className="flex items-center gap-2">
                         <RiMapPinLine className="text-arc-cyan text-base shrink-0" />
                         <span className="truncate font-medium">{item.venue}</span>

@@ -97,6 +97,14 @@ class Command(BaseCommand):
                 created += 1
                 self.stdout.write(self.style.SUCCESS(f"CREATE {slug}"))
 
+        # Synchronize finalized committee in-charges
+        if not dry:
+            bow = Event.objects.filter(slug="school-best-out-of-waste").first()
+            if bow:
+                bow.coordinator_name = "Jeswin Rony & Jerin George"
+                bow.coordinator_phone = "+91 92074 32334 / +91 73568 02019"
+                bow.save(update_fields=["coordinator_name", "coordinator_phone"])
+
         retired = 0
         if options["retire_demos"]:
             demos = Event.objects.exclude(slug__in=OFFICIAL_SLUGS)
