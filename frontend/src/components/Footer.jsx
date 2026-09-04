@@ -232,39 +232,39 @@ export default function Footer() {
       {/* Top Animated Laser Beam */}
       <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-marvel-red via-arc-cyan to-transparent opacity-80" />
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-5">
         
         {/* ─── LIVE WORKING SECTION: MARVEL VS DC MULTIVERSE HYPE TERMINAL ─── */}
-        <div className="mb-8 p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/15 backdrop-blur-xl relative overflow-hidden shadow-[0_0_35px_rgba(0,0,0,0.8)]">
+        <div className="mb-4 p-2.5 sm:p-3 rounded-xl bg-white/[0.03] border border-white/15 backdrop-blur-xl relative overflow-hidden shadow-[0_0_25px_rgba(0,0,0,0.8)]">
           
           {/* Cyber Grid Accent */}
           <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:16px_16px] pointer-events-none opacity-40" />
 
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-4 sm:gap-6 relative z-10">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-3 sm:gap-4 relative z-10">
             
             {/* Left: Terminal Telemetry Stream (Clickable to Cycle & Shows Vote) */}
             <div
               onClick={handleNextFeed}
-              className="flex items-center gap-3 w-full lg:w-auto cursor-pointer group flex-1 min-w-0"
+              className="flex items-center gap-2.5 w-full lg:w-auto cursor-pointer group flex-1 min-w-0"
               title="Click to cycle next telemetry alert"
             >
-              <div className={`p-2.5 rounded-xl border shrink-0 transition-all ${
+              <div className={`p-1.5 rounded-lg border shrink-0 transition-all ${
                 userVoted === "marvel"
-                  ? "bg-marvel-red/20 border-marvel-red text-marvel-red shadow-[0_0_15px_rgba(237,29,36,0.4)]"
+                  ? "bg-marvel-red/20 border-marvel-red text-marvel-red shadow-[0_0_12px_rgba(237,29,36,0.4)]"
                   : userVoted === "dc"
-                  ? "bg-arc-cyan/20 border-arc-cyan text-arc-cyan shadow-[0_0_15px_rgba(0,212,255,0.4)]"
-                  : "bg-arc-cyan/10 border-arc-cyan/40 text-arc-cyan shadow-[0_0_12px_rgba(0,212,255,0.25)]"
+                  ? "bg-arc-cyan/20 border-arc-cyan text-arc-cyan shadow-[0_0_12px_rgba(0,212,255,0.4)]"
+                  : "bg-arc-cyan/10 border-arc-cyan/40 text-arc-cyan shadow-[0_0_10px_rgba(0,212,255,0.25)]"
               }`}>
-                <RiRadio2Line size={20} className="animate-pulse" />
+                <RiRadio2Line size={16} className="animate-pulse" />
               </div>
               <div className="text-left overflow-hidden w-full">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className={`w-2 h-2 rounded-full animate-ping ${userVoted === "marvel" ? "bg-marvel-red" : "bg-arc-cyan"}`} />
-                  <span className="text-[10px] font-black uppercase tracking-[0.22em] font-orbitron text-arc-cyan">
+                  <span className={`w-1.5 h-1.5 rounded-full animate-ping ${userVoted === "marvel" ? "bg-marvel-red" : "bg-arc-cyan"}`} />
+                  <span className="text-[9px] font-black uppercase tracking-[0.2em] font-orbitron text-arc-cyan">
                     QUANTUM TELEMETRY FEED
                   </span>
                   {userVoted && (
-                    <span className={`px-2 py-0.2 rounded-full text-[9px] font-black uppercase tracking-wider ${
+                    <span className={`px-1.5 py-0.2 rounded-full text-[8.5px] font-black uppercase tracking-wider ${
                       userVoted === "marvel"
                         ? "bg-marvel-red/30 text-marvel-red border border-marvel-red/60"
                         : "bg-arc-cyan/30 text-arc-cyan border border-arc-cyan/60"
@@ -276,12 +276,12 @@ export default function Footer() {
                 <AnimatePresence mode="wait">
                   <motion.p
                     key={userVoted ? `${userVoted}-${feedIndex}` : feedIndex}
-                    initial={{ opacity: 0, y: 6 }}
+                    initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -6 }}
+                    exit={{ opacity: 0, y: -4 }}
                     transition={{ duration: 0.2 }}
-                    className="text-xs sm:text-sm font-bold text-white tracking-wide truncate mt-0.5"
-                    style={{ textShadow: "0 0 12px rgba(255,255,255,0.4)" }}
+                    className="text-[11px] sm:text-xs font-bold text-white tracking-wide truncate mt-0.5"
+                    style={{ textShadow: "0 0 10px rgba(255,255,255,0.3)" }}
                   >
                     {feedIndex === 0 && userVoted
                       ? userVoted === "marvel"
@@ -294,29 +294,29 @@ export default function Footer() {
             </div>
 
             {/* Right: Live Interactive Marvel vs DC Hype Battle Bar */}
-            <div className="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-3 sm:gap-4 min-w-[320px] sm:min-w-[460px]">
-              <div className="w-full space-y-1.5">
-                <div className="flex justify-between items-center text-xs font-bold tracking-wider uppercase font-anton">
+            <div className="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-2.5 sm:gap-3 min-w-[300px] sm:min-w-[420px]">
+              <div className="w-full space-y-1">
+                <div className="flex justify-between items-center text-[11px] font-bold tracking-wider uppercase font-anton">
                   <span className={`flex items-center gap-1 ${userVoted === "marvel" ? "text-[#ff2b32] font-black scale-105" : "text-marvel-red"}`}>
-                    <RiSwordLine className="text-xs" /> MARVEL ({marvelPct}%)
-                    {userVoted === "marvel" && <span className="text-[10px] text-metallic-gold ml-1 font-space font-bold">• YOUR VOTE ✓</span>}
+                    <RiSwordLine className="text-[11px]" /> MARVEL ({marvelPct}%)
+                    {userVoted === "marvel" && <span className="text-[9px] text-metallic-gold ml-1 font-space font-bold">• YOUR VOTE ✓</span>}
                   </span>
                   <span className={`flex items-center gap-1 ${userVoted === "dc" ? "text-[#1ae0ff] font-black scale-105" : "text-arc-cyan"}`}>
-                    {userVoted === "dc" && <span className="text-[10px] text-metallic-gold mr-1 font-space font-bold">YOUR VOTE ✓ •</span>}
-                    DC ({dcPct}%) <RiSwordLine className="text-xs" />
+                    {userVoted === "dc" && <span className="text-[9px] text-metallic-gold mr-1 font-space font-bold">YOUR VOTE ✓ •</span>}
+                    DC ({dcPct}%) <RiSwordLine className="text-[11px]" />
                   </span>
                 </div>
 
                 {/* Dual Split Animated Battle Power Bar */}
-                <div className="w-full h-3 rounded-full bg-black/60 overflow-hidden flex p-0.5 border border-white/20 shadow-inner">
+                <div className="w-full h-2 rounded-full bg-black/60 overflow-hidden flex p-0.5 border border-white/20 shadow-inner">
                   <motion.div
-                    className="h-full rounded-l-full bg-gradient-to-r from-[#FF0022] to-[#ED1D24] shadow-[0_0_14px_#ED1D24]"
+                    className="h-full rounded-l-full bg-gradient-to-r from-[#FF0022] to-[#ED1D24] shadow-[0_0_10px_#ED1D24]"
                     initial={false}
                     animate={{ width: `${marvelPct}%` }}
                     transition={{ type: "spring", stiffness: 120, damping: 14 }}
                   />
                   <motion.div
-                    className="h-full rounded-r-full bg-gradient-to-r from-[#00D4FF] to-[#0088FF] shadow-[0_0_14px_#00D4FF]"
+                    className="h-full rounded-r-full bg-gradient-to-r from-[#00D4FF] to-[#0088FF] shadow-[0_0_10px_#00D4FF]"
                     initial={false}
                     animate={{ width: `${dcPct}%` }}
                     transition={{ type: "spring", stiffness: 120, damping: 14 }}
@@ -325,53 +325,53 @@ export default function Footer() {
               </div>
 
               {/* Single-Vote Action Buttons */}
-              <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1.5 shrink-0">
                 <motion.button
-                  whileHover={!userVoted ? { scale: 1.06 } : {}}
-                  whileTap={!userVoted ? { scale: 0.94 } : {}}
+                  whileHover={!userVoted ? { scale: 1.05 } : {}}
+                  whileTap={!userVoted ? { scale: 0.95 } : {}}
                   type="button"
                   onClick={() => handleVote("marvel")}
                   disabled={!!userVoted}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider transition-all flex items-center gap-1 ${
                     userVoted === "marvel"
-                      ? "bg-marvel-red text-white shadow-[0_0_20px_#ED1D24] border border-white/40 ring-2 ring-marvel-red/80 cursor-default"
+                      ? "bg-marvel-red text-white shadow-[0_0_16px_#ED1D24] border border-white/40 ring-2 ring-marvel-red/80 cursor-default"
                       : userVoted === "dc"
                       ? "bg-white/5 text-white/30 border border-white/10 cursor-not-allowed opacity-50"
                       : !isLoggedIn()
-                      ? "bg-marvel-red/15 text-marvel-red hover:bg-marvel-red hover:text-white border border-marvel-red/40 hover:shadow-[0_0_14px_#ED1D24] cursor-pointer"
-                      : "bg-marvel-red/20 text-marvel-red hover:bg-marvel-red hover:text-white border border-marvel-red/50 hover:shadow-[0_0_14px_#ED1D24] cursor-pointer"
+                      ? "bg-marvel-red/15 text-marvel-red hover:bg-marvel-red hover:text-white border border-marvel-red/40 hover:shadow-[0_0_12px_#ED1D24] cursor-pointer"
+                      : "bg-marvel-red/20 text-marvel-red hover:bg-marvel-red hover:text-white border border-marvel-red/50 hover:shadow-[0_0_12px_#ED1D24] cursor-pointer"
                   }`}
                   title={userVoted ? "Your vote is recorded" : !isLoggedIn() ? "Login required to cast your vote for Marvel" : "Vote for Marvelverse (1 Vote Limit)"}
                 >
                   {userVoted === "marvel" ? (
-                    <RiCheckDoubleLine className="text-xs" />
+                    <RiCheckDoubleLine className="text-[11px]" />
                   ) : !isLoggedIn() ? (
-                    <RiLockLine className="text-[10px] opacity-70" />
+                    <RiLockLine className="text-[9px] opacity-70" />
                   ) : null}
                   <span>{userVoted === "marvel" ? "ASSEMBLED ✓" : "Assemble"}</span>
                 </motion.button>
 
                 <motion.button
-                  whileHover={!userVoted ? { scale: 1.06 } : {}}
-                  whileTap={!userVoted ? { scale: 0.94 } : {}}
+                  whileHover={!userVoted ? { scale: 1.05 } : {}}
+                  whileTap={!userVoted ? { scale: 0.95 } : {}}
                   type="button"
                   onClick={() => handleVote("dc")}
                   disabled={!!userVoted}
-                  className={`px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider transition-all flex items-center gap-1.5 ${
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-black uppercase tracking-wider transition-all flex items-center gap-1 ${
                     userVoted === "dc"
-                      ? "bg-arc-cyan text-black shadow-[0_0_20px_#00D4FF] border border-white/40 ring-2 ring-arc-cyan/80 cursor-default"
+                      ? "bg-arc-cyan text-black shadow-[0_0_16px_#00D4FF] border border-white/40 ring-2 ring-arc-cyan/80 cursor-default"
                       : userVoted === "marvel"
                       ? "bg-white/5 text-white/30 border border-white/10 cursor-not-allowed opacity-50"
                       : !isLoggedIn()
-                      ? "bg-arc-cyan/15 text-arc-cyan hover:bg-arc-cyan hover:text-black border border-arc-cyan/40 hover:shadow-[0_0_14px_#00D4FF] cursor-pointer"
-                      : "bg-arc-cyan/20 text-arc-cyan hover:bg-arc-cyan hover:text-black border border-arc-cyan/50 hover:shadow-[0_0_14px_#00D4FF] cursor-pointer"
+                      ? "bg-arc-cyan/15 text-arc-cyan hover:bg-arc-cyan hover:text-black border border-arc-cyan/40 hover:shadow-[0_0_12px_#00D4FF] cursor-pointer"
+                      : "bg-arc-cyan/20 text-arc-cyan hover:bg-arc-cyan hover:text-black border border-arc-cyan/50 hover:shadow-[0_0_12px_#00D4FF] cursor-pointer"
                   }`}
                   title={userVoted ? "Your vote is recorded" : !isLoggedIn() ? "Login required to cast your vote for DC" : "Vote for DC Universe (1 Vote Limit)"}
                 >
                   {userVoted === "dc" ? (
-                    <RiCheckDoubleLine className="text-xs text-black" />
+                    <RiCheckDoubleLine className="text-[11px] text-black" />
                   ) : !isLoggedIn() ? (
-                    <RiLockLine className="text-[10px] opacity-70" />
+                    <RiLockLine className="text-[9px] opacity-70" />
                   ) : null}
                   <span>{userVoted === "dc" ? "UNITED ✓" : "Unite"}</span>
                 </motion.button>
@@ -383,10 +383,10 @@ export default function Footer() {
           <AnimatePresence>
             {feedbackToast && (
               <motion.div
-                initial={{ opacity: 0, y: 10 }}
+                initial={{ opacity: 0, y: 6 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="mt-3 py-1 px-3 rounded-lg bg-white/10 border border-arc-cyan/40 text-center text-xs font-bold text-arc-cyan tracking-wider font-orbitron"
+                exit={{ opacity: 0, y: -6 }}
+                className="mt-2 py-0.5 px-2.5 rounded-md bg-white/10 border border-arc-cyan/40 text-center text-[10px] font-bold text-arc-cyan tracking-wider font-orbitron"
               >
                 {feedbackToast}
               </motion.div>
@@ -394,39 +394,39 @@ export default function Footer() {
           </AnimatePresence>
         </div>
 
-        {/* ─── SECTION 2: BRAND IDENTITY & TACTICAL CARDS ─── */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 pb-6 border-b border-white/10 items-start">
+        {/* ─── SECTION 2: BRAND IDENTITY & COMMUNICATIONS ─── */}
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-4 pb-3 border-b border-white/10 items-start">
           
-          {/* Brand & Mission Briefing (md:col-span-5) */}
-          <div className="md:col-span-5 space-y-3.5 text-left flex flex-col items-start">
+          {/* Brand & Mission Briefing (md:col-span-7) */}
+          <div className="md:col-span-7 space-y-2 text-left flex flex-col items-start">
             <Link
               to="/"
-              className="flex items-center gap-2.5 group focus:outline-none"
+              className="flex items-center gap-2 group focus:outline-none"
               aria-label="MACFIESTA Home Link"
             >
-              <div className="relative w-9 h-9 flex items-center justify-center shrink-0">
+              <div className="relative w-7 h-7 flex items-center justify-center shrink-0">
                 <img
                   src={settings?.logoUrl || "/logo.png"}
                   alt="MACFIESTA Logo"
-                  className="w-9 h-9 object-contain group-hover:scale-105 transition-transform duration-300"
+                  className="w-7 h-7 object-contain group-hover:scale-105 transition-transform duration-300"
                 />
               </div>
               <div className="text-left">
-                <h3 className="text-lg md:text-xl tracking-wider uppercase flex items-center gap-1 font-anton leading-none">
+                <h3 className="text-base md:text-lg tracking-wider uppercase flex items-center gap-1 font-anton leading-none">
                   <span className="shimmer-text">{(settings?.name || "MACFIESTA").toUpperCase()}</span>
                 </h3>
-                <p className="text-[8px] text-arc-cyan tracking-[0.25em] uppercase font-bold font-space mt-0.5">
+                <p className="text-[7.5px] text-arc-cyan tracking-[0.22em] uppercase font-bold font-space mt-0.5">
                   {settings?.edition || "2K26"} • MARVEL VS DC
                 </p>
               </div>
             </Link>
 
-            <p className="text-xs text-white/60 leading-relaxed max-w-sm font-space">
-              Earth&apos;s premier national collegiate festival at MACFAST. 23 Arena Missions across School & College divisions.
+            <p className="text-[11px] text-white/60 leading-snug max-w-md font-space">
+              Earth&apos;s premier national collegiate festival at MACFAST. 23 Arena Missions across School &amp; College divisions.
             </p>
 
             {/* Social Alliances Connect */}
-            <div className="flex gap-2 pt-0.5">
+            <div className="flex gap-1.5 pt-0.5">
               {SOCIAL_LINKS.map((link) => {
                 const Icon = link.icon;
                 const dynamicUrl =
@@ -439,101 +439,70 @@ export default function Footer() {
                     : link.url;
                 return (
                   <motion.a
-                    whileHover={{ scale: 1.12 }}
+                    whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.95 }}
                     key={link.platform}
                     href={dynamicUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="p-2 bg-white/5 border border-white/10 rounded-xl text-white/60 hover:text-arc-cyan hover:border-arc-cyan/40 hover:bg-arc-cyan/10 transition-all shadow-sm"
+                    className="p-1.5 bg-white/5 border border-white/10 rounded-lg text-white/60 hover:text-arc-cyan hover:border-arc-cyan/40 hover:bg-arc-cyan/10 transition-all shadow-sm"
                     aria-label={`Follow on ${link.label}`}
                   >
-                    <Icon size={16} />
+                    <Icon size={14} />
                   </motion.a>
                 );
               })}
             </div>
           </div>
 
-          {/* Tactical Action Card 1: Direct Mission Clearance (md:col-span-3) */}
-          <div className="md:col-span-3 space-y-2 text-left">
-            <h4 className="text-[11px] font-bold text-arc-cyan uppercase tracking-[0.2em] flex items-center gap-1.5">
-              <RiShieldFlashLine className="text-xs" /> Tactical Actions
-            </h4>
-            <div className="space-y-2">
-              {isLoggedIn() || currentUser ? (
-                <Link
-                  to={currentUser?.is_staff || currentUser?.is_superuser ? "/admin" : "/student-dashboard"}
-                  className="group flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 hover:border-arc-cyan/50 transition-all text-xs"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-arc-cyan shadow-[0_0_6px_#00D4FF]" />
-                    <span className="font-bold text-white group-hover:text-arc-cyan transition-colors">
-                      {currentUser?.is_staff || currentUser?.is_superuser ? "Command Console" : "Dashboard"}
-                    </span>
-                  </div>
-                  <span className="text-[10px] text-white/40 group-hover:translate-x-0.5 transition-transform">Dashboard →</span>
-                </Link>
-              ) : (
-                <Link
-                  to="/register"
-                  className="group flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 hover:border-marvel-red/50 transition-all text-xs"
-                >
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-marvel-red shadow-[0_0_6px_#ED1D24]" />
-                    <span className="font-bold text-white group-hover:text-marvel-red transition-colors">Claim Pass</span>
-                  </div>
-                  <span className="text-[10px] text-white/40 group-hover:translate-x-0.5 transition-transform">REGISTER →</span>
-                </Link>
-              )}
-
-              <Link
-                to="/brochure"
-                className="group flex items-center justify-between p-2.5 rounded-xl bg-white/[0.03] hover:bg-white/[0.07] border border-white/10 hover:border-metallic-gold/50 transition-all text-xs"
-              >
-                <div className="flex items-center gap-2">
-                  <RiDownloadLine className="text-metallic-gold text-xs" />
-                  <span className="font-bold text-white group-hover:text-metallic-gold transition-colors">Brochure Dossier</span>
-                </div>
-                <span className="text-[10px] text-white/40 group-hover:translate-x-0.5 transition-transform">PDF →</span>
-              </Link>
-            </div>
-          </div>
-
-          {/* Tactical Action Card 2: Stark Communications & Venue (md:col-span-4) */}
-          <div className="md:col-span-4 space-y-2 text-left">
-            <h4 className="text-[11px] font-bold text-marvel-red uppercase tracking-[0.2em] flex items-center gap-1.5">
-              <RiFlashlightLine className="text-xs" /> Stark Communications
+          {/* Stark Communications & Venue (md:col-span-5) */}
+          <div className="md:col-span-5 space-y-1.5 text-left">
+            <h4 className="text-[10px] font-bold text-marvel-red uppercase tracking-[0.2em] flex items-center gap-1">
+              <RiFlashlightLine className="text-[11px]" /> Stark Communications
             </h4>
 
-            <div className="p-3 rounded-xl bg-white/[0.03] border border-white/10 space-y-1.5 text-xs text-white/75">
+            <div className="p-2.5 rounded-lg bg-white/[0.03] border border-white/10 space-y-1.5 text-[11px] text-white/75">
               <div className="flex gap-2 items-center">
-                <RiMapPinLine className="text-arc-cyan text-sm shrink-0" />
+                <RiMapPinLine className="text-arc-cyan text-xs shrink-0" />
                 <span className="truncate">{settings?.venueAddress || "MACFAST Campus, Tiruvalla, Kerala"}</span>
               </div>
               <div className="flex gap-2 items-center">
-                <RiPhoneLine className="text-marvel-red text-sm shrink-0" />
+                <RiPhoneLine className="text-marvel-red text-xs shrink-0" />
                 <a href={`tel:${settings?.contactPhone || "+919447000000"}`} className="hover:text-white font-mono transition-colors truncate">
                   {settings?.contactPhone || "+91 94470 00000"}
                 </a>
               </div>
               <div className="flex gap-2 items-center">
-                <RiMailLine className="text-metallic-gold text-sm shrink-0" />
+                <RiMailLine className="text-metallic-gold text-xs shrink-0" />
                 <a href={`mailto:${settings?.contactEmail || "macfiesta@macfast.org"}`} className="hover:text-white font-mono transition-colors truncate">
                   {settings?.contactEmail || "macfiesta@macfast.org"}
                 </a>
+              </div>
+
+              {/* Brochure Download Action */}
+              <div className="pt-1.5 border-t border-white/10">
+                <Link
+                  to="/brochure"
+                  className="group flex items-center justify-between py-1 px-2 rounded-md bg-white/[0.03] hover:bg-white/[0.08] border border-white/10 hover:border-metallic-gold/50 transition-all text-[11px]"
+                >
+                  <div className="flex items-center gap-1.5">
+                    <RiDownloadLine className="text-metallic-gold text-xs" />
+                    <span className="font-bold text-white group-hover:text-metallic-gold transition-colors">Brochure Dossier</span>
+                  </div>
+                  <span className="text-[9.5px] text-white/40 group-hover:translate-x-0.5 transition-transform font-mono">PDF →</span>
+                </Link>
               </div>
             </div>
           </div>
         </div>
 
         {/* ─── SECTION 3: BOTTOM SIGNATURE & PROTOCOL BAR ─── */}
-        <div className="pt-4 pb-12 xl:pb-0 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-white/45 font-mono text-center sm:text-left">
+        <div className="pt-2.5 pb-6 xl:pb-0 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-[10px] text-white/45 font-mono text-center sm:text-left">
           <div>
             © {new Date().getFullYear()} {(settings?.name || "MACFIESTA").toUpperCase()} • MARVEL VS DC. All rights reserved.
           </div>
 
-          <div className="flex gap-4">
+          <div className="flex gap-3">
             <Link to="/events" className="hover:text-arc-cyan transition-colors">Missions</Link>
             <Link to="/schedule" className="hover:text-arc-cyan transition-colors">Timeline</Link>
             <Link to="/scoreboard" className="hover:text-arc-cyan transition-colors">Scoreboard</Link>
@@ -542,17 +511,17 @@ export default function Footer() {
             <Link to="/privacy" className="hover:text-arc-cyan transition-colors">Privacy</Link>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
             <span>
               Engineered by <span className="text-metallic-gold font-bold uppercase">Joel Sajan Thomas & Joel Zacharia</span>
             </span>
             <button
               onClick={scrollToTop}
               type="button"
-              className="p-1.5 bg-arc-cyan/10 border border-arc-cyan/40 rounded-full text-arc-cyan hover:bg-arc-cyan hover:text-black transition-all shadow-[0_0_10px_rgba(0,212,255,0.3)] cursor-pointer shrink-0"
+              className="p-1 bg-arc-cyan/10 border border-arc-cyan/40 rounded-full text-arc-cyan hover:bg-arc-cyan hover:text-black transition-all shadow-[0_0_8px_rgba(0,212,255,0.3)] cursor-pointer shrink-0"
               aria-label="Scroll back to top"
             >
-              <RiArrowUpLine size={13} />
+              <RiArrowUpLine size={12} />
             </button>
           </div>
         </div>

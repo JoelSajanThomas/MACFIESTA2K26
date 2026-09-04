@@ -65,14 +65,15 @@ def compute_registration_amount(
         calc = bf + ln + dn
         food = calc if calc > 0 else food_package_fee()
 
-    total += food
-
+    count = 1
     if needs_accommodation:
         count = int(accommodation_count or 1)
         if count < 1:
             count = 1
         accommodation = accommodation_fee_per_person() * count
-        total += accommodation
+        food = food * count
+
+    total = total + food + accommodation
 
     # Transport is not offered for MacFiesta — never charge it.
     transport = Decimal("0.00")

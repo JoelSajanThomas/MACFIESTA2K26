@@ -18,6 +18,7 @@ import {
   paymentQrImageUrl,
   hostelPaymentQrImageUrl,
   buildUpiPayLink,
+  calculateBatchFees,
 } from "../utils/registrationFees";
 
 function money(v) {
@@ -50,24 +51,25 @@ export default function PaymentProofPanel({
   const batchId = primary?.payment_batch_id || "";
   const paymentReference = primary?.payment_reference || "";
 
-  const hasAccommodation = useMemo(() => {
-    return regs.some((r) => r.needs_accommodation) || Boolean(primary?.needs_accommodation);
-  }, [regs, primary]);
+  const fallbackFees = useMemo(() => {
+    return calculateBatchFees(regs);
+  }, [regs]);
 
-  const eventAmount = useMemo(() => {
-    if (eventFeeTotal != null && eventFeeTotal !== "") return Number(eventFeeTotal) || 0;
-    return regs.reduce((sum, r) => sum + (Number(r.event?.registration_fee || r.event_fee) || 0), 0);
-  }, [regs, eventFeeTotal]);
+  const hasAccommodation = useMemo(() => {
+    if (accommodationFeeTotal != null && Number(accommodationFeeTotal) > 0) return true;
+    if (hospitalityTotal != null && Number(hospitalityTotal) > 0) return true;
+    return fallbackFees.hasAccommodation;
+  }, [accommodationFeeTotal, hospitalityTotal, fallbackFees]);
 
   const stayAmount = useMemo(() => {
     if (accommodationFeeTotal != null && accommodationFeeTotal !== "") return Number(accommodationFeeTotal) || 0;
-    return 0;
-  }, [accommodationFeeTotal]);
+    return fallbackFees.accommodationFeeTotal;
+  }, [accommodationFeeTotal, fallbackFees]);
 
   const foodAmount = useMemo(() => {
     if (foodFeeTotal != null && foodFeeTotal !== "") return Number(foodFeeTotal) || 0;
-    return 0;
-  }, [foodFeeTotal]);
+    return fallbackFees.foodFeeTotal;
+  }, [foodFeeTotal, fallbackFees]);
 
   const totalHospitality = useMemo(() => {
     if (hospitalityTotal != null && hospitalityTotal !== "") return Number(hospitalityTotal) || 0;
@@ -78,8 +80,15 @@ export default function PaymentProofPanel({
     if (paymentAmountTotal != null && paymentAmountTotal !== "") {
       return Number(paymentAmountTotal) || 0;
     }
-    return regs.reduce((sum, r) => sum + (Number(r.payment_amount) || 0), 0);
-  }, [regs, paymentAmountTotal]);
+    return fallbackFees.paymentAmountTotal;
+  }, [paymentAmountTotal, fallbackFees]);
+
+  const eventAmount = useMemo(() => {
+    if (eventFeeTotal != null && eventFeeTotal !== "") return Number(eventFeeTotal) || 0;
+    if (fallbackFees.eventFeeTotal > 0) return fallbackFees.eventFeeTotal;
+    const diff = totalAmount - totalHospitality;
+    return diff > 0 ? diff : 0;
+  }, [eventFeeTotal, fallbackFees, totalAmount, totalHospitality]);
 
   const [txnId, setTxnId] = useState(
     () => primary?.payment_transaction_id || ""

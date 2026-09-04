@@ -111,11 +111,23 @@ export default function Events() {
       .catch(() => {});
   }, []);
 
-  const collegeCount = useMemo(() => events.filter(e => e.scope === "college").length, [events]);
-  const schoolCount = useMemo(() => events.filter(e => e.scope === "school").length, [events]);
+  const collegeCount = useMemo(() => events.filter((e) => e.scope === "college").length, [events]);
+  const schoolCount = useMemo(() => events.filter((e) => e.scope === "school").length, [events]);
 
-  const soloCount = useMemo(() => events.filter(e => e.type === "solo" || e.maxTeamSize === 1).length, [events]);
-  const squadCount = useMemo(() => events.filter(e => e.type === "squad" || (e.maxTeamSize && e.maxTeamSize > 1)).length, [events]);
+  // Dynamically scope the format counts to the currently selected audience/division (All / College / School)
+  const scopeEvents = useMemo(() => {
+    if (selectedScope === "all") return events;
+    return events.filter((e) => e.scope === selectedScope);
+  }, [events, selectedScope]);
+
+  const soloCount = useMemo(
+    () => scopeEvents.filter((e) => e.type === "solo" || (e.maxTeamSize || 1) <= 1).length,
+    [scopeEvents]
+  );
+  const squadCount = useMemo(
+    () => scopeEvents.filter((e) => e.type === "squad" || (e.maxTeamSize && e.maxTeamSize > 1)).length,
+    [scopeEvents]
+  );
 
   const scopeTabs = useMemo(() => [
     { id: "all", label: `All (${events.length})`, icon: RiShieldFlashLine },

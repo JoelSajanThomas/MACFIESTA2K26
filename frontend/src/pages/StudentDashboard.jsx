@@ -38,7 +38,7 @@ import {
   getMyInvitations,
   respondTeamInvitation,
 } from "../services/api";
-import { applyPublicFestConfig, MACFIESTA_PAYMENT } from "../utils/registrationFees";
+import { applyPublicFestConfig, MACFIESTA_PAYMENT, calculateBatchFees } from "../utils/registrationFees";
 import { isUnauthorized, logout } from "../utils/auth";
 import { formatScheduleTime } from "../utils/scheduleUtils";
 
@@ -461,7 +461,9 @@ export default function StudentDashboard() {
                     <TeamDashboardCard
                       key={reg.id}
                       registration={reg}
+                      allRegistrations={registrations}
                       currentUser={user}
+                      payment={payment}
                       onRefresh={load}
                       onCancel={handleCancelClick}
                       isCancelling={busyId === reg.id}
@@ -471,6 +473,10 @@ export default function StudentDashboard() {
 
                 const ev = reg.eventData;
                 const detailPath = ev ? `/events/${ev.slug || ev.id}` : "/events";
+                const batchRegs = reg.payment_batch_id
+                  ? registrations.filter((r) => r.payment_batch_id === reg.payment_batch_id)
+                  : [reg];
+                const batchFees = calculateBatchFees(batchRegs);
 
                 return (
                   <motion.article
@@ -539,6 +545,28 @@ export default function StudentDashboard() {
                       </div>
                     </div>
 
+                    {/* Separate Payment Summary Breakdown Strip */}
+                    {reg.payment_status !== "paid" &&
+                      reg.payment_status !== "waived" &&
+                      reg.approval_status !== "cancelled" &&
+                      Number(batchFees.paymentAmountTotal || reg.payment_amount) > 0 && (
+                        <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-metallic-gold/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+                          <div className="flex flex-wrap items-center gap-3">
+                            <span className="text-white/60">
+                              Mission Fee: <strong className="text-metallic-gold font-bold">₹{batchFees.eventFeeTotal.toLocaleString("en-IN")}</strong>
+                            </span>
+                            {batchFees.hasAccommodation && (
+                              <span className="text-white/60">
+                                Stay &amp; Food: <strong className="text-arc-cyan font-bold">₹{batchFees.hospitalityTotal.toLocaleString("en-IN")}</strong>
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-white/70">
+                            Total Payable: <strong className="text-metallic-gold text-sm font-black">₹{batchFees.paymentAmountTotal.toLocaleString("en-IN")}</strong>
+                          </div>
+                        </div>
+                      )}
+
                     {/* Actions Row */}
                     <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
                       {reg.approval_status === "approved" && (reg.payment_status === "paid" || reg.payment_status === "waived" || !(Number(reg.payment_amount) > 0)) ? (
@@ -600,11 +628,12 @@ export default function StudentDashboard() {
                       >
                         <PaymentProofPanel
                           registration={reg}
-                          registrations={
-                            reg.payment_batch_id
-                              ? registrations.filter((r) => r.payment_batch_id === reg.payment_batch_id)
-                              : [reg]
-                          }
+                          registrations={batchRegs}
+                          paymentAmountTotal={batchFees.paymentAmountTotal}
+                          eventFeeTotal={batchFees.eventFeeTotal}
+                          accommodationFeeTotal={batchFees.accommodationFeeTotal}
+                          foodFeeTotal={batchFees.foodFeeTotal}
+                          hospitalityTotal={batchFees.hospitalityTotal}
                           payment={payment}
                           onUpdated={(data) => {
                             if (Array.isArray(data)) {

@@ -18,7 +18,7 @@ import {
 } from "react-icons/ri";
 import StatusChip from "./theme/StatusChip";
 import PaymentProofPanel from "./PaymentProofPanel";
-import { registrationQrImageUrl } from "../utils/registrationFees";
+import { registrationQrImageUrl, calculateBatchFees } from "../utils/registrationFees";
 import {
   inviteTeamMember,
   removeTeamMember,
@@ -27,7 +27,9 @@ import {
 
 export default function TeamDashboardCard({
   registration,
+  allRegistrations = [],
   currentUser,
+  payment,
   onRefresh,
   onCancel,
   isCancelling = false,
@@ -63,6 +65,11 @@ export default function TeamDashboardCard({
   const [selectedMemberQr, setSelectedMemberQr] = useState(null);
   // Captain payment panel
   const [showCaptainPayPanel, setShowCaptainPayPanel] = useState(false);
+
+  const batchRegs = registration.payment_batch_id && Array.isArray(allRegistrations) && allRegistrations.length
+    ? allRegistrations.filter((r) => r.payment_batch_id === registration.payment_batch_id)
+    : [registration];
+  const batchFees = calculateBatchFees(batchRegs);
 
   const maxMembers = registration.max_team_size || registration.eventData?.max_team_size || 4;
   const minMembers = registration.min_team_size || registration.eventData?.min_team_size || 2;
@@ -304,6 +311,25 @@ export default function TeamDashboardCard({
         </div>
       </div>
 
+      {/* Separate Payment Summary Breakdown Strip */}
+      {isCaptain && !captainPaid && Number(batchFees.paymentAmountTotal || registration.payment_amount) > 0 && registration.approval_status !== "cancelled" && (
+        <div className="p-3.5 rounded-2xl bg-white/[0.02] border border-metallic-gold/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs font-mono">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-white/60">
+              Squad Mission Fee: <strong className="text-metallic-gold font-bold">₹{batchFees.eventFeeTotal.toLocaleString("en-IN")}</strong>
+            </span>
+            {batchFees.hasAccommodation && (
+              <span className="text-white/60">
+                Stay &amp; Food: <strong className="text-arc-cyan font-bold">₹{batchFees.hospitalityTotal.toLocaleString("en-IN")}</strong>
+              </span>
+            )}
+          </div>
+          <div className="text-white/70">
+            Total Payable: <strong className="text-metallic-gold text-sm font-black">₹{batchFees.paymentAmountTotal.toLocaleString("en-IN")}</strong>
+          </div>
+        </div>
+      )}
+
       {/* ─── Captain Action Buttons (mirrors solo registration UI) ─── */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         {/* View Team Pass — when approved & paid */}
@@ -350,9 +376,14 @@ export default function TeamDashboardCard({
           className="pt-4 border-t border-white/10"
         >
           <PaymentProofPanel
-            registrations={[registration]}
-            paymentAmountTotal={registration.payment_amount}
-            eventFeeTotal={registration.payment_amount}
+            registration={registration}
+            registrations={batchRegs}
+            paymentAmountTotal={batchFees.paymentAmountTotal}
+            eventFeeTotal={batchFees.eventFeeTotal}
+            accommodationFeeTotal={batchFees.accommodationFeeTotal}
+            foodFeeTotal={batchFees.foodFeeTotal}
+            hospitalityTotal={batchFees.hospitalityTotal}
+            payment={payment}
             onUpdated={() => {
               setShowCaptainPayPanel(false);
               if (onRefresh) onRefresh();

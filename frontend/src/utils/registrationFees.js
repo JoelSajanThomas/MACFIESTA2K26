@@ -165,3 +165,107 @@ export function computeRegistrationTotal({
   const total = event + food + accommodation;
   return { event, food, accommodation, transport: 0, total };
 }
+
+/**
+ * Calculate separated fees for a list of registrations (or a single registration),
+ * syncing cleanly with the Checkout Payment breakdown.
+ *
+ * @param {Array|object} registrations
+ * @param {object} [addons]
+ * @returns {{
+ *   eventFeeTotal: number,
+ *   accommodationFeeTotal: number,
+ *   foodFeeTotal: number,
+ *   hospitalityTotal: number,
+ *   paymentAmountTotal: number,
+ *   hasAccommodation: boolean,
+ * }}
+ */
+export function calculateBatchFees(registrations = [], addons = REGISTRATION_ADDONS) {
+  const regs = Array.isArray(registrations) ? registrations : (registrations ? [registrations] : []);
+  if (!regs.length) {
+    return {
+      eventFeeTotal: 0,
+      accommodationFeeTotal: 0,
+      foodFeeTotal: 0,
+      hospitalityTotal: 0,
+      paymentAmountTotal: 0,
+      hasAccommodation: false,
+    };
+  }
+
+  let eventFeeTotal = 0;
+  let accommodationFeeTotal = 0;
+  let foodFeeTotal = 0;
+  let paymentAmountTotal = 0;
+  let hasAccommodation = false;
+
+  for (const r of regs) {
+    const pAmount = Number(r.payment_amount);
+    if (Number.isFinite(pAmount)) {
+      paymentAmountTotal += pAmount;
+    }
+
+    // Event fee
+    let evFee = null;
+    if (r.event_fee != null && r.event_fee !== "") {
+      evFee = Number(r.event_fee);
+    } else if (r.eventData?.registration_fee != null) {
+      evFee = Number(r.eventData.registration_fee);
+    } else if (r.event && typeof r.event === "object" && r.event.registration_fee != null) {
+      evFee = Number(r.event.registration_fee);
+    }
+    if (Number.isFinite(evFee)) {
+      eventFeeTotal += evFee;
+    }
+
+    // Accommodation & food fee
+    if (r.needs_accommodation) {
+      hasAccommodation = true;
+      const count = Math.max(1, Number(r.accommodation_count) || 1);
+
+      if (r.accommodation_fee != null && r.accommodation_fee !== "") {
+        accommodationFeeTotal += Number(r.accommodation_fee) || 0;
+      } else {
+        accommodationFeeTotal += (addons.accommodationPerPerson || 350) * count;
+      }
+
+      if (r.food_fee != null && r.food_fee !== "") {
+        foodFeeTotal += Number(r.food_fee) || 0;
+      } else if (r.food_preference && r.food_preference !== "none") {
+        const pref = String(r.food_preference).toLowerCase();
+        if (["full", "all", "veg", "non_veg", "jain", "package"].includes(pref)) {
+          foodFeeTotal += (addons.foodPackage || 170) * count;
+        } else {
+          const meals = pref.replace(/[+;]/g, ",").split(",").map((m) => m.trim());
+          let mTotal = 0;
+          if (meals.includes("breakfast") || meals.includes("bf")) mTotal += (addons.breakfast || 50);
+          if (meals.includes("lunch") || meals.includes("ln")) mTotal += (addons.lunch || 70);
+          if (meals.includes("dinner") || meals.includes("dn")) mTotal += (addons.dinner || 50);
+          foodFeeTotal += (mTotal > 0 ? mTotal : (addons.foodPackage || 170)) * count;
+        }
+      }
+    }
+  }
+
+  const hospitalityTotal = accommodationFeeTotal + foodFeeTotal;
+
+  // Fallback reconciliations:
+  // If paymentAmountTotal was not saved on DB records, sum event + hospitality
+  if (paymentAmountTotal <= 0 && (eventFeeTotal > 0 || hospitalityTotal > 0)) {
+    paymentAmountTotal = eventFeeTotal + hospitalityTotal;
+  }
+  // If eventFeeTotal is 0 but paymentAmountTotal > hospitalityTotal, eventFee is the difference
+  if (eventFeeTotal <= 0 && paymentAmountTotal > hospitalityTotal) {
+    eventFeeTotal = Math.max(0, paymentAmountTotal - hospitalityTotal);
+  }
+
+  return {
+    eventFeeTotal,
+    accommodationFeeTotal,
+    foodFeeTotal,
+    hospitalityTotal,
+    paymentAmountTotal,
+    hasAccommodation,
+  };
+}

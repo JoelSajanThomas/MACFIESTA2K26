@@ -3,6 +3,13 @@ from decimal import Decimal
 from rest_framework import serializers
 
 from events.models import Event
+from .fees import (
+    accommodation_fee_per_person,
+    food_package_fee,
+    breakfast_fee,
+    lunch_fee,
+    dinner_fee,
+)
 from .models import Registration, TeamMember, Institution
 
 
@@ -88,6 +95,10 @@ class RegistrationSerializer(serializers.ModelSerializer):
     is_team_paid = serializers.BooleanField(read_only=True)
     total_team_members_count = serializers.IntegerField(read_only=True)
     gender = serializers.CharField(required=False, allow_blank=True, default="male")
+    event_fee = serializers.SerializerMethodField()
+    accommodation_fee = serializers.SerializerMethodField()
+    food_fee = serializers.SerializerMethodField()
+    hospitality_fee = serializers.SerializerMethodField()
 
     class Meta:
         model = Registration
@@ -98,6 +109,7 @@ class RegistrationSerializer(serializers.ModelSerializer):
             "event_venue",
             "event_date",
             "event_time",
+            "event_fee",
             "min_team_size",
             "max_team_size",
             "registration_type",
@@ -124,9 +136,12 @@ class RegistrationSerializer(serializers.ModelSerializer):
             "registered_at",
             "food_preference",
             "food_notes",
+            "food_fee",
             "needs_accommodation",
             "accommodation_count",
             "accommodation_notes",
+            "accommodation_fee",
+            "hospitality_fee",
             "needs_transport",
             "transport_note",
             "payment_amount",
@@ -184,7 +199,57 @@ class RegistrationSerializer(serializers.ModelSerializer):
             "is_team_full",
             "is_team_paid",
             "total_team_members_count",
+            "event_fee",
+            "accommodation_fee",
+            "food_fee",
+            "hospitality_fee",
         ]
+
+    def get_event_fee(self, obj):
+        try:
+            return str(Decimal(obj.event.registration_fee or 0))
+        except Exception:
+            return "0.00"
+
+    def get_accommodation_fee(self, obj):
+        if not obj.needs_accommodation:
+            return "0.00"
+        try:
+            count = int(obj.accommodation_count or 1)
+            if count < 1:
+                count = 1
+            return str(accommodation_fee_per_person() * count)
+        except Exception:
+            return "0.00"
+
+    def get_food_fee(self, obj):
+        if not obj.needs_accommodation or not obj.food_preference or str(obj.food_preference).lower() == "none":
+            return "0.00"
+        try:
+            count = int(obj.accommodation_count or 1)
+            if count < 1:
+                count = 1
+            pref = str(obj.food_preference).lower()
+            if pref in ("full", "all", "veg", "non_veg", "jain", "package"):
+                fee = food_package_fee()
+            else:
+                meals = [m.strip() for m in pref.replace("+", ",").replace(";", ",").split(",") if m.strip()]
+                bf = breakfast_fee() if ("breakfast" in meals or "bf" in meals) else Decimal("0.00")
+                ln = lunch_fee() if ("lunch" in meals or "ln" in meals) else Decimal("0.00")
+                dn = dinner_fee() if ("dinner" in meals or "dn" in meals) else Decimal("0.00")
+                calc = bf + ln + dn
+                fee = calc if calc > 0 else food_package_fee()
+            return str(fee * count)
+        except Exception:
+            return "0.00"
+
+    def get_hospitality_fee(self, obj):
+        try:
+            acc = Decimal(self.get_accommodation_fee(obj))
+            food = Decimal(self.get_food_fee(obj))
+            return str(acc + food)
+        except Exception:
+            return "0.00"
 
     def get_pass_token(self, obj):
         if not obj.registration_number:
