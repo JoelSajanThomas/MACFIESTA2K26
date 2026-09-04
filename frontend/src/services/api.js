@@ -9,7 +9,10 @@ import { hashPassword } from "../utils/crypto";
  */
 function resolveApiBase() {
   const fromEnv = import.meta.env.VITE_API_BASE_URL;
-  if (fromEnv) return fromEnv.replace(/\/$/, "");
+  if (fromEnv) {
+    const stripped = fromEnv.trim().replace(/\/+$/, "");
+    return stripped.endsWith("/api") ? stripped : `${stripped}/api`;
+  }
 
   if (import.meta.env.DEV) {
     return "/api";

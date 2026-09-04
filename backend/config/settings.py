@@ -60,7 +60,19 @@ if not CSRF_TRUSTED_ORIGINS:
         "http://127.0.0.1:4173",
         "http://localhost:8000",
         "http://127.0.0.1:8000",
+        "https://*.onrender.com",
+        "https://*.vercel.app",
     ]
+
+# Auto-trust Render external domain if running on Render
+RENDER_EXTERNAL_HOSTNAME = os.environ.get("RENDER_EXTERNAL_HOSTNAME")
+if RENDER_EXTERNAL_HOSTNAME:
+    if RENDER_EXTERNAL_HOSTNAME not in ALLOWED_HOSTS and "*" not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+    render_origin = f"https://{RENDER_EXTERNAL_HOSTNAME}"
+    if render_origin not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(render_origin)
+
 
 AUTHENTICATION_BACKENDS = [
     "accounts.backends.EmailOrUsernameBackend",
@@ -99,6 +111,12 @@ SERVE_MEDIA = env_bool("SERVE_MEDIA", True)
 
 # Frontend origin for password-reset links (e.g. https://macfiesta-pro.vercel.app)
 FRONTEND_BASE_URL = os.environ.get("FRONTEND_BASE_URL", "").rstrip("/")
+if FRONTEND_BASE_URL:
+    if FRONTEND_BASE_URL not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(FRONTEND_BASE_URL)
+    if FRONTEND_BASE_URL not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(FRONTEND_BASE_URL)
+
 
 # --- Fest payment + add-on fees (from .env — never hardcode live UPI/bank in source) ---
 
@@ -186,22 +204,24 @@ MIDDLEWARE = [
 ]
 
 # ─── Security headers & production hardening ─────────────────────────────────
-# Django's built-in flags (active when DEBUG=False or forced via env).
 SECURE_CONTENT_TYPE_NOSNIFF = True       # X-Content-Type-Options: nosniff
 X_FRAME_OPTIONS = "DENY"                  # X-Frame-Options: DENY (no iframe embedding)
 SECURE_BROWSER_XSS_FILTER = True         # Legacy X-XSS-Protection header
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = "Lax"
 
-# Only force HTTPS / HSTS in actual production (DEBUG=False).
+# Only force HTTPS / HSTS behind reverse-proxy in actual production (DEBUG=False).
 if not DEBUG:
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
     SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", True)
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = int(os.environ.get("SECURE_HSTS_SECONDS", "31536000"))
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    CSRF_COOKIE_HTTPONLY = True           # JS cannot read CSRF cookie
-    SESSION_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = "Lax"
+    SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
+
 
 ROOT_URLCONF = "config.urls"
 
@@ -266,23 +286,6 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-if not DEBUG:
-    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-    SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", True)
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SESSION_COOKIE_HTTPONLY = True
-    CSRF_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = "Lax"
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-    SECURE_REFERRER_POLICY = "strict-origin-when-cross-origin"
-else:
-    SESSION_COOKIE_HTTPONLY = True
-    CSRF_COOKIE_HTTPONLY = True
-    SESSION_COOKIE_SAMESITE = "Lax"
 
 from datetime import timedelta
 
