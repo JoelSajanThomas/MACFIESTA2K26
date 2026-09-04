@@ -1,7 +1,8 @@
 import logging
 import re
 import secrets
-import threading
+
+from config.mail_utils import send_mail_async
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -209,28 +210,42 @@ class SignupView(APIView):
             return
         email = user.email
         display = (user.get_full_name() or "").strip() or email
-        user_id = user.id
-        from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "macfiesta@macfast.org")
-
-        def _worker():
-            subject = "Welcome to MacFiesta Pro"
-            message = (
-                f"Hi {display},\n\n"
-                "Your MacFiesta Pro account is ready. You can now register for events.\n\n"
-                "If you did not create this account, contact the fest desk.\n"
-            )
-            try:
-                send_mail(
-                    subject,
-                    message,
-                    from_email,
-                    [email],
-                    fail_silently=True,
-                )
-            except Exception:
-                logger.exception("Failed to send welcome email to user_id=%s", user_id)
-
-        threading.Thread(target=_worker, daemon=True).start()
+        subject = "Welcome to MacFiesta 2026 — S.H.I.E.L.D. Clearance Activated"
+        text_message = (
+            f"Hello {display},\n\n"
+            "Welcome to MacFiesta 2026: Multiverse of Mayhem!\n\n"
+            "Your Agent account has been successfully created and your security clearance is active.\n"
+            "You can now browse events, register for competitions, and access your tournament pass.\n\n"
+            "Student Dashboard: https://macfiesta.in/student-dashboard\n\n"
+            "If you did not create this account, please contact the fest desk immediately.\n\n"
+            "Best regards,\n"
+            "MacFiesta 2026 Organizing Committee\n"
+            "Mar Athanasios College for Advanced Studies Tiruvalla (MACFAST)\n"
+        )
+        html_message = (
+            f'<div style="font-family: Arial, sans-serif; background: #05050A; color: #FFFFFF; padding: 28px; border-radius: 16px; max-width: 520px; margin: 0 auto; border: 1px solid #1E293B;">'
+            f'<div style="text-align: center; margin-bottom: 20px;">'
+            f'<h1 style="color: #FFD700; margin: 0; font-size: 24px; letter-spacing: 2px;">MACFIESTA 2026</h1>'
+            f'<p style="color: #00D4FF; font-size: 11px; margin-top: 4px; letter-spacing: 1px; font-weight: bold;">S.H.I.E.L.D. CLEARANCE ACTIVATED</p>'
+            f'</div>'
+            f'<p style="color: #CBD5E1; font-size: 14px;">Welcome Agent <strong>{display}</strong>,</p>'
+            f'<p style="color: #94A3B8; font-size: 13px; line-height: 1.6;">Your MacFiesta Pro account is ready. You can now register for competitions, join squads, and unlock your digital tournament pass.</p>'
+            f'<div style="text-align: center; margin: 24px 0;">'
+            f'<a href="https://macfiesta.in/student-dashboard" style="display: inline-block; background: #FFD700; color: #000000; font-weight: bold; text-decoration: none; padding: 12px 24px; border-radius: 9999px; font-size: 13px; letter-spacing: 1px; text-transform: uppercase;">'
+            f'OPEN STUDENT DASHBOARD'
+            f'</a>'
+            f'</div>'
+            f'<hr style="border: 0; border-top: 1px solid #1E293B; margin: 20px 0;" />'
+            f'<p style="color: #64748B; font-size: 11px; text-align: center; margin: 0;">MacFiesta 2026 · Mar Athanasios College for Advanced Studies Tiruvalla (MACFAST)</p>'
+            f'</div>'
+        )
+        send_mail_async(
+            subject=subject,
+            message=text_message,
+            recipient_list=[email],
+            html_message=html_message,
+            context_id=f"welcome_user_{user.id}",
+        )
 
 
 class PasswordResetRequestSerializer(serializers.Serializer):

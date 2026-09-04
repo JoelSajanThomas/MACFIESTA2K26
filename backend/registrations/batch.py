@@ -223,6 +223,10 @@ def create_registration_batch(*, user, event_ids: list[int], profile: dict, memb
             members_data=members,
         )
         created.append(reg)
+
+    for reg in created:
+        transaction.on_commit(lambda r=reg: send_registration_email(r))
+
     batch_total = sum((r.payment_amount or Decimal("0")) for r in created)
     event_fee_total = sum(Decimal(r.event.registration_fee or 0) for r in created)
     # The first registration holds the accommodation and food breakdown

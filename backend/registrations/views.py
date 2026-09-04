@@ -283,6 +283,11 @@ class RegistrationViewSet(
             payment_amount=Decimal(event.registration_fee or 0),
         )
 
+        try:
+            send_registration_email(reg)
+        except Exception:
+            pass
+
         return Response(RegistrationSerializer(reg, context={"request": request}).data, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=["post"], url_path="team/invite")
