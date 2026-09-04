@@ -294,7 +294,7 @@ export default function Footer() {
             </div>
 
             {/* Right: Live Interactive Marvel vs DC Hype Battle Bar */}
-            <div className="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-2.5 sm:gap-3 min-w-[300px] sm:min-w-[420px]">
+            <div className="w-full lg:w-auto flex flex-col sm:flex-row items-center gap-2.5 sm:gap-3 min-w-0 sm:min-w-[420px]">
               <div className="w-full space-y-1">
                 <div className="flex justify-between items-center text-[11px] font-bold tracking-wider uppercase font-anton">
                   <span className={`flex items-center gap-1 ${userVoted === "marvel" ? "text-[#ff2b32] font-black scale-105" : "text-marvel-red"}`}>
@@ -497,7 +497,7 @@ export default function Footer() {
         </div>
 
         {/* ─── SECTION 3: BOTTOM SIGNATURE & PROTOCOL BAR ─── */}
-        <div className="pt-2.5 pb-6 xl:pb-0 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-[10px] text-white/45 font-mono text-center sm:text-left">
+        <div className="pt-2.5 pb-20 xl:pb-0 flex flex-col sm:flex-row items-center justify-between gap-2.5 text-[10px] text-white/45 font-mono text-center sm:text-left">
           <div>
             © {new Date().getFullYear()} {(settings?.name || "MACFIESTA").toUpperCase()} • MARVEL VS DC. All rights reserved.
           </div>

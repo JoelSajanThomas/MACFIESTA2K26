@@ -16,6 +16,16 @@ import {
   RiShieldUserLine,
   RiUserLine,
   RiInstagramLine,
+  RiFacebookCircleLine,
+  RiYoutubeLine,
+  RiFlashlightLine,
+  RiCompass3Line,
+  RiTimeLine,
+  RiTrophyLine,
+  RiHotelBedLine,
+  RiPhoneLine,
+  RiMegaphoneLine,
+  RiTicketLine,
 } from "react-icons/ri";
 import { getCurrentUser, isLoggedIn } from "../services/api";
 import { AUTH_CHANGE_EVENT, logout, isUnauthorized } from "../utils/auth";
@@ -36,6 +46,21 @@ const dropdownNavItems = [
   { href: "/brochure", label: "Directive PDF", icon: RiBookOpenLine },
   { href: "/rules", label: "Protocol Rules", icon: RiFileListLine },
   { href: "/faq", label: "JARVIS FAQ", icon: RiQuestionLine },
+];
+
+const MOBILE_TACTICAL_TILES = [
+  { href: "/events", label: "Missions", subtitle: "23 Arena Battles", icon: RiCompass3Line, color: "text-marvel-red" },
+  { href: "/schedule", label: "Timeline", subtitle: "Day 1 & 2 Agenda", icon: RiTimeLine, color: "text-arc-cyan" },
+  { href: "/scoreboard", label: "Scoreboard", subtitle: "Multiverse Ranks", icon: RiTrophyLine, color: "text-metallic-gold" },
+  { href: "/accommodation", label: "Quarters", subtitle: "Hostel & Meals", icon: RiHotelBedLine, color: "text-arc-cyan" },
+  { href: "/rules", label: "Protocol", subtitle: "Rulebook Dossier", icon: RiFileListLine, color: "text-white" },
+  { href: "/announcements", label: "Live Intel", subtitle: "S.H.I.E.L.D. Alerts", icon: RiMegaphoneLine, color: "text-marvel-red" },
+  { href: "/brochure", label: "Brochure", subtitle: "Official Dossier PDF", icon: RiBookOpenLine, color: "text-metallic-gold" },
+  { href: "/results", label: "Hall of Heroes", subtitle: "Winner Records", icon: RiMedalLine, color: "text-metallic-gold" },
+  { href: "/gallery", label: "Archives", subtitle: "Photo & Video Vault", icon: RiGalleryLine, color: "text-arc-cyan" },
+  { href: "/faq", label: "JARVIS FAQ", subtitle: "Agent Help Desk", icon: RiQuestionLine, color: "text-white" },
+  { href: "/contact", label: "HQ Comms", subtitle: "Campus Hotline", icon: RiPhoneLine, color: "text-arc-cyan" },
+  { href: "/about", label: "About Fest", subtitle: "MACFAST Origin", icon: RiFlashlightLine, color: "text-metallic-gold" },
 ];
 
 export default function Navbar() {
@@ -246,133 +271,108 @@ export default function Navbar() {
             )}
           </div>
 
-          {/* Mobile Menu Toggle */}
+          {/* Mobile Menu Controls */}
           <div className="flex items-center gap-2 lg:hidden">
             {!isAuth ? (
               <Link
-                to="/login"
-                className="px-2.5 py-1 text-[10px] font-black text-black bg-metallic-gold rounded-full tracking-wider uppercase shadow-[0_0_10px_rgba(212,175,55,0.4)]"
+                to="/register"
+                className="px-3 py-1 text-[10px] font-black text-black bg-gradient-to-r from-metallic-gold to-[#f59e0b] rounded-full tracking-wider uppercase shadow-[0_0_12px_rgba(212,175,55,0.4)] flex items-center gap-1"
               >
-                Login
+                <RiTicketLine className="text-xs" />
+                <span>Pass</span>
               </Link>
             ) : (
               <Link
                 to={user?.is_staff || user?.is_superuser ? "/admin" : "/student-dashboard"}
-                className="px-2.5 py-1 text-[10px] font-bold bg-marvel-red text-white rounded-full tracking-wider uppercase shadow-[0_0_10px_#ED1D24]"
+                className="w-7 h-7 rounded-full bg-marvel-red/20 border border-marvel-red/60 text-marvel-red flex items-center justify-center text-[10px] font-black uppercase shadow-[0_0_8px_rgba(237,29,36,0.4)]"
+                title={user?.full_name || user?.username || "Agent"}
               >
-                Dashboard
+                {(user?.full_name || user?.username || "A").slice(0, 1).toUpperCase()}
               </Link>
             )}
 
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-1.5 rounded-xl bg-white/5 border border-white/10 text-white/80 hover:text-arc-cyan hover:border-arc-cyan/40 transition-all cursor-pointer"
+              className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
+                mobileMenuOpen
+                  ? "bg-marvel-red/20 border-marvel-red text-marvel-red shadow-[0_0_12px_rgba(237,29,36,0.4)]"
+                  : "bg-white/5 border-white/15 text-white/80 hover:text-arc-cyan hover:border-arc-cyan/40"
+              }`}
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             >
-              {mobileMenuOpen ? <RiCloseLine size={22} /> : <RiMenuLine size={22} />}
+              {mobileMenuOpen ? <RiCloseLine size={20} /> : <RiMenuLine size={20} />}
             </button>
           </div>
         </div>
       </motion.header>
 
-      {/* Mobile Menu Drawer */}
+      {/* S.H.I.E.L.D. Mobile Command Drawer */}
       <AnimatePresence>
         {mobileMenuOpen && (
           <motion.div
-            className="fixed inset-0 z-[99] bg-[#05050A]/97 backdrop-blur-2xl flex flex-col p-4 sm:p-6 lg:hidden overflow-hidden w-full max-w-full"
+            className="fixed inset-0 z-[99] bg-[#040409]/98 backdrop-blur-2xl flex flex-col p-4 sm:p-5 lg:hidden overflow-hidden w-full max-w-full font-space"
             initial={{ opacity: 0, x: "100%" }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: "100%" }}
             transition={{ duration: 0.28, ease: "easeOut" }}
           >
-            {/* Ambient Lighting */}
-            <div className="absolute -top-20 -left-20 w-60 h-60 rounded-full bg-marvel-red/15 blur-[90px] pointer-events-none" />
-            <div className="absolute -bottom-20 -right-20 w-60 h-60 rounded-full bg-arc-cyan/15 blur-[90px] pointer-events-none" />
+            {/* Ambient Corner Glows */}
+            <div className="absolute -top-24 -left-24 w-64 h-64 rounded-full bg-marvel-red/15 blur-[90px] pointer-events-none" />
+            <div className="absolute -bottom-24 -right-24 w-64 h-64 rounded-full bg-arc-cyan/15 blur-[90px] pointer-events-none" />
 
-            {/* Mobile Header */}
-            <div className="flex items-center justify-between pt-2 pb-3 border-b border-white/10 relative z-10 w-full">
+            {/* Top HUD Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-white/10 relative z-10 w-full shrink-0">
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-arc-cyan animate-pulse shadow-[0_0_8px_#00D4FF]" />
-                <span className="text-[10px] font-bold text-arc-cyan tracking-[0.2em] uppercase font-space">
-                  MISSION COMMAND
+                <span className="text-[10px] font-black text-arc-cyan tracking-[0.2em] uppercase font-orbitron">
+                  S.H.I.E.L.D. COMMAND HUB
+                </span>
+                <span className="px-1.5 py-0.2 rounded text-[8px] font-black uppercase bg-white/10 text-metallic-gold border border-white/15">
+                  2K26
                 </span>
               </div>
               <button
                 type="button"
                 onClick={closeMobile}
-                className="p-1.5 rounded-full bg-white/5 border border-white/15 text-white/80 hover:text-arc-cyan hover:border-arc-cyan transition-colors"
+                className="p-1.5 rounded-full bg-white/5 border border-white/15 text-white/80 hover:text-marvel-red hover:border-marvel-red transition-all cursor-pointer"
                 aria-label="Close menu"
               >
-                <RiCloseLine size={20} />
+                <RiCloseLine size={18} />
               </button>
             </div>
 
-            {/* Nav Links Stack */}
-            <nav className="flex flex-col items-center justify-center gap-1.5 py-4 flex-1 overflow-y-auto relative z-10 w-full font-space">
-              {mainNavItems.map((item, i) => (
-                <motion.div
-                  key={item.href}
-                  initial={{ opacity: 0, y: 12 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -8 }}
-                  transition={{ delay: i * 0.03, duration: 0.2 }}
-                  className="w-full text-center"
-                >
-                  <Link
-                    to={item.href}
-                    onClick={closeMobile}
-                    className={`block py-1 text-base sm:text-lg font-bold tracking-wider uppercase transition-all duration-200 ${
-                      pathname === item.href
-                        ? "text-marvel-red glow-text-red font-black"
-                        : "text-white/80 hover:text-arc-cyan"
-                    }`}
-                  >
-                    {item.label}
-                  </Link>
-                </motion.div>
-              ))}
-
-              {/* Sub-links row */}
-              <div className="flex flex-wrap justify-center gap-1.5 pt-3 w-full border-t border-white/10 font-space">
-                {dropdownNavItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    to={item.href}
-                    onClick={closeMobile}
-                    className="px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold text-metallic-gold hover:border-metallic-gold uppercase tracking-wider transition-colors"
-                  >
-                    {item.label}
-                  </Link>
-                ))}
-              </div>
-            </nav>
-
-            {/* Mobile Footer Actions */}
-            <div className="pt-3 border-t border-white/10 flex flex-col gap-3 relative z-10 font-space pb-[max(1rem,env(safe-area-inset-bottom))] w-full">
+            {/* Scrollable Command Content */}
+            <div className="flex-1 overflow-y-auto py-3 space-y-3.5 relative z-10 w-full no-scrollbar">
+              
+              {/* Agent Identity Card */}
               {isAuth ? (
-                <>
-                  {/* User Profile Mini Bar */}
-                  <div className="flex items-center gap-3 p-3 rounded-2xl bg-white/[0.04] border border-white/10 mb-3">
-                    <div className="w-9 h-9 rounded-full bg-arc-cyan/20 border border-arc-cyan/40 flex items-center justify-center text-arc-cyan font-black text-xs shrink-0">
+                <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10 relative overflow-hidden">
+                  <div className="flex items-center gap-2.5 mb-2.5">
+                    <div className="w-9 h-9 rounded-full bg-arc-cyan/20 border border-arc-cyan/50 flex items-center justify-center text-arc-cyan font-black text-xs shrink-0 shadow-[0_0_10px_rgba(0,212,255,0.3)] font-orbitron">
                       {(user?.full_name || user?.username || "A").slice(0, 1).toUpperCase()}
                     </div>
                     <div className="flex-1 min-w-0 text-left">
-                      <p className="text-xs font-bold text-white truncate font-excon-bold">
-                        {user?.full_name || user?.username || "Agent"}
-                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-xs font-bold text-white truncate">
+                          {user?.full_name || user?.username || "Agent"}
+                        </p>
+                        <span className="text-[8px] font-bold text-arc-cyan bg-arc-cyan/15 px-1.5 py-0.2 rounded uppercase tracking-wider">
+                          ACTIVE
+                        </span>
+                      </div>
                       <p className="text-[10px] text-white/50 truncate font-mono">
                         {user?.email || "Authenticated Agent"}
                       </p>
                     </div>
                   </div>
 
-                  {/* Dashboard + Logout */}
-                  <div className="grid grid-cols-2 gap-2 w-full">
+                  {/* Dashboard + Logout Action Strip */}
+                  <div className="grid grid-cols-2 gap-2 w-full pt-1">
                     <Link
                       to={user?.is_staff || user?.is_superuser ? "/admin" : "/student-dashboard"}
                       onClick={closeMobile}
-                      className="flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-black bg-gradient-to-r from-arc-cyan to-arc-cyan/80 text-black rounded-full tracking-wider uppercase shadow-[0_0_15px_rgba(0,212,255,0.35)]"
+                      className="flex items-center justify-center gap-1.5 py-1.5 px-3 text-[10.5px] font-black bg-arc-cyan text-black rounded-lg tracking-wider uppercase shadow-[0_0_12px_rgba(0,212,255,0.35)] hover:bg-white transition-all"
                     >
                       {user?.is_staff || user?.is_superuser ? (
                         <><RiShieldUserLine className="text-xs" /><span>Console</span></>
@@ -383,33 +383,121 @@ export default function Navbar() {
                     <button
                       type="button"
                       onClick={() => { closeMobile(); logout(); setUser(null); navigate("/"); }}
-                      className="flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-black bg-gradient-to-r from-marvel-red/90 to-marvel-red text-white rounded-full tracking-wider uppercase shadow-[0_0_15px_rgba(237,29,36,0.4)] cursor-pointer hover:shadow-[0_0_25px_rgba(237,29,36,0.7)] transition-all"
+                      className="flex items-center justify-center gap-1.5 py-1.5 px-3 text-[10.5px] font-bold bg-white/5 border border-white/15 text-white/70 hover:text-marvel-red hover:border-marvel-red/40 rounded-lg tracking-wider uppercase transition-all cursor-pointer"
                     >
                       <RiLogoutBoxLine className="text-xs" />
                       <span>Log Out</span>
                     </button>
                   </div>
-                </>
+                </div>
               ) : (
-                <div className="grid grid-cols-2 gap-2 w-full">
-                  <Link
-                    to="/login"
-                    onClick={closeMobile}
-                    className="flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-bold bg-white/5 border border-white/20 text-white rounded-full tracking-wider uppercase hover:border-white hover:bg-white/10 transition-all"
-                  >
-                    <RiUserLine className="text-xs" />
-                    <span>Agent Login</span>
-                  </Link>
-                  <Link
-                    to="/register"
-                    onClick={closeMobile}
-                    className="flex items-center justify-center gap-1.5 py-2.5 text-[11px] font-black bg-metallic-gold text-black rounded-full tracking-wider uppercase shadow-[0_0_15px_rgba(255,215,0,0.5)] hover:shadow-[0_0_25px_rgba(255,215,0,0.7)] transition-all"
-                  >
-                    <RiShieldFlashLine className="text-xs" />
-                    <span>Register Pass</span>
-                  </Link>
+                <div className="p-3 rounded-xl bg-gradient-to-r from-marvel-red/10 via-white/[0.02] to-arc-cyan/10 border border-white/10 space-y-2 text-center">
+                  <div className="text-[9px] font-black uppercase tracking-[0.2em] text-metallic-gold font-orbitron">
+                    MULTIVERSE ARENA PASS
+                  </div>
+                  <p className="text-[10.5px] text-white/70 leading-tight">
+                    Earth&apos;s premier collegiate fest at MACFAST. Join the battle!
+                  </p>
+                  <div className="grid grid-cols-2 gap-2 pt-1">
+                    <Link
+                      to="/login"
+                      onClick={closeMobile}
+                      className="flex items-center justify-center gap-1 py-1.5 px-2.5 text-[10.5px] font-bold bg-white/5 border border-white/20 text-white rounded-lg tracking-wider uppercase hover:border-white transition-all"
+                    >
+                      <RiUserLine className="text-xs" />
+                      <span>Login</span>
+                    </Link>
+                    <Link
+                      to="/register"
+                      onClick={closeMobile}
+                      className="flex items-center justify-center gap-1 py-1.5 px-2.5 text-[10.5px] font-black bg-gradient-to-r from-metallic-gold to-[#f59e0b] text-black rounded-lg tracking-wider uppercase shadow-[0_0_14px_rgba(212,175,55,0.4)]"
+                    >
+                      <RiShieldFlashLine className="text-xs" />
+                      <span>Get Pass</span>
+                    </Link>
+                  </div>
                 </div>
               )}
+
+              {/* Tactical Navigation Grid */}
+              <div className="space-y-1.5">
+                <div className="text-[9px] font-bold uppercase tracking-[0.2em] text-white/40 text-left px-1">
+                  TACTICAL DIRECTORY
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {MOBILE_TACTICAL_TILES.map((tile) => {
+                    const isActive = tile.href === "/" ? pathname === "/" : pathname?.startsWith(tile.href);
+                    const Icon = tile.icon;
+
+                    return (
+                      <Link
+                        key={tile.href}
+                        to={tile.href}
+                        onClick={closeMobile}
+                        className={`p-2.5 rounded-xl border transition-all text-left flex flex-col justify-between min-h-[64px] group relative overflow-hidden ${
+                          isActive
+                            ? "bg-white/[0.08] border-arc-cyan/60 shadow-[0_0_12px_rgba(0,212,255,0.2)]"
+                            : "bg-white/[0.03] border-white/10 hover:border-white/25 hover:bg-white/[0.06]"
+                        }`}
+                      >
+                        {isActive && (
+                          <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-arc-cyan animate-ping" />
+                        )}
+                        <div className="flex items-center justify-between w-full">
+                          <Icon className={`text-base ${tile.color} transition-transform group-hover:scale-110`} />
+                        </div>
+                        <div className="mt-1">
+                          <span className={`block text-xs font-bold tracking-wide uppercase font-space transition-colors ${
+                            isActive ? "text-white font-black" : "text-white/85 group-hover:text-white"
+                          }`}>
+                            {tile.label}
+                          </span>
+                          <span className="block text-[8.5px] text-white/45 truncate">
+                            {tile.subtitle}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Social Alliances & Campus Coordinates */}
+              <div className="pt-2 border-t border-white/10 space-y-2">
+                <div className="flex items-center justify-between px-1 text-[9px] text-white/40 uppercase tracking-widest font-mono">
+                  <span>FOLLOW PROTOCOL</span>
+                  <span>MACFAST • 2026</span>
+                </div>
+                <div className="flex items-center justify-center gap-3 py-1">
+                  <a
+                    href={BRAND.socialLinks.instagram || "https://www.instagram.com/macfiestaofficial/"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-arc-cyan hover:border-arc-cyan/40 transition-all"
+                    aria-label="Instagram"
+                  >
+                    <RiInstagramLine size={16} />
+                  </a>
+                  <a
+                    href={BRAND.socialLinks.facebook || "https://www.facebook.com/macfiesta/"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-arc-cyan hover:border-arc-cyan/40 transition-all"
+                    aria-label="Facebook"
+                  >
+                    <RiFacebookCircleLine size={16} />
+                  </a>
+                  <a
+                    href={BRAND.socialLinks.youtube || "https://www.youtube.com/@macfiesta"}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="p-2 rounded-lg bg-white/5 border border-white/10 text-white/70 hover:text-arc-cyan hover:border-arc-cyan/40 transition-all"
+                    aria-label="YouTube"
+                  >
+                    <RiYoutubeLine size={16} />
+                  </a>
+                </div>
+              </div>
             </div>
           </motion.div>
         )}

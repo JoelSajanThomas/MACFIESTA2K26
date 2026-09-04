@@ -109,13 +109,13 @@ export default function MobileBottomBar() {
         )}
       </AnimatePresence>
 
-      <div className="fixed bottom-3 left-0 right-0 z-[90] xl:hidden pointer-events-none pb-[env(safe-area-inset-bottom)] px-3 sm:px-4">
+      <div className="fixed bottom-2.5 left-0 right-0 z-[90] xl:hidden pointer-events-none pb-[env(safe-area-inset-bottom)] px-3">
         <nav
           aria-label="Mobile Navigation Dock"
-          className="max-w-[420px] sm:max-w-md mx-auto pointer-events-auto relative bg-[#05050A]/90 backdrop-blur-md border border-white/10 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.4),0_0_20px_rgba(0,212,255,0.08)] flex items-center justify-between px-2 py-1 font-excon"
+          className="max-w-[420px] mx-auto pointer-events-auto relative bg-[#070712]/92 backdrop-blur-2xl border border-white/15 rounded-full shadow-[0_12px_40px_rgba(0,0,0,0.8),0_0_20px_rgba(0,212,255,0.12)] flex items-center justify-between px-2 py-1 font-space"
         >
-          {/* Ambient Top Glow Line */}
-          <div className="absolute top-0 left-10 right-10 h-px bg-gradient-to-r from-transparent via-arc-cyan/40 to-transparent pointer-events-none" />
+          {/* Top Laser Accent Glow Line */}
+          <div className="absolute top-0 left-8 right-8 h-px bg-gradient-to-r from-transparent via-arc-cyan/60 to-transparent pointer-events-none" />
 
           {/* Left 2 Tabs */}
           <div className="flex items-center justify-around flex-1">
@@ -127,51 +127,58 @@ export default function MobileBottomBar() {
                 <Link
                   key={tab.href}
                   to={tab.href}
-                  className="relative flex items-center justify-center py-2 px-4 rounded-full transition-all duration-300 group"
+                  className="relative flex flex-col items-center justify-center py-1 px-3 rounded-full transition-all duration-200 group flex-1"
                 >
                   {isActive && (
                     <motion.div
                       layoutId="mobile-dock-active-pip"
-                      className="absolute -top-1 w-5 h-1 rounded-full bg-arc-cyan shadow-[0_0_12px_#00D4FF]"
+                      className="absolute -top-1 w-5 h-0.5 rounded-full bg-arc-cyan shadow-[0_0_10px_#00D4FF]"
                       transition={{ type: "spring", stiffness: 400, damping: 28 }}
                     />
                   )}
                   <Icon
-                    className={`text-xl transition-all duration-200 ${
+                    className={`text-lg transition-all duration-200 ${
                       isActive
-                        ? "text-arc-cyan scale-110 drop-shadow-[0_0_10px_#00D4FF]"
-                        : "text-white/70 group-hover:text-white"
+                        ? "text-arc-cyan scale-110 drop-shadow-[0_0_8px_#00D4FF]"
+                        : "text-white/60 group-hover:text-white"
                     }`}
                   />
+                  <span
+                    className={`text-[8.5px] font-bold tracking-wider uppercase transition-colors mt-0.5 ${
+                      isActive ? "text-arc-cyan font-black" : "text-white/45 group-hover:text-white/80"
+                    }`}
+                  >
+                    {tab.label}
+                  </span>
                 </Link>
               );
             })}
           </div>
 
           {/* Center Elevated Arc Reactor Pass Button */}
-          <div className="relative -mt-6 mx-1 shrink-0">
+          <div className="relative -mt-5 mx-1 shrink-0">
             <Link
               to={centerHref}
               className="group relative flex flex-col items-center focus:outline-none"
-              aria-label={isAuth ? "Agent Dashboard" : "Festival Entry Pass"}
+              aria-label={isAuth ? (user?.is_staff || user?.is_superuser ? "Command Console" : "Agent Dashboard") : "Festival Entry Pass"}
             >
               {/* Pulsing Backlight Glow */}
-              <div className="absolute -inset-1 rounded-full bg-marvel-red/30 blur-md group-hover:bg-marvel-red/50 transition-colors animate-pulse" />
+              <div className="absolute -inset-1 rounded-full bg-marvel-red/35 blur-md group-hover:bg-marvel-red/60 transition-colors animate-pulse" />
 
               <motion.div
-                whileHover={{ scale: 1.1, y: -2 }}
+                whileHover={{ scale: 1.08, y: -2 }}
                 whileTap={{ scale: 0.92 }}
                 transition={{ type: "spring", stiffness: 400, damping: 18 }}
-                className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-full p-0.5 flex items-center justify-center shadow-[0_0_25px_rgba(237,29,36,0.6),0_0_15px_rgba(0,212,255,0.4)] ${
+                className={`relative w-12 h-12 rounded-full p-[1.5px] flex items-center justify-center shadow-[0_0_22px_rgba(237,29,36,0.65),0_0_12px_rgba(0,212,255,0.4)] ${
                   isPassActive
-                    ? "bg-gradient-to-tr from-marvel-red via-metallic-gold to-arc-cyan"
+                    ? "bg-gradient-to-tr from-marvel-red via-metallic-gold to-arc-cyan animate-spin-slow"
                     : "bg-gradient-to-tr from-marvel-red via-[#ED1D24] to-arc-cyan"
                 }`}
               >
                 {/* Inner Reactor Disc */}
-                <div className="w-full h-full rounded-full bg-black/60 backdrop-blur-md flex flex-col items-center justify-center relative overflow-hidden border border-white/20">
+                <div className="w-full h-full rounded-full bg-[#070712] flex flex-col items-center justify-center relative overflow-hidden border border-white/25">
                   <RiTicketFill
-                    className={`text-xl sm:text-2xl transition-transform duration-300 group-hover:scale-110 ${
+                    className={`text-xl transition-transform duration-200 group-hover:scale-110 ${
                       isPassActive
                         ? "text-metallic-gold drop-shadow-[0_0_10px_#FFD700]"
                         : "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.8)]"
@@ -179,6 +186,9 @@ export default function MobileBottomBar() {
                   />
                 </div>
               </motion.div>
+              <span className="text-[7.5px] font-black uppercase tracking-[0.16em] text-metallic-gold font-orbitron mt-0.5 drop-shadow-[0_0_6px_rgba(255,215,0,0.5)]">
+                {isAuth ? "DECK" : "PASS"}
+              </span>
             </Link>
           </div>
 
@@ -192,22 +202,29 @@ export default function MobileBottomBar() {
                 <Link
                   key={tab.href}
                   to={tab.href}
-                  className="relative flex items-center justify-center py-2 px-4 rounded-full transition-all duration-300 group"
+                  className="relative flex flex-col items-center justify-center py-1 px-3 rounded-full transition-all duration-200 group flex-1"
                 >
                   {isActive && (
                     <motion.div
                       layoutId="mobile-dock-active-pip"
-                      className="absolute -top-1 w-5 h-1 rounded-full bg-arc-cyan shadow-[0_0_12px_#00D4FF]"
+                      className="absolute -top-1 w-5 h-0.5 rounded-full bg-arc-cyan shadow-[0_0_10px_#00D4FF]"
                       transition={{ type: "spring", stiffness: 400, damping: 28 }}
                     />
                   )}
                   <Icon
-                    className={`text-xl transition-all duration-200 ${
+                    className={`text-lg transition-all duration-200 ${
                       isActive
-                        ? "text-arc-cyan scale-110 drop-shadow-[0_0_10px_#00D4FF]"
+                        ? "text-arc-cyan scale-110 drop-shadow-[0_0_8px_#00D4FF]"
                         : "text-white/60 group-hover:text-white"
                     }`}
                   />
+                  <span
+                    className={`text-[8.5px] font-bold tracking-wider uppercase transition-colors mt-0.5 ${
+                      isActive ? "text-arc-cyan font-black" : "text-white/45 group-hover:text-white/80"
+                    }`}
+                  >
+                    {tab.label}
+                  </span>
                 </Link>
               );
             })}

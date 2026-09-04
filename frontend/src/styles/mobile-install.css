@@ -272,3 +272,17 @@ body.capacitor-android.status-bar-fallback {
   margin: 0.5rem auto 0.75rem;
   border: 2px solid rgba(212, 175, 55, 0.35);
 }
+
+/* ── Mobile Touch & Drawer Polish ── */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+@media (max-width: 1024px) {
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+}
