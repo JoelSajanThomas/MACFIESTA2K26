@@ -7,6 +7,8 @@ import {
   getFAQs, createFAQ, updateFAQ, deleteFAQ, getFAQ,
   getSponsors, createSponsor, updateSponsor, deleteSponsor, getSponsor,
   getFestRewindItems, createFestRewindItem, updateFestRewindItem, deleteFestRewindItem, getFestRewindItem,
+  getFestivalRules, createFestivalRule, updateFestivalRule, deleteFestivalRule, getFestivalRule,
+  getCoordinatorProfiles, createCoordinatorProfile, updateCoordinatorProfile, deleteCoordinatorProfile, getCoordinatorProfile,
 } from "../../../services/api";
 
 export const CMS_RESOURCES = {
@@ -148,11 +150,92 @@ export const CMS_RESOURCES = {
     ],
     empty: { title: "", order: 0, is_active: true },
   },
+  rules: {
+    title: "Festival Rules & Directives",
+    singular: "Rule",
+    basePath: "/admin/content/rules",
+    listColumns: [
+      { key: "title", label: "Rule Title" },
+      { key: "category", label: "Category" },
+      { key: "order", label: "Order" },
+    ],
+    searchFields: ["title", "description", "category"],
+    api: {
+      list: () => getFestivalRules(true),
+      get: getFestivalRule,
+      create: createFestivalRule,
+      update: updateFestivalRule,
+      delete: deleteFestivalRule,
+    },
+    fields: [
+      { name: "title", label: "Rule Title *", type: "text", required: true },
+      {
+        name: "category",
+        label: "Category *",
+        type: "select",
+        required: true,
+        options: [
+          { value: "general", label: "General Festival Regulation" },
+          { value: "school", label: "School Participant Guidelines" },
+          { value: "college", label: "College Participant Guidelines" },
+          { value: "discipline", label: "Discipline & Code of Conduct" },
+          { value: "judging", label: "Fairness & Judging Directives" },
+        ],
+      },
+      { name: "description", label: "Rule Description *", type: "textarea", required: true },
+      { name: "order", label: "Order", type: "number" },
+      { name: "is_active", label: "Active", type: "checkbox" },
+    ],
+    empty: { title: "", category: "general", description: "", order: 0, is_active: true },
+  },
+  coordinators: {
+    title: "Staff & Student Coordinators",
+    singular: "Coordinator",
+    basePath: "/admin/content/coordinators",
+    listColumns: [
+      { key: "name", label: "Coordinator Name" },
+      { key: "role", label: "Role / Committee Title" },
+      { key: "category", label: "Category" },
+    ],
+    searchFields: ["name", "role", "department", "phone", "email"],
+    api: {
+      list: () => getCoordinatorProfiles(true),
+      get: getCoordinatorProfile,
+      create: createCoordinatorProfile,
+      update: updateCoordinatorProfile,
+      delete: deleteCoordinatorProfile,
+    },
+    fields: [
+      { name: "name", label: "Coordinator Name *", type: "text", required: true },
+      { name: "role", label: "Role / Committee Title *", type: "text", required: true },
+      {
+        name: "category",
+        label: "Category *",
+        type: "select",
+        required: true,
+        options: [
+          { value: "core", label: "Core Team" },
+          { value: "dept_head", label: "Department / Committee Head" },
+          { value: "leadership", label: "Patron / Faculty Leadership" },
+          { value: "volunteer", label: "Volunteer Lead" },
+        ],
+      },
+      { name: "department", label: "Department / Institute", type: "text" },
+      { name: "phone", label: "Phone Number", type: "text" },
+      { name: "email", label: "Email Address", type: "text" },
+      { name: "image", label: "Portrait Photo", type: "image" },
+      { name: "order", label: "Order", type: "number" },
+      { name: "is_active", label: "Active", type: "checkbox" },
+    ],
+    empty: { name: "", role: "", category: "core", department: "", phone: "", email: "", order: 0, is_active: true },
+  },
 };
 
 export const CMS_DASHBOARD_CARDS = [
-  { title: "Site Settings, Hero & Branding", desc: "Fest name, dates, hero copy, contact, images", href: "/admin/content/site-settings" },
+  { title: "Site Settings, Hero & Branding", desc: "Fest name, dates, hero copy, brochure, contact, images", href: "/admin/content/site-settings" },
   { title: "Homepage Sections", desc: "Show/hide sections and edit titles & ordering", href: "/admin/content/homepage-sections" },
+  { title: "Festival Rules & Directives", desc: "Manage general, school, college, and judging rules", href: "/admin/content/rules" },
+  { title: "Coordinators & Committee Leads", desc: "Manage core team, department heads, and faculty leadership", href: "/admin/content/coordinators" },
   { title: "Chief Guests & VIPs", desc: "Honored chief guest cards, bios and stage sessions", href: "/admin/content/guests" },
   { title: "Highlights", desc: "Festival highlight cards on homepage", href: "/admin/content/highlights" },
   { title: "Event Categories", desc: "Homepage category display cards", href: "/admin/content/categories" },

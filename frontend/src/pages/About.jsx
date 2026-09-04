@@ -1,6 +1,8 @@
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { RiRocketLine, RiEyeLine, RiHistoryLine, RiTeamLine, RiShieldFlashLine } from "react-icons/ri";
 import { usePageSeo } from "../hooks/usePageSeo";
+import { getCoordinatorProfiles, mediaUrl } from "../services/api";
 
 const milestones = [
   { year: "2015", event: "MacFiesta is born as a tech fest for department of Computer Applications." },
@@ -22,6 +24,28 @@ export default function About() {
     title: "About MACFIESTA · MACFAST",
     description: "Learn about MacFiesta 2026, our vision, history, and organizing leadership.",
   });
+
+  const [coordinators, setCoordinators] = useState([]);
+
+  useEffect(() => {
+    getCoordinatorProfiles()
+      .then((res) => {
+        const list = Array.isArray(res.data) ? res.data : (res.data?.results || []);
+        if (list.length > 0) {
+          setCoordinators(list.filter((c) => c.is_active !== false));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const displayLeaders = coordinators.length > 0
+    ? coordinators.map((c) => ({
+        name: c.name,
+        role: c.role || c.tier,
+        dept: c.department || "MACFAST",
+        photo: c.photo,
+      }))
+    : leadershipList;
 
   return (
     <div className="bg-[#05050A] min-h-screen pt-28 pb-16 text-white font-excon relative overflow-hidden">
@@ -146,18 +170,26 @@ export default function About() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {leadershipList.map((member, idx) => (
+            {displayLeaders.map((member, idx) => (
               <motion.div
-                key={idx}
+                key={member.name + idx}
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: idx * 0.05 }}
                 className="marvel-card p-6 rounded-2xl border border-arc-cyan/20 hover:border-arc-cyan transition-all text-center flex flex-col justify-between shadow-xl"
               >
-                <div className="text-arc-cyan text-4xl mx-auto mb-4 p-3 bg-arc-cyan/10 rounded-2xl w-fit border border-arc-cyan/30">
-                  <RiTeamLine />
-                </div>
+                {member.photo ? (
+                  <img
+                    src={mediaUrl(member.photo)}
+                    alt={member.name}
+                    className="w-16 h-16 rounded-2xl mx-auto mb-4 object-cover border border-arc-cyan/40 shadow-[0_0_15px_rgba(0,212,255,0.25)]"
+                  />
+                ) : (
+                  <div className="text-arc-cyan text-4xl mx-auto mb-4 p-3 bg-arc-cyan/10 rounded-2xl w-fit border border-arc-cyan/30">
+                    <RiTeamLine />
+                  </div>
+                )}
                 <div className="space-y-1">
                   <span className="block text-sm font-black text-white uppercase tracking-tight font-excon-black">
                     {member.name}

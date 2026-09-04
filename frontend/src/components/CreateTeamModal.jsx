@@ -1,16 +1,9 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   RiShieldFlashLine,
-  RiTeamLine,
   RiUserStarLine,
-  RiBuildingLine,
-  RiPhoneLine,
   RiCloseLine,
-  RiCheckLine,
-  RiAlertLine,
-  RiUserLine,
-  RiTrophyLine,
 } from "react-icons/ri";
 import CollegeSchoolPicker from "./CollegeSchoolPicker";
 import { createTeamRegistration } from "../services/api";

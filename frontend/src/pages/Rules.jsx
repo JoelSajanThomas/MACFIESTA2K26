@@ -1,17 +1,18 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import {
   RiShieldFlashLine,
   RiCompass3Line,
-  RiFileTextLine,
   RiAlertLine,
   RiCheckDoubleLine,
   RiToolsLine,
   RiSuitcaseLine,
   RiLightbulbFlashLine,
   RiSchoolLine,
+  RiBuilding4Line,
 } from "react-icons/ri";
 import { usePageSeo } from "../hooks/usePageSeo";
+import { getFestivalRules } from "../services/api";
 
 export default function Rules() {
   usePageSeo({
@@ -20,6 +21,18 @@ export default function Rules() {
   });
 
   const [activeTab, setActiveTab] = useState("school-rules");
+  const [dbRules, setDbRules] = useState([]);
+
+  useEffect(() => {
+    getFestivalRules()
+      .then((res) => {
+        const list = Array.isArray(res.data) ? res.data : (res.data?.results || []);
+        setDbRules(list.filter((r) => r.is_active !== false));
+      })
+      .catch((err) => {
+        console.warn("Could not load dynamic festival rules:", err?.message || err);
+      });
+  }, []);
 
   // PDF Document 1: Page 2 General Rules for All School Events
   const schoolParticipantRules = [
@@ -49,6 +62,15 @@ export default function Rules() {
     "The committee may stop or modify an event if a safety issue arises.",
   ];
 
+  const collegeBaselineRules = [
+    "Participants must carry valid College / University ID cards and institutional bonafide letters.",
+    "UG and PG students across registered departments are eligible according to event matrices.",
+    "Cross-college teams are permitted only where specified in event guidelines.",
+    "Reporting time to the MACFAST Main Auditorium / Arena is 30 minutes prior to scheduled slots.",
+    "Use of unauthorized electronic equipment during closed-door technical rounds is prohibited.",
+    "Delegation championship points are accrued based on certified prize rankings across college events.",
+  ];
+
   // Common Festival Regulations
   const commonRules = [
     "Participants must carry valid college / school identification and complete registration verification before competing.",
@@ -60,6 +82,13 @@ export default function Rules() {
     "Complaints must be submitted only through the team leader / participant to the Event Head within the dispute window. Participants must not confront judges directly.",
     "Judges' decisions on evaluation are final. The organizing committee may decide procedural matters not explicitly covered by the rules.",
   ];
+
+  // Categorize dynamic rules
+  const dynamicSchoolRules = dbRules.filter((r) => r.category === "school");
+  const dynamicCollegeRules = dbRules.filter((r) => r.category === "college");
+  const dynamicJudgingRules = dbRules.filter((r) => r.category === "judging");
+  const dynamicDisciplineRules = dbRules.filter((r) => r.category === "discipline");
+  const dynamicGeneralRules = dbRules.filter((r) => r.category === "general");
 
   // PDF Document 1: Pages 19-20 Materials Required by Event
   const materialsByEvent = [
@@ -257,9 +286,10 @@ export default function Rules() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="flex flex-wrap justify-center gap-2 p-1.5 rounded-2xl bg-black/35 backdrop-blur-xl border border-white/15 max-w-3xl mx-auto">
+        <div className="flex flex-wrap justify-center gap-2 p-1.5 rounded-2xl bg-black/35 backdrop-blur-xl border border-white/15 max-w-4xl mx-auto">
           {[
             { id: "school-rules", label: "School Master Rules", icon: RiSchoolLine },
+            { id: "college-rules", label: "College Master Rules", icon: RiBuilding4Line },
             { id: "materials", label: "Materials Required", icon: RiToolsLine },
             { id: "kits", label: "Event Kits & Control", icon: RiSuitcaseLine },
             { id: "expo", label: "Innovation Expo & Schools", icon: RiLightbulbFlashLine },
@@ -284,9 +314,16 @@ export default function Rules() {
         {activeTab === "school-rules" && (
           <div className="space-y-6">
             <div className="p-6 sm:p-8 rounded-3xl border border-arc-cyan/30 bg-black/25 backdrop-blur-md shadow-2xl space-y-6">
-              <div className="flex items-center gap-2.5 text-arc-cyan text-sm font-bold uppercase tracking-wider font-excon-bold border-b border-white/10 pb-3">
-                <RiSchoolLine className="text-lg" />
-                <span>General Rules for All School Events (Participant Rules)</span>
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2.5 text-arc-cyan text-sm font-bold uppercase tracking-wider font-excon-bold">
+                  <RiSchoolLine className="text-lg" />
+                  <span>General Rules for All School Events (Participant Rules)</span>
+                </div>
+                {dynamicSchoolRules.length > 0 && (
+                  <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-arc-cyan/20 text-arc-cyan font-bold">
+                    {dynamicSchoolRules.length} Live Directives
+                  </span>
+                )}
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-excon">
                 {schoolParticipantRules.map((rule, idx) => (
@@ -295,6 +332,17 @@ export default function Rules() {
                       {idx + 1}
                     </span>
                     <p className="text-white/90 leading-relaxed">{rule}</p>
+                  </div>
+                ))}
+                {dynamicSchoolRules.map((r) => (
+                  <div key={r.id} className="p-3.5 bg-arc-cyan/10 backdrop-blur-sm border border-arc-cyan/40 rounded-xl flex items-start gap-3">
+                    <span className="w-5 h-5 rounded-full bg-arc-cyan text-black font-bold text-[10px] flex items-center justify-center shrink-0 font-mono mt-0.5">
+                      ★
+                    </span>
+                    <div>
+                      <span className="text-arc-cyan font-bold block mb-0.5">{r.title}</span>
+                      <p className="text-white/90 leading-relaxed">{r.description}</p>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -314,6 +362,15 @@ export default function Rules() {
                       <p className="text-white/85 leading-relaxed">{rule}</p>
                     </div>
                   ))}
+                  {dynamicJudgingRules.map((r, idx) => (
+                    <div key={r.id} className="p-3 bg-metallic-gold/10 backdrop-blur-sm border border-metallic-gold/40 rounded-xl flex items-start gap-2.5">
+                      <span className="text-metallic-gold font-mono font-bold shrink-0">F{schoolFairnessRules.length + idx + 1}.</span>
+                      <div>
+                        <span className="text-metallic-gold font-bold block">{r.title}</span>
+                        <p className="text-white/85 leading-relaxed">{r.description}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
 
@@ -330,7 +387,56 @@ export default function Rules() {
                       <p className="text-white/85 leading-relaxed">{rule}</p>
                     </div>
                   ))}
+                  {dynamicDisciplineRules.map((r, idx) => (
+                    <div key={r.id} className="p-3 bg-marvel-red/10 backdrop-blur-sm border border-marvel-red/40 rounded-xl flex items-start gap-2.5">
+                      <span className="text-marvel-red font-mono font-bold shrink-0">S{schoolDisciplineRules.length + idx + 1}.</span>
+                      <div>
+                        <span className="text-marvel-red font-bold block">{r.title}</span>
+                        <p className="text-white/85 leading-relaxed">{r.description}</p>
+                      </div>
+                    </div>
+                  ))}
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* TAB: COLLEGE MASTER RULES */}
+        {activeTab === "college-rules" && (
+          <div className="space-y-6">
+            <div className="p-6 sm:p-8 rounded-3xl border border-metallic-gold/30 bg-black/25 backdrop-blur-md shadow-2xl space-y-6">
+              <div className="flex items-center justify-between border-b border-white/10 pb-3">
+                <div className="flex items-center gap-2.5 text-metallic-gold text-sm font-bold uppercase tracking-wider font-excon-bold">
+                  <RiBuilding4Line className="text-lg" />
+                  <span>College &amp; University Championship Protocol</span>
+                </div>
+                {dynamicCollegeRules.length > 0 && (
+                  <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-metallic-gold/20 text-metallic-gold font-bold">
+                    {dynamicCollegeRules.length} Live Directives
+                  </span>
+                )}
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs font-excon">
+                {collegeBaselineRules.map((rule, idx) => (
+                  <div key={idx} className="p-3.5 bg-black/35 backdrop-blur-sm border border-white/10 rounded-xl flex items-start gap-3 hover:border-metallic-gold/40 transition-colors">
+                    <span className="w-5 h-5 rounded-full bg-metallic-gold/20 text-metallic-gold font-bold text-[10px] flex items-center justify-center shrink-0 font-mono mt-0.5">
+                      {idx + 1}
+                    </span>
+                    <p className="text-white/90 leading-relaxed">{rule}</p>
+                  </div>
+                ))}
+                {dynamicCollegeRules.map((r) => (
+                  <div key={r.id} className="p-3.5 bg-metallic-gold/10 backdrop-blur-sm border border-metallic-gold/40 rounded-xl flex items-start gap-3">
+                    <span className="w-5 h-5 rounded-full bg-metallic-gold text-black font-bold text-[10px] flex items-center justify-center shrink-0 font-mono mt-0.5">
+                      ★
+                    </span>
+                    <div>
+                      <span className="text-metallic-gold font-bold block mb-0.5">{r.title}</span>
+                      <p className="text-white/90 leading-relaxed">{r.description}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -488,9 +594,16 @@ export default function Rules() {
         {/* TAB 5: GENERAL CODE OF CONDUCT */}
         {activeTab === "common" && (
           <div className="p-6 sm:p-8 rounded-3xl border border-arc-cyan/30 bg-black/25 backdrop-blur-md space-y-4 shadow-2xl">
-            <div className="flex items-center gap-2 text-metallic-gold text-xs font-bold uppercase tracking-wider font-excon-bold border-b border-white/10 pb-2.5">
-              <RiAlertLine className="text-base" />
-              <span>Common Regulations for All Festival Competitions</span>
+            <div className="flex items-center justify-between border-b border-white/10 pb-2.5">
+              <div className="flex items-center gap-2 text-metallic-gold text-xs font-bold uppercase tracking-wider font-excon-bold">
+                <RiAlertLine className="text-base" />
+                <span>Common Regulations for All Festival Competitions</span>
+              </div>
+              {dynamicGeneralRules.length > 0 && (
+                <span className="text-[10px] uppercase font-mono px-2 py-0.5 rounded bg-arc-cyan/20 text-arc-cyan font-bold">
+                  {dynamicGeneralRules.length} Live Directives
+                </span>
+              )}
             </div>
 
             <div className="space-y-3 text-xs font-excon">
@@ -500,6 +613,17 @@ export default function Rules() {
                     {idx + 1}
                   </span>
                   <p className="text-white/85 leading-relaxed">{rule}</p>
+                </div>
+              ))}
+              {dynamicGeneralRules.map((r) => (
+                <div key={r.id} className="p-3.5 bg-marvel-red/10 backdrop-blur-sm border border-marvel-red/40 rounded-xl flex items-start gap-3">
+                  <span className="w-5 h-5 rounded-full bg-marvel-red text-white font-bold text-[10px] flex items-center justify-center shrink-0 font-mono mt-0.5">
+                    ★
+                  </span>
+                  <div>
+                    <span className="text-marvel-red font-bold block mb-0.5">{r.title}</span>
+                    <p className="text-white/85 leading-relaxed">{r.description}</p>
+                  </div>
                 </div>
               ))}
             </div>

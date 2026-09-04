@@ -1,6 +1,8 @@
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { RiShakeHandsLine, RiShieldFlashLine } from "react-icons/ri";
 import { usePageSeo } from "../hooks/usePageSeo";
+import { getSponsors, mediaUrl } from "../services/api";
 
 const SPONSOR_TIERS = [
   { id: "platinum", label: "Platinum Alliances", color: "#E5E4E2" },
@@ -24,6 +26,33 @@ export default function Sponsors() {
     title: "Sponsors & Strategic Alliances · MacFiesta 2026",
     description: "Collaborating with leading national and regional organizations to power MACFIESTA 2026.",
   });
+
+  const [sponsors, setSponsors] = useState(fallbackSponsors);
+
+  useEffect(() => {
+    getSponsors()
+      .then((res) => {
+        const list = Array.isArray(res.data) ? res.data : res.data.results || [];
+        if (list.length > 0) {
+          const mapped = list.map((s) => {
+            const rawType = (s.sponsor_type || "").toLowerCase();
+            let tier = "community";
+            if (rawType.includes("platinum") || rawType.includes("title") || rawType.includes("host")) tier = "platinum";
+            else if (rawType.includes("gold")) tier = "gold";
+            else if (rawType.includes("silver")) tier = "silver";
+            return {
+              name: s.name,
+              tier,
+              logo: s.logo || "🌐",
+              desc: s.description || `${s.name} — Proud ${s.sponsor_type} Partner of MacFiesta.`,
+              website: s.website,
+            };
+          });
+          setSponsors(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="bg-[#05050A] min-h-screen pt-28 pb-16 font-excon relative overflow-hidden">
@@ -51,7 +80,7 @@ export default function Sponsors() {
 
         {/* Tier Lists */}
         {SPONSOR_TIERS.map((tierGroup) => {
-          const tierSponsors = fallbackSponsors.filter((s) => s.tier === tierGroup.id);
+          const tierSponsors = sponsors.filter((s) => s.tier === tierGroup.id);
           if (tierSponsors.length === 0) return null;
 
           return (
@@ -64,31 +93,40 @@ export default function Sponsors() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {tierSponsors.map((sponsor, idx) => (
-                  <motion.div
-                    key={sponsor.name}
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    whileInView={{ opacity: 1, scale: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: idx * 0.05 }}
-                    className="marvel-card p-6 rounded-2xl border border-white/15 space-y-4 flex flex-col justify-between hover:border-arc-cyan/50 transition-colors duration-300 bg-[#0A0D1A]/90"
-                  >
-                    <div className="flex items-center gap-4">
-                      <span className="text-4xl p-3 bg-white/5 rounded-xl border border-white/10 shrink-0">{sponsor.logo}</span>
-                      <div>
-                        <h3 className="font-black text-white uppercase text-base font-excon-black">
-                          {sponsor.name}
-                        </h3>
-                        <span className="text-[10px] uppercase font-bold tracking-widest text-arc-cyan font-excon-bold">
-                          {sponsor.tier} Partner
-                        </span>
+                {tierSponsors.map((sponsor, idx) => {
+                  const isImage = typeof sponsor.logo === "string" && (sponsor.logo.startsWith("http") || sponsor.logo.startsWith("/"));
+                  return (
+                    <motion.div
+                      key={`${sponsor.name}-${idx}`}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: idx * 0.05 }}
+                      className="marvel-card p-6 rounded-2xl border border-white/15 space-y-4 flex flex-col justify-between hover:border-arc-cyan/50 transition-colors duration-300 bg-[#0A0D1A]/90"
+                    >
+                      <div className="flex items-center gap-4">
+                        {isImage ? (
+                          <div className="w-14 h-14 p-2 bg-white/5 rounded-xl border border-white/10 shrink-0 flex items-center justify-center">
+                            <img src={mediaUrl(sponsor.logo)} alt={sponsor.name} className="max-w-full max-h-full object-contain" />
+                          </div>
+                        ) : (
+                          <span className="text-4xl p-3 bg-white/5 rounded-xl border border-white/10 shrink-0">{sponsor.logo}</span>
+                        )}
+                        <div>
+                          <h3 className="font-black text-white uppercase text-base font-excon-black">
+                            {sponsor.name}
+                          </h3>
+                          <span className="text-[10px] uppercase font-bold tracking-widest text-arc-cyan font-excon-bold">
+                            {sponsor.tier} Partner
+                          </span>
+                        </div>
                       </div>
-                    </div>
-                    <p className="text-white/60 text-xs leading-relaxed font-excon">
-                      {sponsor.desc}
-                    </p>
-                  </motion.div>
-                ))}
+                      <p className="text-white/60 text-xs leading-relaxed font-excon">
+                        {sponsor.desc}
+                      </p>
+                    </motion.div>
+                  );
+                })}
               </div>
             </div>
           );

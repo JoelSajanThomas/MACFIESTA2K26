@@ -3,7 +3,7 @@ from decimal import Decimal
 from rest_framework import serializers
 
 from events.models import Event
-from .models import Registration, TeamMember
+from .models import Registration, TeamMember, Institution
 
 
 class TeamMemberSerializer(serializers.ModelSerializer):
@@ -139,6 +139,10 @@ class RegistrationSerializer(serializers.ModelSerializer):
             "payment_notes",
             "payment_batch_id",
             "payment_reference",
+            "refund_amount",
+            "refund_transaction_id",
+            "refunded_at",
+            "refund_notes",
             "verified_at",
             "cancelled_at",
             "user",
@@ -171,6 +175,10 @@ class RegistrationSerializer(serializers.ModelSerializer):
             "payment_notes",
             "payment_batch_id",
             "payment_reference",
+            "refund_amount",
+            "refund_transaction_id",
+            "refunded_at",
+            "refund_notes",
             "verified_at",
             "cancelled_at",
             "is_team_full",
@@ -468,3 +476,14 @@ class AdminRegistrationSerializer(serializers.ModelSerializer):
                 instance.save(update_fields=["verification_attendance_marked"])
 
         return instance
+
+
+class InstitutionSerializer(serializers.ModelSerializer):
+    registration_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Institution
+        fields = ["id", "name", "created_at", "registration_count"]
+
+    def get_registration_count(self, obj):
+        return Registration.objects.filter(college_name__iexact=obj.name).count()

@@ -62,6 +62,11 @@ if not CSRF_TRUSTED_ORIGINS:
         "http://127.0.0.1:8000",
     ]
 
+AUTHENTICATION_BACKENDS = [
+    "accounts.backends.EmailOrUsernameBackend",
+    "django.contrib.auth.backends.ModelBackend",
+]
+
 
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [

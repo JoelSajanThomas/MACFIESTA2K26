@@ -37,7 +37,6 @@ const STANDARD_HOSTEL_OPTIONS = [
   { value: "St. Thomas Mens Hostel", label: "St. Thomas Mens Hostel (Boys)", gender: "male" },
   { value: "St. Teresa Ladies Hostel", label: "St. Teresa Ladies Hostel (Girls)", gender: "female" },
   { value: "St. Alphonsa Ladies Hostel", label: "St. Alphonsa Ladies Hostel (Girls)", gender: "female" },
-  { value: "Tiruvalla Town Guest Annex", label: "Tiruvalla Town Guest Annex (Co-ed)", gender: "all" },
 ];
 
 function downloadHostelList(label, rows) {

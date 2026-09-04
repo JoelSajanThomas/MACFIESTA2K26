@@ -447,7 +447,7 @@ export function HeroSection() {
                   >
                     <RiDashboardLine className="text-sm sm:text-base pointer-events-none" />
                     <span className="relative z-10 font-black tracking-[0.05em] sm:tracking-[0.14em] uppercase text-[11px] sm:text-xs md:text-sm whitespace-nowrap pointer-events-none">
-                      {currentUser?.is_staff || currentUser?.is_superuser ? "Command Console" : "Agent HUD"}
+                      {currentUser?.is_staff || currentUser?.is_superuser ? "Command Console" : "Dashboard"}
                     </span>
                   </button>
                 ) : (

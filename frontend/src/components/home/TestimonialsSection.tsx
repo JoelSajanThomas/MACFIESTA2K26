@@ -148,34 +148,44 @@ export function TestimonialsSection() {
 
   return (
     <section className="relative bg-transparent section-padding border-t border-white/10 overflow-hidden min-h-[540px]">
-      {/* Background Marvel Artwork Accent */}
-      <div className="absolute inset-0 z-0 opacity-85 pointer-events-none overflow-hidden">
-        <Image
-          src="/MARVEL/300685712645038155.png"
-          alt="What They Say Marvel Background"
-          fill
-          priority
-          className="object-cover object-top filter brightness-105 contrast-125 saturate-135"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#05050A]/70 via-transparent to-[#05050A]/60 z-[1]" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] rounded-full bg-marvel-red/15 blur-[150px] z-[1]" />
+      {/* Background Hero Artwork Accent */}
+      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden bg-transparent">
+        {/* Enlarge character with soft liquid edge mask to dissolve all hard boundaries and fade out bottom opacity */}
+        <div 
+          className="absolute inset-0 flex justify-center items-start pt-2 sm:pt-4 z-[1]"
+          style={{
+            maskImage: "radial-gradient(ellipse 75% 65% at 50% 35%, black 45%, transparent 95%), linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 30%, rgba(0,0,0,0.4) 55%, rgba(0,0,0,0.1) 75%, transparent 90%)",
+            WebkitMaskImage: "radial-gradient(ellipse 75% 65% at 50% 35%, black 45%, transparent 95%), linear-gradient(to bottom, rgba(0,0,0,1) 0%, rgba(0,0,0,0.95) 30%, rgba(0,0,0,0.4) 55%, rgba(0,0,0,0.1) 75%, transparent 90%)",
+            maskComposite: "intersect",
+            WebkitMaskComposite: "source-in",
+          }}
+        >
+          <Image
+            src="/MARVEL/download (6).png"
+            alt="Delegate Voices & Reviews Hero Character"
+            width={1200}
+            height={1200}
+            priority
+            className="w-auto max-w-[95%] sm:max-w-[85%] md:max-w-[780px] lg:max-w-[880px] xl:max-w-[940px] max-h-[95%] object-contain object-top filter brightness-110 contrast-110"
+          />
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto relative z-10 space-y-10">
         {/* Section Header */}
         <Reveal y={50} duration={0.7} margin="-80px">
           <div className="text-center space-y-4 max-w-3xl mx-auto">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-metallic-gold/40 bg-metallic-gold/10 text-metallic-gold text-xs font-bold tracking-[0.2em] uppercase shadow-[0_0_15px_rgba(212,175,55,0.25)] font-space">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-metallic-gold/40 bg-black/40 text-metallic-gold text-xs font-bold tracking-[0.2em] uppercase shadow-[0_0_15px_rgba(212,175,55,0.25)] font-space backdrop-blur-sm">
               <RiChatQuoteLine className="animate-pulse text-metallic-gold" />
               <span>DELEGATE VOICES &amp; EXPERIENCES</span>
             </div>
 
-            <h2 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-white font-excon-black">
+            <h2 className="text-3xl sm:text-5xl md:text-6xl font-black uppercase tracking-tight text-white font-excon-black drop-shadow-[0_4px_20px_rgba(0,0,0,0.9)]">
               <span className="shimmer-text">WHAT THEY</span>{" "}
               <span className="gradient-text-gold">SAY &amp; REVIEWS</span>
             </h2>
 
-            <p className="text-white/70 text-sm sm:text-base font-excon max-w-xl mx-auto">
+            <p className="text-white/85 text-sm sm:text-base font-excon max-w-xl mx-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
               Real experiences from verified student delegates, champions, and performers across 23 national challenges.
             </p>
 
@@ -216,7 +226,7 @@ export function TestimonialsSection() {
               <button
                 type="button"
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="group inline-flex items-center gap-2.5 px-7 py-3 rounded-full bg-black/40 hover:bg-black/65 border border-white/15 hover:border-metallic-gold/50 text-xs sm:text-sm font-bold text-white transition-all duration-300 shadow-xl backdrop-blur-md cursor-pointer hover:shadow-[0_0_25px_rgba(212,175,55,0.2)]"
+                className="group inline-flex items-center gap-2.5 px-7 py-3 rounded-full bg-black/30 hover:bg-black/50 border border-white/20 hover:border-metallic-gold/60 text-xs sm:text-sm font-bold text-white transition-all duration-300 shadow-xl backdrop-blur-sm cursor-pointer hover:shadow-[0_0_25px_rgba(212,175,55,0.2)]"
                 aria-expanded={isExpanded}
               >
                 <span>{isExpanded ? "Show Fewer Reviews" : `View More Reviews (${extraCards.length} More)`}</span>
@@ -238,7 +248,7 @@ function TestimonialCard({ review }: { review: TestimonialReview }) {
     <motion.div
       whileHover={{ scale: 1.02, y: -4 }}
       transition={{ duration: 0.3 }}
-      className="glass-aurora p-6 sm:p-7 rounded-2xl border border-white/15 flex flex-col justify-between relative shadow-2xl min-h-[290px] group hover:border-metallic-gold/50 hover:shadow-[0_0_30px_rgba(212,175,55,0.2)] transition-all duration-300 bg-black/35 backdrop-blur-md"
+      className="p-6 sm:p-7 rounded-2xl border border-white/30 hover:border-metallic-gold/80 flex flex-col justify-between relative min-h-[290px] group transition-all duration-300 bg-white/[0.04] hover:bg-white/[0.08] backdrop-blur-sm shadow-[0_8px_24px_rgba(0,0,0,0.5)] hover:shadow-[0_0_25px_rgba(212,175,55,0.3)]"
     >
       {/* Subtle Quote Watermark */}
       <div className="absolute top-6 right-6 text-white/5 text-5xl pointer-events-none group-hover:text-metallic-gold/15 transition-colors duration-500">

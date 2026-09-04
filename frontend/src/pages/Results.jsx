@@ -12,7 +12,6 @@ import {
   RiSparklingFill,
   RiCompass3Line,
   RiSwordLine,
-  RiMedalFill,
 } from "react-icons/ri";
 import { getResults } from "../services/api";
 import { usePageSeo } from "../hooks/usePageSeo";

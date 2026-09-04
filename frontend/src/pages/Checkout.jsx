@@ -15,8 +15,6 @@ import {
   RiTrophyLine,
   RiQrCodeLine,
   RiTeamLine,
-  RiUserStarLine,
-  RiGroupLine,
 } from "react-icons/ri";
 import PaymentProofPanel from "../components/PaymentProofPanel";
 import LoadingState from "../components/ui/LoadingState";
@@ -35,7 +33,7 @@ import {
   removeCartEvent,
 } from "../utils/eventCart";
 import { formatRegistrationFee } from "../utils/festDays";
-import { loadParticipantProfile } from "../utils/participantProfile";
+import { loadParticipantProfile, saveParticipantProfile } from "../utils/participantProfile";
 import {
   createRegistrationBatch,
   getCurrentUser,
@@ -567,20 +565,16 @@ export default function Checkout() {
                       </span>
                       <span
                         className={`text-[9px] px-1.5 py-0.2 rounded font-mono font-bold uppercase ${
-                          Boolean(
-                            ev.type === "squad" ||
-                            (ev.max_team_size && ev.max_team_size > 1) ||
-                            (ev.maxTeamSize && ev.maxTeamSize > 1)
-                          )
+                          ev.type === "squad" ||
+                          (ev.max_team_size && ev.max_team_size > 1) ||
+                          (ev.maxTeamSize && ev.maxTeamSize > 1)
                             ? "bg-arc-cyan/20 text-arc-cyan border border-arc-cyan/40"
                             : "bg-white/10 text-white/70 border border-white/20"
                         }`}
                       >
-                        {Boolean(
-                          ev.type === "squad" ||
-                          (ev.max_team_size && ev.max_team_size > 1) ||
-                          (ev.maxTeamSize && ev.maxTeamSize > 1)
-                        )
+                        {ev.type === "squad" ||
+                        (ev.max_team_size && ev.max_team_size > 1) ||
+                        (ev.maxTeamSize && ev.maxTeamSize > 1)
                           ? "Squad"
                           : "Solo"}
                       </span>
@@ -624,11 +618,10 @@ export default function Checkout() {
                               key={tab.id}
                               type="button"
                               onClick={() => setScopeFilter(tab.id)}
-                              className={`flex-1 sm:flex-none px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap cursor-pointer ${
-                                active
-                                  ? "bg-metallic-gold text-black shadow-md font-excon-bold"
-                                  : "text-white/60 hover:text-white"
-                              }`}
+                              className={`flex-1 sm:flex-none px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap cursor-pointer ${active
+                                ? "bg-metallic-gold text-black shadow-md font-excon-bold"
+                                : "text-white/60 hover:text-white"
+                                }`}
                             >
                               {tab.label}
                             </button>
@@ -649,11 +642,10 @@ export default function Checkout() {
                               key={tab.id}
                               type="button"
                               onClick={() => setFormatFilter(tab.id)}
-                              className={`flex-1 sm:flex-none px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap cursor-pointer ${
-                                active
-                                  ? "bg-arc-cyan text-black shadow-md font-excon-bold"
-                                  : "text-white/60 hover:text-white"
-                              }`}
+                              className={`flex-1 sm:flex-none px-3 py-1 rounded-lg text-xs font-bold uppercase transition-all whitespace-nowrap cursor-pointer ${active
+                                ? "bg-arc-cyan text-black shadow-md font-excon-bold"
+                                : "text-white/60 hover:text-white"
+                                }`}
                             >
                               {tab.label}
                             </button>
@@ -695,11 +687,10 @@ export default function Checkout() {
                           <div
                             key={ev.id}
                             onClick={() => handleToggleEvent(ev.id)}
-                            className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all select-none ${
-                              isChecked
-                                ? "bg-metallic-gold/20 border border-metallic-gold/50 text-white"
-                                : "hover:bg-white/5 text-white/70"
-                            }`}
+                            className={`flex items-center justify-between p-2.5 rounded-xl cursor-pointer transition-all select-none ${isChecked
+                              ? "bg-metallic-gold/20 border border-metallic-gold/50 text-white"
+                              : "hover:bg-white/5 text-white/70"
+                              }`}
                           >
                             <div className="flex items-center gap-2.5 min-w-0 pr-2">
                               {isChecked ? (
@@ -713,22 +704,21 @@ export default function Checkout() {
                                 </p>
                                 <div className="flex items-center gap-1.5 pt-0.5">
                                   <span
-                                    className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold uppercase ${
-                                      ev.audience === "school"
-                                        ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
-                                        : "bg-metallic-gold/20 text-metallic-gold border border-metallic-gold/30"
-                                    }`}
+                                    className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold uppercase ${ev.audience === "school"
+                                      ? "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"
+                                      : "bg-metallic-gold/20 text-metallic-gold border border-metallic-gold/30"
+                                      }`}
                                   >
                                     {ev.audience === "school" ? "School" : "College"}
                                   </span>
                                   <span
                                     className={`text-[9px] px-1.5 py-0.5 rounded font-mono font-bold uppercase ${
-                                      Boolean(ev.type === "squad" || (ev.max_team_size && ev.max_team_size > 1) || (ev.maxTeamSize && ev.maxTeamSize > 1))
+                                      ev.type === "squad" || (ev.max_team_size && ev.max_team_size > 1) || (ev.maxTeamSize && ev.maxTeamSize > 1)
                                         ? "bg-arc-cyan/20 text-arc-cyan border border-arc-cyan/40"
                                         : "bg-white/10 text-white/70 border border-white/20"
                                     }`}
                                   >
-                                    {Boolean(ev.type === "squad" || (ev.max_team_size && ev.max_team_size > 1) || (ev.maxTeamSize && ev.maxTeamSize > 1))
+                                    {ev.type === "squad" || (ev.max_team_size && ev.max_team_size > 1) || (ev.maxTeamSize && ev.maxTeamSize > 1)
                                       ? `👥 Squad (${ev.max_team_size || ev.maxTeamSize || 4}P)`
                                       : "👤 Solo"}
                                   </span>
@@ -763,8 +753,8 @@ export default function Checkout() {
                       {hasSquadEvents && hasSoloEvents
                         ? `Combined Order: ${soloEvents.length} Solo + ${squadEvents.length} Squad`
                         : hasSquadEvents
-                        ? "Squad Mission (You are Captain)"
-                        : "Register solo or as Team Captain"}
+                          ? "Squad Mission (You are Captain)"
+                          : "Register solo or as Team Captain"}
                     </span>
                   </div>
                 </div>
@@ -779,22 +769,20 @@ export default function Checkout() {
                       type="button"
                       onClick={() => setForm((prev) => ({ ...prev, registration_type: "individual" }))}
                       disabled={hasSquadEvents}
-                      className={`px-4 py-1.5 rounded-lg font-bold uppercase transition-all cursor-pointer ${
-                        form.registration_type === "individual" && !hasSquadEvents
-                          ? "bg-white/20 text-white font-excon-bold"
-                          : "text-white/50 hover:text-white"
-                      } ${hasSquadEvents ? "opacity-40 cursor-not-allowed" : ""}`}
+                      className={`px-4 py-1.5 rounded-lg font-bold uppercase transition-all cursor-pointer ${form.registration_type === "individual" && !hasSquadEvents
+                        ? "bg-white/20 text-white font-excon-bold"
+                        : "text-white/50 hover:text-white"
+                        } ${hasSquadEvents ? "opacity-40 cursor-not-allowed" : ""}`}
                     >
                       Solo
                     </button>
                     <button
                       type="button"
                       onClick={() => setForm((prev) => ({ ...prev, registration_type: "team" }))}
-                      className={`px-4 py-1.5 rounded-lg font-bold uppercase transition-all cursor-pointer ${
-                        form.registration_type === "team" || hasSquadEvents
-                          ? "bg-metallic-gold text-black shadow-md font-excon-bold"
-                          : "text-white/50 hover:text-white"
-                      }`}
+                      className={`px-4 py-1.5 rounded-lg font-bold uppercase transition-all cursor-pointer ${form.registration_type === "team" || hasSquadEvents
+                        ? "bg-metallic-gold text-black shadow-md font-excon-bold"
+                        : "text-white/50 hover:text-white"
+                        }`}
                     >
                       Squad / Team
                     </button>
@@ -853,11 +841,10 @@ export default function Checkout() {
                   required
                   maxLength={10}
                   placeholder="9876543210"
-                  className={`w-full px-4 py-3 bg-white/5 border rounded-xl focus:outline-none text-white text-xs font-mono transition-colors ${
-                    phoneError
-                      ? "border-rose-500 focus:border-rose-400"
-                      : "border-white/10 focus:border-metallic-gold"
-                  }`}
+                  className={`w-full px-4 py-3 bg-white/5 border rounded-xl focus:outline-none text-white text-xs font-mono transition-colors ${phoneError
+                    ? "border-rose-500 focus:border-rose-400"
+                    : "border-white/10 focus:border-metallic-gold"
+                    }`}
                 />
                 {phoneError && (
                   <p className="text-[11px] text-rose-400 mt-1 font-mono">{phoneError}</p>
@@ -884,11 +871,10 @@ export default function Checkout() {
                         key={opt.id}
                         type="button"
                         onClick={() => setForm((prev) => ({ ...prev, gender: opt.id }))}
-                        className={`py-2.5 px-3 rounded-xl border text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all font-excon-bold cursor-pointer ${
-                          isSelected
-                            ? "bg-metallic-gold text-black border-metallic-gold shadow-[0_0_15px_rgba(212,175,55,0.4)] ring-1 ring-metallic-gold"
-                            : "bg-white/5 text-white/70 border-white/10 hover:border-white/30 hover:text-white"
-                        }`}
+                        className={`py-2.5 px-3 rounded-xl border text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all font-excon-bold cursor-pointer ${isSelected
+                          ? "bg-metallic-gold text-black border-metallic-gold shadow-[0_0_15px_rgba(212,175,55,0.4)] ring-1 ring-metallic-gold"
+                          : "bg-white/5 text-white/70 border-white/10 hover:border-white/30 hover:text-white"
+                          }`}
                       >
                         <span className="text-sm font-black">{opt.symbol}</span>
                         <span>{opt.label}</span>
@@ -995,11 +981,10 @@ export default function Checkout() {
 
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 pt-1">
                           {/* Breakfast */}
-                          <label className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer select-none transition-all ${
-                            form.food_breakfast
-                              ? "bg-metallic-gold/20 border-metallic-gold/60 text-white"
-                              : "bg-white/[0.02] border-white/10 text-white/70 hover:bg-white/5"
-                          }`}>
+                          <label className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer select-none transition-all ${form.food_breakfast
+                            ? "bg-metallic-gold/20 border-metallic-gold/60 text-white"
+                            : "bg-white/[0.02] border-white/10 text-white/70 hover:bg-white/5"
+                            }`}>
                             <div className="flex items-center gap-2">
                               <input
                                 type="checkbox"
@@ -1016,11 +1001,10 @@ export default function Checkout() {
                           </label>
 
                           {/* Lunch */}
-                          <label className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer select-none transition-all ${
-                            form.food_lunch
-                              ? "bg-metallic-gold/20 border-metallic-gold/60 text-white"
-                              : "bg-white/[0.02] border-white/10 text-white/70 hover:bg-white/5"
-                          }`}>
+                          <label className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer select-none transition-all ${form.food_lunch
+                            ? "bg-metallic-gold/20 border-metallic-gold/60 text-white"
+                            : "bg-white/[0.02] border-white/10 text-white/70 hover:bg-white/5"
+                            }`}>
                             <div className="flex items-center gap-2">
                               <input
                                 type="checkbox"
@@ -1037,11 +1021,10 @@ export default function Checkout() {
                           </label>
 
                           {/* Dinner */}
-                          <label className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer select-none transition-all ${
-                            form.food_dinner
-                              ? "bg-metallic-gold/20 border-metallic-gold/60 text-white"
-                              : "bg-white/[0.02] border-white/10 text-white/70 hover:bg-white/5"
-                          }`}>
+                          <label className={`flex items-center justify-between p-2.5 rounded-xl border cursor-pointer select-none transition-all ${form.food_dinner
+                            ? "bg-metallic-gold/20 border-metallic-gold/60 text-white"
+                            : "bg-white/[0.02] border-white/10 text-white/70 hover:bg-white/5"
+                            }`}>
                             <div className="flex items-center gap-2">
                               <input
                                 type="checkbox"
@@ -1107,20 +1090,16 @@ export default function Checkout() {
                       <div className="flex items-center gap-1.5 pt-0.5">
                         <span
                           className={`text-[9px] px-1.5 py-0.2 rounded font-mono font-bold uppercase ${
-                            Boolean(
-                              ev.type === "squad" ||
-                              (ev.max_team_size && ev.max_team_size > 1) ||
-                              (ev.maxTeamSize && ev.maxTeamSize > 1)
-                            )
+                            ev.type === "squad" ||
+                            (ev.max_team_size && ev.max_team_size > 1) ||
+                            (ev.maxTeamSize && ev.maxTeamSize > 1)
                               ? "bg-arc-cyan/20 text-arc-cyan border border-arc-cyan/30"
                               : "bg-white/10 text-white/70 border border-white/20"
                           }`}
                         >
-                          {Boolean(
-                            ev.type === "squad" ||
-                            (ev.max_team_size && ev.max_team_size > 1) ||
-                            (ev.maxTeamSize && ev.maxTeamSize > 1)
-                          )
+                          {ev.type === "squad" ||
+                          (ev.max_team_size && ev.max_team_size > 1) ||
+                          (ev.maxTeamSize && ev.maxTeamSize > 1)
                             ? "👥 Squad"
                             : "👤 Solo"}
                         </span>

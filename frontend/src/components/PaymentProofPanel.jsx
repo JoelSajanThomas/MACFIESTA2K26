@@ -82,7 +82,7 @@ export default function PaymentProofPanel({
   }, [regs, paymentAmountTotal]);
 
   const [txnId, setTxnId] = useState(
-    () => primary?.payment_transaction_id || paymentReference || ""
+    () => primary?.payment_transaction_id || ""
   );
   const [file, setFile] = useState(null);
   const [busy, setBusy] = useState(false);
@@ -170,7 +170,7 @@ export default function PaymentProofPanel({
     setOk("");
     try {
       const payload = {
-        payment_transaction_id: txnId.trim() || paymentReference,
+        payment_transaction_id: txnId.trim(),
         payment_proof: file,
       };
       let res;
@@ -237,11 +237,10 @@ export default function PaymentProofPanel({
         {/* 1. Event Registration Amount Card */}
         <div
           onClick={() => setQrType("events")}
-          className={`p-5 rounded-2xl border transition-all cursor-pointer relative overflow-hidden ${
-            qrType === "events"
+          className={`p-5 rounded-2xl border transition-all cursor-pointer relative overflow-hidden ${qrType === "events"
               ? "bg-metallic-gold/15 border-metallic-gold shadow-[0_0_25px_rgba(212,175,55,0.3)] ring-1 ring-metallic-gold"
               : "bg-white/[0.02] border-white/10 hover:border-white/25"
-          }`}
+            }`}
         >
           <div className="flex items-center justify-between pb-3 border-b border-white/10">
             <span className="text-[10px] uppercase tracking-wider font-bold text-metallic-gold font-mono flex items-center gap-1.5">
@@ -266,11 +265,10 @@ export default function PaymentProofPanel({
         {hasAccommodation && (
           <div
             onClick={() => setQrType("hostel")}
-            className={`p-5 rounded-2xl border transition-all cursor-pointer relative overflow-hidden ${
-              qrType === "hostel"
+            className={`p-5 rounded-2xl border transition-all cursor-pointer relative overflow-hidden ${qrType === "hostel"
                 ? "bg-arc-cyan/15 border-arc-cyan shadow-[0_0_25px_rgba(0,212,255,0.3)] ring-1 ring-arc-cyan"
                 : "bg-white/[0.02] border-white/10 hover:border-white/25"
-            }`}
+              }`}
           >
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <span className="text-[10px] uppercase tracking-wider font-bold text-arc-cyan font-mono flex items-center gap-1.5">
@@ -336,11 +334,10 @@ export default function PaymentProofPanel({
           <button
             type="button"
             onClick={() => setQrType("events")}
-            className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all font-excon-black cursor-pointer flex items-center justify-center gap-2 ${
-              qrType === "events"
+            className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all font-excon-black cursor-pointer flex items-center justify-center gap-2 ${qrType === "events"
                 ? "bg-metallic-gold text-black shadow-[0_0_15px_rgba(212,175,55,0.4)]"
                 : "text-white/60 hover:text-white"
-            }`}
+              }`}
           >
             <RiQrCodeLine className="text-sm" />
             <span>Event Pass QR</span>
@@ -348,11 +345,10 @@ export default function PaymentProofPanel({
           <button
             type="button"
             onClick={() => setQrType("hostel")}
-            className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all font-excon-black cursor-pointer flex items-center justify-center gap-2 ${
-              qrType === "hostel"
+            className={`flex-1 py-2.5 px-3 rounded-xl text-xs font-black uppercase tracking-wider transition-all font-excon-black cursor-pointer flex items-center justify-center gap-2 ${qrType === "hostel"
                 ? "bg-arc-cyan text-black shadow-[0_0_15px_rgba(0,212,255,0.4)]"
                 : "text-white/60 hover:text-white"
-            }`}
+              }`}
           >
             <RiHotelBedLine className="text-sm" />
             <span>Hostel Residency QR {hasAccommodation ? "★" : ""}</span>
@@ -381,11 +377,10 @@ export default function PaymentProofPanel({
         {upiLink && (
           <a
             href={upiLink}
-            className={`w-full py-3.5 px-4 font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-lg font-excon-black inline-flex items-center justify-center gap-2 cursor-pointer ${
-              qrType === "hostel"
+            className={`w-full py-3.5 px-4 font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-lg font-excon-black inline-flex items-center justify-center gap-2 cursor-pointer ${qrType === "hostel"
                 ? "bg-arc-cyan hover:bg-white text-black shadow-[0_0_20px_rgba(0,212,255,0.35)]"
                 : "bg-metallic-gold hover:bg-white text-black shadow-[0_0_20px_rgba(212,175,55,0.35)]"
-            }`}
+              }`}
           >
             <span>Open UPI / GPay App ({money(activeAmount)})</span>
             <RiExternalLinkLine className="text-sm" />
@@ -441,13 +436,13 @@ export default function PaymentProofPanel({
             type="text"
             value={txnId}
             onChange={(e) => setTxnId(e.target.value)}
-            placeholder={paymentReference || "UPI Ref / 12-digit UTR"}
+            placeholder="Please enter your transaction ID (e.g. 12-digit UPI UTR)"
             required
             disabled={busy}
             className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-metallic-gold focus:outline-none text-white text-xs font-mono"
           />
           <span className="text-[10px] text-white/40 font-space block">
-            Prefills with your registration reference. You can replace it with the 12-digit UPI UTR from your payment receipt.
+            Please enter your transaction ID / UTR reference from your payment receipt (Google Pay, PhonePe, Paytm, etc.).
           </span>
         </div>
 

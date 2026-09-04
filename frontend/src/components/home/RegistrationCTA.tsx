@@ -126,7 +126,7 @@ export function RegistrationCTA() {
                   >
                     <RiDashboardLine className="text-base shrink-0" />
                     <span className="relative z-10 font-black tracking-[0.08em] sm:tracking-[0.16em] uppercase text-[10.5px] sm:text-sm truncate">
-                      {user?.is_staff || user?.is_superuser ? "Command Console" : "Agent HUD"}
+                      {user?.is_staff || user?.is_superuser ? "Command Console" : "Dashboard"}
                     </span>
                   </Link>
                 ) : (

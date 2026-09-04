@@ -9,6 +9,7 @@ import {
   getAdminRegistrations,
   updateAdminRegistration,
   adminVerifyMemberFinance,
+  refundRegistration,
 } from "../../services/api";
 
 function money(v) {
@@ -30,6 +31,10 @@ export default function AdminFinance() {
   const [confirmAction, setConfirmAction] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
   const [busy, setBusy] = useState(false);
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [refundAmount, setRefundAmount] = useState("");
+  const [refundTxnId, setRefundTxnId] = useState("");
+  const [refundNotes, setRefundNotes] = useState("");
 
   function load() {
     setLoading(true);
@@ -67,6 +72,7 @@ export default function AdminFinance() {
     const paid = activeRows.filter((r) => r.payment_status === "paid");
     const pending = activeRows.filter((r) => r.payment_status === "pending");
     const failed = activeRows.filter((r) => r.payment_status === "failed" || r.payment_status === "rejected");
+    const refunded = activeRows.filter((r) => r.payment_status === "refunded");
     const sum = (list) =>
       list.reduce((acc, r) => acc + (Number(r.payment_amount) || 0), 0);
     return {
@@ -74,10 +80,31 @@ export default function AdminFinance() {
       paid: paid.length,
       pending: pending.length,
       failed: failed.length,
+      refunded: refunded.length,
       verifiedRevenue: sum(paid),
       pendingAmount: sum(pending),
     };
   }, [rows]);
+
+  async function handleRefundSubmit(e) {
+    e.preventDefault();
+    if (!active) return;
+    setBusy(true);
+    try {
+      const res = await refundRegistration(active.id, {
+        refund_amount: refundAmount,
+        refund_transaction_id: refundTxnId,
+        refund_notes: refundNotes,
+      });
+      setRows((prev) => prev.map((r) => (r.id === active.id ? { ...r, ...res.data } : r)));
+      setActive({ ...active, ...res.data });
+      setShowRefundModal(false);
+    } catch {
+      alert("Failed to issue refund. Check finance permissions.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function applyAction() {
     if (!confirmAction || !active) return;
@@ -178,6 +205,7 @@ export default function AdminFinance() {
         <article className="admin-kpi-card"><strong>{summary.pending}</strong><span>Pending</span></article>
         <article className="admin-kpi-card"><strong>{summary.paid}</strong><span>Verified</span></article>
         <article className="admin-kpi-card"><strong>{summary.failed}</strong><span>Rejected</span></article>
+        <article className="admin-kpi-card"><strong>{summary.refunded}</strong><span>Refunded</span></article>
         <article className="admin-kpi-card"><strong>{money(summary.verifiedRevenue)}</strong><span>Total verified amount</span></article>
       </div>
 
@@ -186,6 +214,7 @@ export default function AdminFinance() {
           <option value="all">All payments</option>
           <option value="pending">Pending verification</option>
           <option value="paid">Verified</option>
+          <option value="refunded">Refunded</option>
           <option value="rejected">Rejected</option>
           <option value="failed">Failed (legacy)</option>
           <option value="waived">Waived</option>
@@ -306,6 +335,23 @@ export default function AdminFinance() {
               <p><strong>Transaction ID:</strong> {active.payment_transaction_id || "—"}</p>
               <p><strong>Status:</strong> <StatusChip status={active.payment_status} /></p>
 
+              {active.payment_status === "refunded" && (
+                <div style={{
+                  padding: "0.6rem 0.8rem",
+                  background: "rgba(239, 68, 68, 0.12)",
+                  border: "1px solid rgba(239, 68, 68, 0.35)",
+                  borderRadius: "8px",
+                  marginTop: "0.5rem",
+                  fontSize: "0.85rem",
+                }}>
+                  <p style={{ color: "#f87171", fontWeight: "bold", margin: "0 0 0.25rem 0" }}>↩ Refund Processed</p>
+                  <p style={{ margin: "0.15rem 0" }}><strong>Refunded Amount:</strong> {money(active.refund_amount)}</p>
+                  {active.refund_transaction_id && <p style={{ margin: "0.15rem 0" }}><strong>Refund Txn Ref:</strong> {active.refund_transaction_id}</p>}
+                  {active.refund_notes && <p style={{ margin: "0.15rem 0" }}><strong>Notes:</strong> {active.refund_notes}</p>}
+                  {active.refunded_at && <p style={{ margin: "0.15rem 0", color: "rgba(255,255,255,0.5)", fontSize: "0.75rem" }}>{new Date(active.refunded_at).toLocaleString()}</p>}
+                </div>
+              )}
+
               {active.payment_proof_url ? (
                 <div style={{ marginTop: "0.75rem" }}>
                   <span style={{ fontSize: "0.8rem", fontWeight: 700, color: "rgba(255,255,255,0.7)" }}>Captain Payment Proof:</span>
@@ -401,23 +447,38 @@ export default function AdminFinance() {
                 </button>
               )}
               {active.payment_status === "paid" && (
-                <div style={{
-                  flex: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  padding: "0.6rem 1rem",
-                  background: "rgba(16,185,129,0.15)",
-                  border: "1px solid #10b981",
-                  borderRadius: "8px",
-                  color: "#10b981",
-                  fontWeight: 700,
-                  fontSize: "0.88rem",
-                }}>
-                  ✓ Captain Payment Verified
-                </div>
+                <>
+                  <div style={{
+                    flex: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    padding: "0.6rem 1rem",
+                    background: "rgba(16,185,129,0.15)",
+                    border: "1px solid #10b981",
+                    borderRadius: "8px",
+                    color: "#10b981",
+                    fontWeight: 700,
+                    fontSize: "0.88rem",
+                  }}>
+                    ✓ Captain Payment Verified
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-outline"
+                    style={{ color: "#f87171", borderColor: "rgba(248,113,113,0.4)" }}
+                    onClick={() => {
+                      setRefundAmount(active.payment_amount || 0);
+                      setRefundTxnId("");
+                      setRefundNotes("");
+                      setShowRefundModal(true);
+                    }}
+                  >
+                    ↩ ISSUE REFUND
+                  </button>
+                </>
               )}
-              {active.payment_status !== "rejected" && active.payment_status !== "failed" && (
+              {active.payment_status !== "rejected" && active.payment_status !== "failed" && active.payment_status !== "refunded" && (
                 <button
                   type="button"
                   className="btn btn-outline"
@@ -460,6 +521,69 @@ export default function AdminFinance() {
           </label>
         )}
       </ConfirmDialog>
+
+      {showRefundModal && active && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+          <div className="bg-[#0D1126] border border-red-500/40 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <h2 className="text-lg font-bold text-white font-excon">Process Registration Refund</h2>
+            <p className="text-xs text-white/60">
+              Issuing refund for <strong>{active.participant_name}</strong> (Reg #{active.registration_number}).
+            </p>
+            <form onSubmit={handleRefundSubmit} className="space-y-4 font-mono text-xs">
+              <div>
+                <label className="block text-white/70 mb-1">Refund Amount (₹) *</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  value={refundAmount}
+                  onChange={(e) => setRefundAmount(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg bg-black/50 border border-white/20 text-white focus:border-red-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-white/70 mb-1">Refund Transaction ID / Reference</label>
+                <input
+                  type="text"
+                  placeholder="Bank UTR / UPI Ref ID"
+                  value={refundTxnId}
+                  onChange={(e) => setRefundTxnId(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg bg-black/50 border border-white/20 text-white focus:border-red-500 focus:outline-none"
+                />
+              </div>
+
+              <div>
+                <label className="block text-white/70 mb-1">Refund Reason / Notes</label>
+                <textarea
+                  rows={2}
+                  placeholder="Reason for refund approval"
+                  value={refundNotes}
+                  onChange={(e) => setRefundNotes(e.target.value)}
+                  className="w-full px-3 py-2 rounded-lg bg-black/50 border border-white/20 text-white focus:border-red-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowRefundModal(false)}
+                  className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white font-bold"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={busy}
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-500 font-bold transition-colors"
+                >
+                  {busy ? "Processing…" : "Confirm Refund"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

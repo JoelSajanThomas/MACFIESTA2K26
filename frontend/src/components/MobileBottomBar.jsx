@@ -1,4 +1,4 @@
-import { useLocation, Link, useNavigate } from "react-router-dom";
+import { useLocation, Link } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -13,11 +13,10 @@ import {
   RiTicketFill,
   RiUserLine,
   RiUserFill,
-  RiLogoutBoxLine,
   RiShieldUserLine,
 } from "react-icons/ri";
 import { isLoggedIn, getCurrentUser } from "../services/api";
-import { AUTH_CHANGE_EVENT, logout, isUnauthorized } from "../utils/auth";
+import { AUTH_CHANGE_EVENT, isUnauthorized, logout } from "../utils/auth";
 
 const LEFT_TABS = [
   { label: "Home", href: "/", icon: RiHome5Line, activeIcon: RiHome5Fill },
@@ -31,7 +30,6 @@ const RIGHT_TABS_GUEST = [
 
 export default function MobileBottomBar() {
   const { pathname } = useLocation();
-  const navigate = useNavigate();
   const [user, setUser] = useState(null);
   const [showLogoutToast, setShowLogoutToast] = useState(false);
 
@@ -45,7 +43,13 @@ export default function MobileBottomBar() {
   useEffect(() => {
     function loadUser() {
       if (!isLoggedIn()) {
-        setUser(null);
+        setUser((prev) => {
+          if (prev) {
+            setShowLogoutToast(true);
+            setTimeout(() => setShowLogoutToast(false), 2500);
+          }
+          return null;
+        });
         return;
       }
       getCurrentUser()
@@ -59,14 +63,6 @@ export default function MobileBottomBar() {
     window.addEventListener(AUTH_CHANGE_EVENT, loadUser);
     return () => window.removeEventListener(AUTH_CHANGE_EVENT, loadUser);
   }, []);
-
-  const handleLogout = () => {
-    logout();
-    setUser(null);
-    setShowLogoutToast(true);
-    setTimeout(() => setShowLogoutToast(false), 2500);
-    navigate("/");
-  };
 
   if (isStandalone) return null;
 
@@ -82,7 +78,7 @@ export default function MobileBottomBar() {
   const rightTabs = user
     ? [
         {
-          label: user.is_staff || user.is_superuser ? "Console" : "My HUD",
+          label: user.is_staff || user.is_superuser ? "Console" : "Dashboard",
           href: dashHref,
           icon: user.is_staff || user.is_superuser ? RiShieldUserLine : RiUserLine,
           activeIcon: user.is_staff || user.is_superuser ? RiShieldUserLine : RiUserFill,

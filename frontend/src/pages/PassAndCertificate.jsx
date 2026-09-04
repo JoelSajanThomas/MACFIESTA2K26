@@ -5,25 +5,13 @@ import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
 import {
   RiShieldFlashLine,
-  RiShieldCheckLine,
-  RiQrCodeLine,
   RiPrinterLine,
   RiArrowLeftLine,
-  RiCalendarEventLine,
-  RiMapPinLine,
-  RiTrophyLine,
-  RiBuilding4Line,
-  RiUserStarLine,
-  RiRestaurantLine,
-  RiHotelBedLine,
   RiAwardLine,
   RiTeamLine,
-  RiGroupLine,
   RiDownload2Line,
   RiFilePdfLine,
 } from "react-icons/ri";
-import StatusChip from "../components/theme/StatusChip";
-import BrandLogo from "../components/BrandLogo";
 import LoadingState from "../components/ui/LoadingState";
 import ErrorState from "../components/ui/ErrorState";
 import { BackgroundVideo } from "../components/ui/BackgroundVideo";

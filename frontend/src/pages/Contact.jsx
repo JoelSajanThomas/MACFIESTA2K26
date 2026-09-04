@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   RiMapPin2Line,
   RiPhoneLine,
@@ -10,14 +10,16 @@ import {
   RiUserHeartLine,
 } from "react-icons/ri";
 import { usePageSeo } from "../hooks/usePageSeo";
+import { useSiteSettings } from "../hooks/useSiteSettings";
+import { getCoordinatorProfiles, getFAQs, mediaUrl } from "../services/api";
 
-const CORE_TEAM = [
+const CORE_TEAM_FALLBACK = [
   { name: "Anu Tiji", role: "Core Team", phone: "+918330065374", display: "+91 83300 65374" },
   { name: "Shibin", role: "Core Team", phone: "+919400715903", display: "+91 94007 15903" },
   { name: "Emil", role: "Core Team", phone: "+917902821846", display: "+91 79028 21846" },
 ];
 
-const DEPT_HEADS = [
+const DEPT_HEADS_FALLBACK = [
   { name: "Gokul", role: "Finance Head", phone: "+917559833490", display: "+91 75598 33490" },
   { name: "Dany", role: "Cultural Head", phone: "+918590919670", display: "+91 85909 19670" },
   { name: "Vishnu", role: "Program Head", phone: "+918921960471", display: "+91 89219 60471" },
@@ -27,7 +29,7 @@ const DEPT_HEADS = [
   { name: "Akshai Das", role: "Food Head", phone: "+917593929551", display: "+91 75939 29551" },
 ];
 
-const faqs = [
+const FAQS_FALLBACK = [
   { q: "Who is eligible to participate?", a: "All bona fide students with valid college or school ID cards are eligible to register across respective event categories." },
   { q: "Can I register on-spot?", a: "Spot registrations will only be available if event slots remain unfilled. We strongly advise pre-registering online." },
   { q: "Is registration fee refundable?", a: "No, once registration passes or individual event slots are booked, fees are non-refundable." },
@@ -40,8 +42,37 @@ export default function Contact() {
     description: "Reach out to the MacFiesta 2026 organizing team or view frequently answered questions.",
   });
 
+  const settings = useSiteSettings() || {};
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState("");
+  const [coordinators, setCoordinators] = useState([]);
+  const [faqList, setFaqList] = useState(FAQS_FALLBACK);
+
+  useEffect(() => {
+    getCoordinatorProfiles()
+      .then((res) => {
+        const list = Array.isArray(res.data) ? res.data : (res.data?.results || []);
+        if (list.length > 0) {
+          setCoordinators(list.filter((c) => c.is_active !== false));
+        }
+      })
+      .catch(() => {});
+
+    getFAQs()
+      .then((res) => {
+        const list = Array.isArray(res.data) ? res.data : (res.data?.results || []);
+        if (list.length > 0) {
+          setFaqList(list.map((item) => ({ q: item.question, a: item.answer })));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const coreTeam = coordinators.filter((c) => c.tier === "core" || c.tier === "faculty");
+  const deptHeads = coordinators.filter((c) => c.tier === "dept_head" || c.tier === "event_head");
+
+  const displayCoreTeam = coreTeam.length > 0 ? coreTeam : CORE_TEAM_FALLBACK;
+  const displayDeptHeads = deptHeads.length > 0 ? deptHeads : DEPT_HEADS_FALLBACK;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -150,11 +181,11 @@ export default function Contact() {
               <div className="space-y-4 text-sm text-white/70 font-excon">
                 <div className="flex items-center gap-3">
                   <RiPhoneLine className="text-metallic-gold text-lg shrink-0" />
-                  <span>General Helpdesk: <strong className="text-white font-bold font-excon-bold">+91 469 273 0300</strong></span>
+                  <span>General Helpdesk: <strong className="text-white font-bold font-excon-bold">{settings?.contact_phone || "+91 469 273 0300"}</strong></span>
                 </div>
                 <div className="flex items-center gap-3">
                   <RiMailSendLine className="text-arc-cyan text-lg shrink-0" />
-                  <span>Official Email: <a href="mailto:macfiesta@macfast.org" className="text-white font-bold font-excon-bold hover:text-arc-cyan transition-colors">macfiesta@macfast.org</a></span>
+                  <span>Official Email: <a href={`mailto:${settings?.contact_email || "macfiesta@macfast.org"}`} className="text-white font-bold font-excon-bold hover:text-arc-cyan transition-colors">{settings?.contact_email || "macfiesta@macfast.org"}</a></span>
                 </div>
                 <div className="flex items-center gap-3">
                   <RiMapPin2Line className="text-marvel-red text-lg shrink-0" />
@@ -229,19 +260,27 @@ export default function Contact() {
               <div className="flex-1 h-px bg-metallic-gold/20" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {CORE_TEAM.map((m) => (
+              {displayCoreTeam.map((m, idx) => (
                 <a
-                  key={m.phone}
-                  href={`tel:${m.phone}`}
+                  key={m.phone || m.id || idx}
+                  href={`tel:${m.phone || ""}`}
                   className="group marvel-card flex items-center gap-4 p-4 rounded-2xl border border-metallic-gold/25 bg-[#060814]/90 backdrop-blur-md hover:border-metallic-gold/60 hover:bg-metallic-gold/10 transition-all duration-300 shadow-xl cursor-pointer no-underline"
                 >
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-metallic-gold via-amber-400 to-amber-600 flex items-center justify-center text-black font-black text-sm shrink-0 shadow-[0_0_15px_rgba(212,175,55,0.35)] group-hover:shadow-[0_0_25px_rgba(212,175,55,0.6)] transition-all">
-                    {m.name.charAt(0)}
-                  </div>
+                  {m.photo ? (
+                    <img
+                      src={mediaUrl(m.photo)}
+                      alt={m.name}
+                      className="w-11 h-11 rounded-full object-cover border border-metallic-gold/40 shrink-0"
+                    />
+                  ) : (
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-metallic-gold via-amber-400 to-amber-600 flex items-center justify-center text-black font-black text-sm shrink-0 shadow-[0_0_15px_rgba(212,175,55,0.35)] group-hover:shadow-[0_0_25px_rgba(212,175,55,0.6)] transition-all">
+                      {m.name.charAt(0)}
+                    </div>
+                  )}
                   <div className="min-w-0">
                     <p className="text-white font-black text-sm font-excon-black truncate group-hover:text-metallic-gold transition-colors">{m.name}</p>
                     <p className="text-white/50 text-[10px] font-excon truncate">{m.role}</p>
-                    <p className="text-metallic-gold text-xs font-bold mt-0.5 font-mono">{m.display}</p>
+                    <p className="text-metallic-gold text-xs font-bold mt-0.5 font-mono">{m.display || m.phone}</p>
                   </div>
                 </a>
               ))}
@@ -256,19 +295,27 @@ export default function Contact() {
               <div className="flex-1 h-px bg-arc-cyan/20" />
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-              {DEPT_HEADS.map((m) => (
+              {displayDeptHeads.map((m, idx) => (
                 <a
-                  key={m.phone}
-                  href={`tel:${m.phone}`}
+                  key={m.phone || m.id || idx}
+                  href={`tel:${m.phone || ""}`}
                   className="group marvel-card flex items-center gap-4 p-4 rounded-2xl border border-arc-cyan/20 bg-[#060814]/90 backdrop-blur-md hover:border-arc-cyan/50 hover:bg-arc-cyan/10 transition-all duration-300 shadow-xl cursor-pointer no-underline"
                 >
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-arc-cyan/30 via-blue-500/20 to-purple-600/20 border border-arc-cyan/40 flex items-center justify-center text-arc-cyan font-black text-sm shrink-0 shadow-[0_0_12px_rgba(0,212,255,0.2)] group-hover:shadow-[0_0_20px_rgba(0,212,255,0.45)] transition-all">
-                    {m.name.charAt(0)}
-                  </div>
+                  {m.photo ? (
+                    <img
+                      src={mediaUrl(m.photo)}
+                      alt={m.name}
+                      className="w-11 h-11 rounded-full object-cover border border-arc-cyan/40 shrink-0"
+                    />
+                  ) : (
+                    <div className="w-11 h-11 rounded-full bg-gradient-to-br from-arc-cyan/30 via-blue-500/20 to-purple-600/20 border border-arc-cyan/40 flex items-center justify-center text-arc-cyan font-black text-sm shrink-0 shadow-[0_0_12px_rgba(0,212,255,0.2)] group-hover:shadow-[0_0_20px_rgba(0,212,255,0.45)] transition-all">
+                      {m.name.charAt(0)}
+                    </div>
+                  )}
                   <div className="min-w-0">
                     <p className="text-white font-black text-sm font-excon-black truncate group-hover:text-arc-cyan transition-colors">{m.name}</p>
                     <p className="text-white/50 text-[10px] font-excon truncate">{m.role}</p>
-                    <p className="text-arc-cyan text-xs font-bold mt-0.5 font-mono">{m.display}</p>
+                    <p className="text-arc-cyan text-xs font-bold mt-0.5 font-mono">{m.display || m.phone}</p>
                   </div>
                 </a>
               ))}
@@ -281,7 +328,7 @@ export default function Contact() {
           <div className="text-center space-y-3">
             <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full border border-arc-cyan/40 bg-[#060814]/80 backdrop-blur-md text-arc-cyan text-xs font-excon-bold font-bold tracking-[0.2em] uppercase">
               <RiQuestionLine />
-              <span>TROUBLESHOOT & FAQS</span>
+              <span>TROUBLESHOOT &amp; FAQS</span>
             </div>
             <h2 className="text-2xl md:text-4xl font-black text-white uppercase tracking-tight font-excon-black">
               <span className="shimmer-text">FREQUENTLY ASKED</span>{" "}
@@ -290,7 +337,7 @@ export default function Contact() {
           </div>
 
           <div className="max-w-3xl mx-auto space-y-4">
-            {faqs.map((faq, idx) => (
+            {faqList.map((faq, idx) => (
               <div key={idx} className="marvel-card p-6 rounded-2xl border border-arc-cyan/25 hover:border-arc-cyan transition-all space-y-2 shadow-xl bg-[#060814]/92 backdrop-blur-xl">
                 <h4 className="font-bold text-white text-base flex items-center gap-2 font-excon-bold">
                   <RiQuestionLine className="text-arc-cyan text-lg shrink-0" />

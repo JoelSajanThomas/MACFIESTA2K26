@@ -77,6 +77,8 @@ const AdminEventWinners = lazy(() => import("./pages/admin/AdminEventWinners"));
 const AdminContentDashboard = lazy(() => import("./pages/admin/cms/AdminContentDashboard"));
 const AdminSiteSettingsForm = lazy(() => import("./pages/admin/cms/AdminSiteSettingsForm"));
 const AdminHomepageSectionsList = lazy(() => import("./pages/admin/cms/AdminHomepageSectionsList"));
+const AdminInstitutions = lazy(() => import("./pages/admin/AdminInstitutions"));
+const AdminAuditLogs = lazy(() => import("./pages/admin/AdminAuditLogs"));
 const AdminThemeForm = lazy(() => import("./pages/admin/cms/AdminThemeForm"));
 const AdminCmsList = lazy(() => import("./pages/admin/cms/AdminCmsList"));
 const AdminCmsForm = lazy(() => import("./pages/admin/cms/AdminCmsForm"));
@@ -159,10 +161,12 @@ function AppRoutes() {
         <Route path="gallery/new" element={<AdminGalleryForm />} />
         <Route path="gallery/:id/edit" element={<AdminGalleryForm />} />
         <Route path="registrations" element={<AdminRegistrationsList />} />
+        <Route path="institutions" element={<AdminInstitutions />} />
         <Route path="payments" element={<AdminFinance />} />
         <Route path="finance" element={<Navigate to="/admin/payments" replace />} />
         <Route path="food" element={<Navigate to="/admin/hospitality?tab=food" replace />} />
         <Route path="hospitality" element={<AdminHospitality />} />
+        <Route path="audit-logs" element={<AdminAuditLogs />} />
         <Route path="reports" element={<AdminReports />} />
         <Route path="content" element={<AdminContentDashboard />} />
         <Route path="content/site-settings" element={<AdminSiteSettingsForm />} />

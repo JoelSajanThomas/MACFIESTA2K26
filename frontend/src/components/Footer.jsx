@@ -469,10 +469,10 @@ export default function Footer() {
                   <div className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-arc-cyan shadow-[0_0_6px_#00D4FF]" />
                     <span className="font-bold text-white group-hover:text-arc-cyan transition-colors">
-                      {currentUser?.is_staff || currentUser?.is_superuser ? "Command Console" : "Agent Dashboard"}
+                      {currentUser?.is_staff || currentUser?.is_superuser ? "Command Console" : "Dashboard"}
                     </span>
                   </div>
-                  <span className="text-[10px] text-white/40 group-hover:translate-x-0.5 transition-transform">HUD →</span>
+                  <span className="text-[10px] text-white/40 group-hover:translate-x-0.5 transition-transform">Dashboard →</span>
                 </Link>
               ) : (
                 <Link

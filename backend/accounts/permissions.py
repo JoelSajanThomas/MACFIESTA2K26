@@ -60,6 +60,9 @@ MODULES_BY_COMMITTEE = {
     ],
     "invitation": ["insights", "announcements", "guests", "content"],
     "verification": ["insights", "verification", "registrations"],
+    "judge": ["insights", "events", "results"],
+    "volunteer": ["insights", "verification", "registrations"],
+    "coordinator": ["insights", "events", "schedule", "registrations", "results"],
 }
 
 def user_modules(user):

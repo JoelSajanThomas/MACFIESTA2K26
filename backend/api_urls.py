@@ -9,6 +9,8 @@ from registrations.views import (
     admin_promote_waitlist,
     admin_verify_member_finance,
     admin_verify_member_organizer,
+    admin_refund_registration,
+    AdminInstitutionViewSet,
     my_pass,
     certificate_data,
     attendance_report,
@@ -25,6 +27,8 @@ from dashboard.views import (
     current_user,
     public_fest_stats,
     public_fest_config,
+    admin_audit_logs,
+    admin_system_backup,
 )
 from accounts.staff_views import (
     staff_directory,
@@ -45,6 +49,8 @@ from cms.views import (
     SponsorViewSet,
     HomepageSectionViewSet,
     FestRewindItemViewSet,
+    FestivalRuleViewSet,
+    CoordinatorProfileViewSet,
 )
 from accommodation.views import (
     HostelViewSet,
@@ -72,7 +78,10 @@ cms_router.register('testimonials', TestimonialViewSet, basename='cms-testimonia
 cms_router.register('faqs', FAQViewSet, basename='cms-faqs')
 cms_router.register('sponsors', SponsorViewSet, basename='cms-sponsors')
 cms_router.register('rewind', FestRewindItemViewSet, basename='cms-rewind')
+cms_router.register('rules', FestivalRuleViewSet, basename='cms-rules')
+cms_router.register('coordinators', CoordinatorProfileViewSet, basename='cms-coordinators')
 cms_router.register('homepage-sections', HomepageSectionViewSet, basename='cms-homepage-sections')
+router.register('admin/institutions', AdminInstitutionViewSet, basename='admin-institutions')
 
 urlpatterns = [
     path('', include(router.urls)),
@@ -88,6 +97,7 @@ urlpatterns = [
     path('admin/participants/<int:pk>/', participant_user_detail),
     path('admin/registrations/', AdminRegistrationListView.as_view()),
     path('admin/registrations/<int:pk>/', AdminRegistrationDetailView.as_view()),
+    path('admin/registrations/<int:pk>/refund/', admin_refund_registration),
     path('admin/team-members/<int:member_id>/verify-finance/', admin_verify_member_finance),
     path('admin/team-members/<int:member_id>/verify-organizer/', admin_verify_member_organizer),
     path('admin/events/<int:event_id>/promote-waitlist/', admin_promote_waitlist),
@@ -97,6 +107,8 @@ urlpatterns = [
     path('admin/purge-registered-data/', purge_registered_users_data),
     path('admin/verification/lookup/', verify_lookup),
     path('admin/verification/check-in/', verify_check_in),
+    path('admin/audit-logs/', admin_audit_logs),
+    path('admin/system-backup/', admin_system_backup),
     path('registrations/<int:pk>/pass/', my_pass),
     path('certificates/<int:result_id>/', certificate_data),
 ]

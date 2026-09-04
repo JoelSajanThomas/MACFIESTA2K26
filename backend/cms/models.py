@@ -28,6 +28,8 @@ class SiteSetting(models.Model):
     logo_image = models.ImageField(upload_to="cms/brand/", blank=True, null=True)
     terms_body = models.TextField(blank=True)
     privacy_body = models.TextField(blank=True)
+    brochure_file = models.FileField(upload_to="cms/brochure/", blank=True, null=True)
+    brochure_url = models.URLField(blank=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
@@ -214,3 +216,47 @@ class FestRewindItem(models.Model):
 
     def __str__(self):
         return self.title
+
+
+class FestivalRule(models.Model):
+    CATEGORY_CHOICES = [
+        ("school", "School Missions (Day 1)"),
+        ("college", "College Missions (Day 2)"),
+        ("general", "General Regulations"),
+        ("fairness", "Fair Play & Ethics"),
+        ("safety", "Safety & Campus Code"),
+    ]
+
+    category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default="general")
+    title = models.CharField(max_length=200)
+    description = models.TextField()
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["category", "order", "id"]
+        verbose_name = "Festival rule"
+        verbose_name_plural = "Festival rules"
+
+    def __str__(self):
+        return f"[{self.get_category_display()}] {self.title}"
+
+
+class CoordinatorProfile(models.Model):
+    name = models.CharField(max_length=120)
+    role = models.CharField(max_length=120)
+    department = models.CharField(max_length=120, blank=True)
+    phone = models.CharField(max_length=30, blank=True)
+    email = models.EmailField(blank=True)
+    photo = models.ImageField(upload_to="cms/coordinators/", blank=True, null=True)
+    is_core = models.BooleanField(default=False)
+    order = models.PositiveIntegerField(default=0)
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        ordering = ["order", "name"]
+        verbose_name = "Coordinator profile"
+        verbose_name_plural = "Coordinator profiles"
+
+    def __str__(self):
+        return f"{self.name} ({self.role})"

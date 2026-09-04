@@ -1,15 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
-  RiContactsLine,
   RiShieldLine,
-  RiShieldFlashLine,
   RiRobot2Line,
   RiFlashlightLine,
   RiTeamLine,
   RiCheckboxCircleLine,
   RiCompass3Line,
-  RiUserStarLine,
   RiPhoneLine,
   RiUserLine,
   RiShieldUserLine,
@@ -324,7 +321,7 @@ export default function EventDetails() {
                 </h3>
                 <p className="text-xs text-white/60">
                   {isAlreadyRegistered
-                    ? "You are officially registered for this mission. Access your verified tournament pass, team roster, and schedule in your Agent HUD."
+                    ? "You are officially registered for this mission. Access your verified tournament pass, team roster, and schedule in your Dashboard."
                     : isExternalReg
                     ? "Registrations for Avengers: Code Assemble (Vibe Coding Hackathon) are officially hosted directly at hackathon.macfast.org."
                     : (isTeamEvent
@@ -494,7 +491,7 @@ export default function EventDetails() {
         event={event}
         user={currentUser}
         onClose={() => setShowTeamModal(false)}
-        onSuccess={(createdReg) => {
+        onSuccess={() => {
           navigate("/student-dashboard");
         }}
       />

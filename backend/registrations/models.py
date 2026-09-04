@@ -122,6 +122,17 @@ class Registration(models.Model):
         on_delete=models.SET_NULL,
         related_name="payment_verifications_done",
     )
+    refund_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    refund_transaction_id = models.CharField(max_length=80, blank=True)
+    refunded_at = models.DateTimeField(null=True, blank=True)
+    refund_notes = models.CharField(max_length=255, blank=True)
+    refunded_by = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="refunds_processed",
+    )
 
     verified_at = models.DateTimeField(null=True, blank=True)
     verified_by = models.ForeignKey(

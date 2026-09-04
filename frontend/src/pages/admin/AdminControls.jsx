@@ -2,17 +2,20 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import {
   RiToggleLine,
-  RiAlertLine,
-  RiUserReceivedLine,
   RiCheckDoubleLine,
   RiRadarLine,
   RiLockPasswordLine,
   RiDeleteBin7Line,
   RiShieldFlashLine,
+  RiDatabase2Line,
+  RiDownload2Line,
+  RiUserReceivedLine,
+  RiAlertLine,
 } from "react-icons/ri";
 import { useFestivalControl } from "../../lib/festivalStore";
 import { useAdminStaff } from "../../components/admin/AdminStaffContext";
 import PurgeDataModal from "../../components/admin/PurgeDataModal";
+import { downloadSystemBackup } from "../../services/api";
 
 export default function AdminControls() {
   const staff = useAdminStaff();
@@ -249,6 +252,33 @@ export default function AdminControls() {
         </div>
       </div>
 
+      {/* System Database Snapshot & Backup Export */}
+      <div className="p-6 sm:p-8 rounded-3xl border border-arc-cyan/30 bg-arc-cyan/5 relative overflow-hidden shadow-xl space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="space-y-1.5">
+            <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full border border-arc-cyan/40 bg-arc-cyan/10 text-arc-cyan text-[10px] font-black uppercase tracking-widest font-mono">
+              <RiDatabase2Line />
+              <span>CORE RESILIENCE • DATA SNAPSHOT</span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black text-white uppercase font-excon-black">
+              System Database Backup
+            </h2>
+            <p className="text-xs text-white/70 max-w-2xl leading-relaxed">
+              Export an encrypted, complete JSON database snapshot of all events, participants, payments, registrations, content records, and audit trails for offline archiving or disaster recovery.
+            </p>
+          </div>
+
+          <a
+            href={downloadSystemBackup()}
+            download
+            className="px-5 py-3 rounded-2xl bg-arc-cyan/20 hover:bg-arc-cyan border border-arc-cyan/50 text-arc-cyan hover:text-black text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 shrink-0 shadow-lg cursor-pointer font-excon-black no-underline"
+          >
+            <RiDownload2Line className="text-base" />
+            <span>Download Database Backup</span>
+          </a>
+        </div>
+      </div>
+
       {/* Danger Zone: Clear Registered Participant Data */}
       <div className="p-6 sm:p-8 rounded-3xl border border-rose-500/30 bg-rose-950/20 relative overflow-hidden shadow-[0_0_40px_rgba(244,63,94,0.12)] space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -261,7 +291,7 @@ export default function AdminControls() {
               Clear All Registered User Data
             </h2>
             <p className="text-xs text-white/70 max-w-2xl leading-relaxed">
-              Permanently wipe all registered participant accounts, event registrations, fast-track passes, team entries, and hostel bookings. Requires admin password verification before execution.
+              Permanently wipe all registered participant accounts, event registrations, fast-track passes, team entries, and hostel bookings. Requires Super Admin password verification before execution.
             </p>
           </div>
 
@@ -280,7 +310,7 @@ export default function AdminControls() {
       <PurgeDataModal
         open={purgeModalOpen}
         onClose={() => setPurgeModalOpen(false)}
-        onSuccess={(data) => {
+        onSuccess={() => {
           flash(`✓ Successfully purged registered participant records.`);
         }}
       />

@@ -297,3 +297,31 @@ class DeskRbacTests(TestCase):
             format="json",
         )
         self.assertEqual(paid.status_code, 200)
+
+    def test_purge_registered_data_requires_superadmin_password(self):
+        User.objects.create_user("superadmin", password="SuperPassword123!", is_staff=True, is_superuser=True)
+        self.client.force_authenticate(self.core)
+
+        # 1. Without password
+        res_no_pw = self.client.post("/api/admin/purge-registered-data/", {}, format="json")
+        self.assertEqual(res_no_pw.status_code, 400)
+        self.assertIn("Super Admin password is required", res_no_pw.data.get("detail", ""))
+
+        # 2. With staff user's own password (TestPass123!) -> Denied!
+        res_staff_pw = self.client.post(
+            "/api/admin/purge-registered-data/",
+            {"raw_password": "TestPass123!"},
+            format="json",
+        )
+        self.assertEqual(res_staff_pw.status_code, 400)
+        self.assertIn("Incorrect Super Admin password", res_staff_pw.data.get("detail", ""))
+
+        # 3. With superadmin password -> Allowed!
+        res_ok = self.client.post(
+            "/api/admin/purge-registered-data/",
+            {"raw_password": "SuperPassword123!"},
+            format="json",
+        )
+        self.assertEqual(res_ok.status_code, 200)
+        self.assertTrue(res_ok.data.get("success"))
+

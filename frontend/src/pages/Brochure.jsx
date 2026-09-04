@@ -1,12 +1,28 @@
 import { Link } from "react-router-dom";
-import { RiFileDownloadLine, RiShieldFlashLine, RiCompass3Line } from "react-icons/ri";
+import { RiFileDownloadLine, RiShieldFlashLine, RiCompass3Line, RiExternalLinkLine } from "react-icons/ri";
 import { usePageSeo } from "../hooks/usePageSeo";
+import { useSiteSettings } from "../hooks/useSiteSettings";
+import { mediaUrl } from "../services/api";
 
 export default function Brochure() {
   usePageSeo({
     title: "Official Brochure · MacFiesta 2026",
     description: "Download the comprehensive national festival brochure featuring event details, cash prize breakdowns, rules, schedules, and MACFAST campus map.",
   });
+
+  const settings = useSiteSettings() || {};
+
+  const brochureTarget = settings.brochure_file
+    ? mediaUrl(settings.brochure_file)
+    : settings.brochure_url || "/brochure.pdf";
+
+  const handleDownload = () => {
+    if (!brochureTarget) {
+      alert("Brochure file is currently being updated by the organizing committee. Please check back shortly!");
+      return;
+    }
+    window.open(brochureTarget, "_blank", "noopener,noreferrer");
+  };
 
   return (
     <div className="bg-[#05050A] min-h-screen pt-28 pb-16 text-white font-mono relative overflow-hidden">
@@ -42,17 +58,22 @@ export default function Brochure() {
             📄
           </div>
           <div className="space-y-1">
-            <h2 className="text-lg font-bold text-white uppercase font-excon-bold">MacFiesta 2K26 Brochure PDF</h2>
-            <p className="text-xs text-white/50">Size: 4.8 MB | High Resolution Print Edition</p>
+            <h2 className="text-lg font-bold text-white uppercase font-excon-bold">
+              {settings?.event_name || "MacFiesta 2K26"} Directive
+            </h2>
+            <p className="text-xs text-white/50">
+              Official Print &amp; Digital Edition • Verified by Committee
+            </p>
           </div>
 
           <button
             type="button"
-            onClick={() => alert("Downloading MacFiesta 2K26 Official Brochure PDF...")}
-            className="w-full py-3.5 px-8 text-xs font-bold uppercase inline-flex items-center justify-center gap-2 shadow-[0_0_25px_#ED1D24] bg-marvel-red hover:bg-white hover:text-black transition-all rounded-full cursor-pointer"
+            onClick={handleDownload}
+            className="w-full py-3.5 px-8 text-xs font-bold uppercase inline-flex items-center justify-center gap-2 shadow-[0_0_25px_#ED1D24] bg-marvel-red hover:bg-white hover:text-black transition-all rounded-full cursor-pointer group"
           >
-            <RiFileDownloadLine className="text-lg" />
+            <RiFileDownloadLine className="text-lg group-hover:scale-110 transition-transform" />
             <span>Download Official Brochure PDF</span>
+            <RiExternalLinkLine className="text-xs opacity-60" />
           </button>
         </div>
 

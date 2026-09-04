@@ -2,11 +2,11 @@ import { useEffect, useState } from "react";
 import { getSiteSettings } from "../services/api";
 import { resolveSiteSettings } from "../utils/cmsUtils";
 
-let cachedSettings = null;
+let cachedSettings = resolveSiteSettings([]);
 let loadPromise = null;
 
 export function loadSiteSettings() {
-  if (cachedSettings) return Promise.resolve(cachedSettings);
+  if (loadPromise) return loadPromise;
   if (!loadPromise) {
     loadPromise = getSiteSettings()
       .then((res) => {

@@ -14,7 +14,6 @@ import {
   RiBuilding4Line,
   RiUserLine,
   RiTeamLine,
-  RiFilter3Line,
   RiPhoneLine,
   RiShieldUserLine,
   RiWhatsappLine,

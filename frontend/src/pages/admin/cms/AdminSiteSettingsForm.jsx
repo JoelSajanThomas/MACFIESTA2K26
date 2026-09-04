@@ -39,6 +39,7 @@ const EMPTY = {
   footer_tagline: "",
   terms_body: "",
   privacy_body: "",
+  brochure_url: "",
 };
 
 function SettingsSection({ title, description, children }) {
@@ -59,9 +60,11 @@ export default function AdminSiteSettingsForm() {
   const [heroFile, setHeroFile] = useState(null);
   const [aboutFile, setAboutFile] = useState(null);
   const [logoFile, setLogoFile] = useState(null);
+  const [brochureFile, setBrochureFile] = useState(null);
   const [heroPreview, setHeroPreview] = useState(null);
   const [aboutPreview, setAboutPreview] = useState(null);
   const [logoPreview, setLogoPreview] = useState(null);
+  const [brochurePreview, setBrochurePreview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
@@ -97,10 +100,12 @@ export default function AdminSiteSettingsForm() {
             footer_tagline: s.footer_tagline || "",
             terms_body: s.terms_body || "",
             privacy_body: s.privacy_body || "",
+            brochure_url: s.brochure_url || "",
           });
           if (s.hero_image) setHeroPreview(mediaUrl(s.hero_image));
           if (s.about_image) setAboutPreview(mediaUrl(s.about_image));
           if (s.logo_image) setLogoPreview(mediaUrl(s.logo_image));
+          if (s.brochure_file) setBrochurePreview(mediaUrl(s.brochure_file));
         }
       })
       .catch(() => setError("Could not load site settings."))
@@ -120,7 +125,7 @@ export default function AdminSiteSettingsForm() {
     setError("");
     setSuccess("");
     try {
-      const useFormData = heroFile || aboutFile || logoFile;
+      const useFormData = heroFile || aboutFile || logoFile || brochureFile;
       let payload;
       if (useFormData) {
         payload = new FormData();
@@ -128,6 +133,7 @@ export default function AdminSiteSettingsForm() {
         if (heroFile) payload.append("hero_image", heroFile);
         if (aboutFile) payload.append("about_image", aboutFile);
         if (logoFile) payload.append("logo_image", logoFile);
+        if (brochureFile) payload.append("brochure_file", brochureFile);
       } else {
         payload = { ...form };
       }
@@ -210,6 +216,47 @@ export default function AdminSiteSettingsForm() {
           <FormInput label="Instagram URL" name="instagram_url" value={form.instagram_url} onChange={handleChange} />
           <FormInput label="YouTube URL" name="youtube_url" value={form.youtube_url} onChange={handleChange} />
           <FormInput label="Facebook URL" name="facebook_url" value={form.facebook_url} onChange={handleChange} />
+        </SettingsSection>
+
+        <SettingsSection title="Festival Brochure" description="Downloadable official PDF brochure file or cloud URL.">
+          <FormInput
+            label="Brochure External URL (Drive / Cloud Link)"
+            name="brochure_url"
+            value={form.brochure_url}
+            onChange={handleChange}
+            placeholder="https://drive.google.com/..."
+          />
+          <div className="form-group" style={{ gridColumn: "1 / -1" }}>
+            <label className="form-label" style={{ display: "block", marginBottom: "0.4rem" }}>
+              Upload Official Brochure PDF
+            </label>
+            <input
+              type="file"
+              accept="application/pdf"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                setBrochureFile(f || null);
+                if (f) setBrochurePreview(f.name);
+                if (error) setError("");
+                if (success) setSuccess("");
+              }}
+              style={{
+                display: "block",
+                width: "100%",
+                padding: "0.6rem",
+                borderRadius: "8px",
+                border: "1px solid rgba(255,255,255,0.15)",
+                background: "rgba(0,0,0,0.3)",
+                color: "#fff",
+                fontSize: "0.85rem",
+              }}
+            />
+            {brochurePreview && (
+              <p style={{ marginTop: "0.4rem", fontSize: "0.8rem", color: "#00d4ff" }}>
+                Active brochure source: <a href={brochurePreview} target="_blank" rel="noreferrer" style={{ color: "#00d4ff", textDecoration: "underline" }}>{brochurePreview}</a>
+              </p>
+            )}
+          </div>
         </SettingsSection>
 
         <SettingsSection title="About" description="Introduction content for the About / briefing section.">

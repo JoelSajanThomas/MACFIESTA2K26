@@ -1,17 +1,14 @@
 import { useEffect, useState, useMemo } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   RiBaseStationLine,
   RiTrophyFill,
   RiBuildingLine,
   RiSearchLine,
-  RiMedalLine,
   RiFireLine,
-  RiAwardLine,
   RiSparklingFill,
   RiRefreshLine,
   RiShieldFlashLine,
-  RiFlashlightFill,
   RiCompass3Line,
 } from "react-icons/ri";
 import { usePageSeo } from "../hooks/usePageSeo";

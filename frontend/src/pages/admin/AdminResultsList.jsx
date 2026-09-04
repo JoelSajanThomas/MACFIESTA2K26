@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import { RiDeleteBin7Line } from "react-icons/ri";
 import AdminTableToolbar from "../../components/admin/AdminTableToolbar";
 import ConfirmDialog from "../../components/admin/ConfirmDialog";
 import LoadingState from "../../components/ui/LoadingState";
 import ErrorState from "../../components/ui/ErrorState";
-import { deleteResult, getResults } from "../../services/api";
+import { deleteResult, clearAllResults, getResults } from "../../services/api";
 import { POSITION_OPTIONS } from "../../utils/adminUtils";
 
 export default function AdminResultsList() {
@@ -14,6 +15,8 @@ export default function AdminResultsList() {
   const [search, setSearch] = useState("");
   const [position, setPosition] = useState("all");
   const [deleteId, setDeleteId] = useState(null);
+  const [clearAllOpen, setClearAllOpen] = useState(false);
+  const [clearing, setClearing] = useState(false);
 
   function load() {
     setLoading(true);
@@ -47,11 +50,37 @@ export default function AdminResultsList() {
     }
   }
 
+  async function handleClearAll() {
+    setClearing(true);
+    try {
+      await clearAllResults();
+      setResults([]);
+      setClearAllOpen(false);
+    } catch {
+      setError("Could not clear all results.");
+    } finally {
+      setClearing(false);
+    }
+  }
+
   return (
     <div className="admin-list-page">
-      <div className="admin-list-head">
+      <div className="admin-list-head flex items-center justify-between gap-4 flex-wrap">
         <h2>Manage Results</h2>
-        <Link to="/admin/results/new" className="btn btn-gold btn-sm">Add Result</Link>
+        <div className="flex items-center gap-2">
+          {results.length > 0 && (
+            <button
+              type="button"
+              className="btn btn-danger-outline btn-sm flex items-center gap-1.5"
+              onClick={() => setClearAllOpen(true)}
+              disabled={clearing}
+            >
+              <RiDeleteBin7Line />
+              <span>Clear All Results</span>
+            </button>
+          )}
+          <Link to="/admin/results/new" className="btn btn-gold btn-sm">Add Result</Link>
+        </div>
       </div>
 
       <AdminTableToolbar search={search} onSearchChange={setSearch} searchPlaceholder="Search event, participant, college…">
@@ -102,6 +131,16 @@ export default function AdminResultsList() {
         message="This will remove the result from the public Results page."
         onConfirm={handleDelete}
         onCancel={() => setDeleteId(null)}
+      />
+
+      <ConfirmDialog
+        open={clearAllOpen}
+        title="Clear All Event Results?"
+        message="Are you sure you want to permanently delete ALL event results? This will unpublish results for all events and wipe all podium standings."
+        confirmLabel={clearing ? "Clearing…" : "Yes, Delete All Results"}
+        onConfirm={handleClearAll}
+        onCancel={() => setClearAllOpen(false)}
+        variant="danger"
       />
     </div>
   );

@@ -213,7 +213,7 @@ export default function Navbar() {
                   to={user?.is_staff || user?.is_superuser ? "/admin" : "/student-dashboard"}
                   className="px-4 py-1.5 text-[11px] font-black text-black bg-arc-cyan rounded-full hover:bg-white transition-all uppercase tracking-wider shadow-[0_0_15px_#00D4FF]"
                 >
-                  {user?.is_staff || user?.is_superuser ? "Command Console" : "Agent HUD"}
+                  {user?.is_staff || user?.is_superuser ? "Command Console" : "Dashboard"}
                 </Link>
                 <button
                   type="button"
@@ -256,7 +256,7 @@ export default function Navbar() {
                 to={user?.is_staff || user?.is_superuser ? "/admin" : "/student-dashboard"}
                 className="px-2.5 py-1 text-[10px] font-bold bg-marvel-red text-white rounded-full tracking-wider uppercase shadow-[0_0_10px_#ED1D24]"
               >
-                HUD
+                Dashboard
               </Link>
             )}
 
@@ -373,7 +373,7 @@ export default function Navbar() {
                       {user?.is_staff || user?.is_superuser ? (
                         <><RiShieldUserLine className="text-xs" /><span>Console</span></>
                       ) : (
-                        <><RiDashboardLine className="text-xs" /><span>My HUD</span></>
+                        <><RiDashboardLine className="text-xs" /><span>Dashboard</span></>
                       )}
                     </Link>
                     <button

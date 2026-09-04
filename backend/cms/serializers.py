@@ -13,6 +13,8 @@ from .models import (
     Sponsor,
     HomepageSection,
     FestRewindItem,
+    FestivalRule,
+    CoordinatorProfile,
 )
 
 
@@ -20,6 +22,7 @@ class SiteSettingSerializer(ImageValidationMixin, serializers.ModelSerializer):
     hero_image = serializers.FileField(required=False, allow_null=True)
     about_image = serializers.FileField(required=False, allow_null=True)
     logo_image = serializers.FileField(required=False, allow_null=True)
+    brochure_file = serializers.FileField(required=False, allow_null=True)
 
     class Meta:
         model = SiteSetting
@@ -93,5 +96,19 @@ class FestRewindItemSerializer(ImageValidationMixin, serializers.ModelSerializer
 
     class Meta:
         model = FestRewindItem
+        fields = "__all__"
+
+
+class FestivalRuleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = FestivalRule
+        fields = "__all__"
+
+
+class CoordinatorProfileSerializer(ImageValidationMixin, serializers.ModelSerializer):
+    photo = serializers.FileField(required=False, allow_null=True)
+
+    class Meta:
+        model = CoordinatorProfile
         fields = "__all__"
 

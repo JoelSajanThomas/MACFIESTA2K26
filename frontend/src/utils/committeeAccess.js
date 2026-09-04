@@ -7,6 +7,7 @@ export const ADMIN_NAV = [
   { to: "/admin/controls", label: "Site Controls", module: "insights", group: "Operations", superuserOnly: true },
   { to: "/admin/events", label: "Events", module: "events", group: "Operations" },
   { to: "/admin/registrations", label: "Registrations", module: "registrations", group: "Operations" },
+  { to: "/admin/institutions", label: "Colleges & Schools", module: "registrations", group: "Operations" },
   { to: "/admin/payments", label: "Payments", module: "registrations", group: "Operations", financeOnly: true },
   { to: "/admin/hospitality", label: "Hospitality", module: "registrations", group: "Operations", hospitalityOnly: true },
   { to: "/admin/verification", label: "Verification", module: "verification", group: "Operations" },
@@ -19,6 +20,7 @@ export const ADMIN_NAV = [
   { to: "/admin/content", label: "Website CMS", module: "content", end: true, group: "Website" },
   { to: "/admin/users", label: "Staff / Volunteers", module: "users", group: "Management", superuserOnly: true },
   { to: "/admin/participant-list", label: "User List", module: "users", group: "Management", superuserOnly: true },
+  { to: "/admin/audit-logs", label: "Audit Logs", module: "insights", group: "Management", superuserOnly: true },
   { to: "/admin/reports", label: "Reports", module: "reports", group: "Management" },
 ];
 

@@ -18,6 +18,9 @@ const COMMITTEE_OPTIONS = [
   { value: "publicity", label: "Publicity" },
   { value: "invitation", label: "Invitation" },
   { value: "verification", label: "Verification" },
+  { value: "coordinator", label: "Event Coordinator" },
+  { value: "judge", label: "Judge / Evaluator" },
+  { value: "volunteer", label: "Volunteer / Support Crew" },
   { value: "core", label: "Core Admin" },
 ];
 

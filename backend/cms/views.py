@@ -14,6 +14,8 @@ from .models import (
     Sponsor,
     HomepageSection,
     FestRewindItem,
+    FestivalRule,
+    CoordinatorProfile,
 )
 from .serializers import (
     SiteSettingSerializer,
@@ -27,6 +29,8 @@ from .serializers import (
     SponsorSerializer,
     HomepageSectionSerializer,
     FestRewindItemSerializer,
+    FestivalRuleSerializer,
+    CoordinatorProfileSerializer,
 )
 
 
@@ -103,3 +107,13 @@ class HomepageSectionViewSet(viewsets.ModelViewSet):
     serializer_class = HomepageSectionSerializer
     permission_classes = [IsAdminOrReadOnly]
     required_module = "content"
+
+
+class FestivalRuleViewSet(ActiveContentViewSet):
+    queryset = FestivalRule.objects.all()
+    serializer_class = FestivalRuleSerializer
+
+
+class CoordinatorProfileViewSet(ActiveContentViewSet):
+    queryset = CoordinatorProfile.objects.all()
+    serializer_class = CoordinatorProfileSerializer

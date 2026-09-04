@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { getSocket } from "./socket";
 import { api } from "./api";
+import { mediaUrl } from "../services/api";
 
 // ── 1. Festival Core & Hero Settings ─────────────────────────────────
 export interface FestivalSettings {
@@ -799,9 +800,9 @@ export function useFestivalControl() {
         if (guestsRes.status === "fulfilled" && Array.isArray(guestsRes.value?.data) && guestsRes.value.data.length > 0) {
           const gList: GuestItem[] = guestsRes.value.data.map((g: any, i: number) => {
             let img = g.image || g.image_url;
-            if (img && img.startsWith("/media/")) {
-              img = `http://127.0.0.1:8000${img}`;
-            } else if (!img) {
+            if (img) {
+              img = mediaUrl(img) || img;
+            } else {
               img = i === 0 ? "/assets/image all/official/guests/guest-akhil-marar.webp" : "/assets/image all/official/guests/guest-sayip-op.webp";
             }
             return {

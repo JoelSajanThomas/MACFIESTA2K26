@@ -11,13 +11,15 @@ from rest_framework.response import Response
 from django.contrib.auth.models import User
 
 from accounts.drf import HasModule, HasStaffModule
+from accounts.models import AuditLog
 from events.models import Event
 from results.models import Result
-from .models import Registration, TeamMember
+from .models import Registration, TeamMember, Institution
 from .serializers import (
     RegistrationSerializer,
     AdminRegistrationSerializer,
     TeamMemberSerializer,
+    InstitutionSerializer,
 )
 from .services import cancel_registration, promote_next_waitlisted, send_registration_email
 from .exports import build_registrations_csv_response
@@ -758,3 +760,78 @@ def public_institutions(request):
         )
     saved = ensure_institution(name)
     return Response({"name": saved}, status=status.HTTP_201_CREATED)
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated, HasStaffModule])
+def admin_refund_registration(request, pk):
+    if not (request.user.is_superuser or (hasattr(request.user, "staff_profile") and request.user.staff_profile.can_access_module("finance"))):
+        return Response({"detail": "Finance permission required."}, status=status.HTTP_403_FORBIDDEN)
+    reg = Registration.objects.filter(pk=pk).first()
+    if not reg:
+        return Response({"detail": "Registration not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    amount = request.data.get("refund_amount")
+    txn_id = request.data.get("refund_transaction_id", "").strip()
+    notes = request.data.get("refund_notes", "").strip()
+
+    try:
+        amount = Decimal(str(amount)) if amount is not None else (reg.payment_amount or Decimal("0.00"))
+    except Exception:
+        amount = reg.payment_amount or Decimal("0.00")
+
+    reg.payment_status = "refunded"
+    reg.refund_amount = amount
+    reg.refund_transaction_id = txn_id
+    reg.refund_notes = notes
+    reg.refunded_at = timezone.now()
+    reg.refunded_by = request.user
+    reg.save(
+        update_fields=[
+            "payment_status",
+            "refund_amount",
+            "refund_transaction_id",
+            "refund_notes",
+            "refunded_at",
+            "refunded_by",
+        ]
+    )
+
+    AuditLog.objects.create(
+        user=request.user,
+        action="REFUND_ISSUED",
+        module="finance",
+        details=f"Issued refund of ₹{amount} for registration #{reg.id} ({reg.registration_number}). Txn: {txn_id}",
+        ip_address=request.META.get("REMOTE_ADDR"),
+    )
+
+    return Response(AdminRegistrationSerializer(reg, context={"request": request}).data)
+
+
+class AdminInstitutionViewSet(viewsets.ModelViewSet):
+    queryset = Institution.objects.all().order_by("name")
+    serializer_class = InstitutionSerializer
+    permission_classes = [IsAuthenticated, HasStaffModule]
+    required_module = "registrations"
+
+    def perform_create(self, serializer):
+        inst = serializer.save()
+        AuditLog.objects.create(
+            user=self.request.user,
+            action="CREATE",
+            module="institutions",
+            details=f"Added institution: {inst.name} ({inst.institution_type})",
+            ip_address=self.request.META.get("REMOTE_ADDR"),
+        )
+
+    def perform_destroy(self, instance):
+        name = instance.name
+        instance.delete()
+        AuditLog.objects.create(
+            user=self.request.user,
+            action="DELETE",
+            module="institutions",
+            details=f"Deleted institution: {name}",
+            ip_address=self.request.META.get("REMOTE_ADDR"),
+        )
+

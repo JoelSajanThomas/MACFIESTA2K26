@@ -7,7 +7,6 @@ import {
   RiMailLine,
   RiUserLine,
   RiSmartphoneLine,
-  RiBuilding4Line,
   RiEyeLine,
   RiEyeOffLine,
 } from "react-icons/ri";

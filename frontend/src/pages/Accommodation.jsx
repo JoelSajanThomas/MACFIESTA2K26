@@ -201,17 +201,16 @@ export default function Accommodation() {
 
         {/* Filter Controls Panel */}
         <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-          
+
           {/* Gender Filter Buttons */}
-          <div className="flex bg-black/50 p-1 rounded-full border border-white/10 w-full md:w-auto">
+          <div className="flex bg-black/40 p-1.5 rounded-full border border-white/15 backdrop-blur-xl w-full md:w-auto shadow-lg">
             <button
               type="button"
               onClick={() => setSelectedGender("all")}
-              className={`flex-1 md:flex-none px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all font-excon-bold ${
-                selectedGender === "all"
-                  ? "bg-marvel-red text-white shadow-[0_0_15px_#ED1D24]"
-                  : "text-white/60 hover:text-white"
-              }`}
+              className={`flex-1 md:flex-none px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all font-excon-bold ${selectedGender === "all"
+                ? "bg-marvel-red text-white shadow-[0_0_15px_#ED1D24]"
+                : "text-white/60 hover:text-white"
+                }`}
             >
               All Quarters
             </button>
@@ -219,11 +218,10 @@ export default function Accommodation() {
             <button
               type="button"
               onClick={() => setSelectedGender("male")}
-              className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all font-excon-bold ${
-                selectedGender === "male"
-                  ? "bg-arc-cyan text-black shadow-[0_0_15px_#00D4FF]"
-                  : "text-white/60 hover:text-white"
-              }`}
+              className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all font-excon-bold ${selectedGender === "male"
+                ? "bg-arc-cyan text-black shadow-[0_0_15px_#00D4FF]"
+                : "text-white/60 hover:text-white"
+                }`}
             >
               <RiMenLine />
               <span>Mens Hostels</span>
@@ -232,11 +230,10 @@ export default function Accommodation() {
             <button
               type="button"
               onClick={() => setSelectedGender("female")}
-              className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all font-excon-bold ${
-                selectedGender === "female"
-                  ? "bg-metallic-gold text-black shadow-[0_0_15px_#FFD700]"
-                  : "text-white/60 hover:text-white"
-              }`}
+              className={`flex-1 md:flex-none flex items-center justify-center gap-1.5 px-5 py-2 rounded-full text-xs font-bold uppercase tracking-wider transition-all font-excon-bold ${selectedGender === "female"
+                ? "bg-metallic-gold text-black shadow-[0_0_15px_#FFD700]"
+                : "text-white/60 hover:text-white"
+                }`}
             >
               <RiWomenLine />
               <span>Ladies Hostels</span>
@@ -245,13 +242,13 @@ export default function Accommodation() {
 
           {/* Search Box */}
           <div className="relative w-full md:w-72">
-            <RiSearch2Line className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-base" />
+            <RiSearch2Line className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/50 text-base" />
             <input
               type="text"
               placeholder="Search hostel names, blocks..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-full text-xs text-white placeholder-white/40 focus:outline-none focus:border-arc-cyan transition-colors font-excon"
+              className="w-full pl-10 pr-4 py-2 bg-white/[0.06] border border-white/15 rounded-full text-xs text-white placeholder-white/40 focus:outline-none focus:border-arc-cyan transition-colors font-excon backdrop-blur-xl"
             />
           </div>
         </div>
@@ -261,59 +258,60 @@ export default function Accommodation() {
           {filteredHostels.map((hostel) => (
             <div
               key={hostel.id}
-              className="marvel-card group rounded-2xl sm:rounded-3xl border border-white/10 hover:border-arc-cyan/40 transition-all duration-300 p-6 flex flex-col justify-between space-y-6 shadow-2xl bg-[#0A0D1A]/90 font-excon"
+              className="group rounded-3xl border border-white/15 hover:border-arc-cyan/60 transition-all duration-300 p-6 sm:p-7 flex flex-col justify-between space-y-6 shadow-[0_10px_35px_rgba(0,0,0,0.5)] hover:shadow-[0_0_35px_rgba(0,212,255,0.25)] bg-white/[0.04] hover:bg-white/[0.07] backdrop-blur-xl ring-1 ring-white/10 font-excon"
             >
               <div className="space-y-4">
-                
+
                 {/* Header with Gender Icon and Availability */}
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-base ${
-                      hostel.gender === "male" ? "bg-arc-cyan/20 text-arc-cyan" : "bg-metallic-gold/20 text-metallic-gold"
-                    }`}>
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-base border ${hostel.gender === "male"
+                      ? "bg-arc-cyan/15 text-arc-cyan border-arc-cyan/30 shadow-[0_0_10px_rgba(0,212,255,0.2)]"
+                      : "bg-metallic-gold/15 text-metallic-gold border-metallic-gold/30 shadow-[0_0_10px_rgba(255,215,0,0.2)]"
+                      }`}>
                       {hostel.gender === "male" ? <RiMenLine /> : <RiWomenLine />}
                     </div>
-                    <span className="text-[10px] uppercase font-bold tracking-widest text-white/50 font-excon-bold">
+                    <span className="text-[10px] uppercase font-bold tracking-widest text-white/60 font-excon-bold">
                       {hostel.type}
                     </span>
                   </div>
 
-                  <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border font-excon-black ${hostel.badgeColor}`}>
+                  <span className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider border font-excon-black backdrop-blur-sm ${hostel.badgeColor}`}>
                     {hostel.availability}
                   </span>
                 </div>
 
                 {/* Name and Tariff */}
                 <div>
-                  <h3 className="text-xl font-black text-white group-hover:text-arc-cyan transition-colors uppercase tracking-tight font-excon-black">
+                  <h3 className="text-xl font-black text-white group-hover:text-arc-cyan transition-colors uppercase tracking-tight font-excon-black drop-shadow-[0_2px_10px_rgba(0,0,0,0.8)]">
                     {hostel.name}
                   </h3>
-                  <p className="text-xs text-white/60 flex items-center gap-1 mt-1 font-medium">
+                  <p className="text-xs text-white/70 flex items-center gap-1 mt-1 font-medium">
                     <RiMapPinLine className="text-marvel-red shrink-0" />
                     <span>{hostel.location} ({hostel.distance})</span>
                   </p>
                 </div>
 
                 {/* Tariff Highlight Badge */}
-                <div className="p-3 bg-white/5 border border-white/10 rounded-xl flex items-center justify-between">
+                <div className="p-3 bg-black/25 border border-white/10 rounded-2xl flex items-center justify-between backdrop-blur-sm shadow-inner">
                   <span className="text-[11px] text-white/60 uppercase font-bold tracking-wider font-excon-bold">
                     Tariff / Person
                   </span>
-                  <span className="text-base font-black text-metallic-gold font-excon-black">
+                  <span className="text-base font-black text-metallic-gold font-excon-black drop-shadow-[0_0_10px_rgba(255,215,0,0.3)]">
                     {hostel.tariff}
                   </span>
                 </div>
 
-                <p className="text-xs text-white/70 leading-relaxed font-normal">
+                <p className="text-xs text-white/80 leading-relaxed font-normal">
                   {hostel.description}
                 </p>
 
                 {/* Amenities List */}
                 <div className="space-y-2">
-                  <span className="block text-[10px] text-white/40 uppercase font-bold tracking-widest font-excon-bold">
+                  <span className="block text-[10px] text-white/50 uppercase font-bold tracking-widest font-excon-bold">
                     Key Facilities
                   </span>
-                  <div className="grid grid-cols-2 gap-1.5 text-[11px] text-white/70">
+                  <div className="grid grid-cols-2 gap-1.5 text-[11px] text-white/80">
                     {hostel.amenities.map((amenity, i) => (
                       <div key={i} className="flex items-center gap-1.5 truncate">
                         <RiCheckLine className="text-arc-cyan shrink-0 text-xs" />
@@ -324,7 +322,7 @@ export default function Accommodation() {
                 </div>
 
                 {/* Warden In-Charge */}
-                <div className="pt-2 border-t border-white/10 text-xs text-white/60 space-y-1">
+                <div className="pt-2.5 border-t border-white/10 text-xs text-white/70 space-y-1">
                   <div className="flex items-center gap-1.5">
                     <RiShieldUserLine className="text-metallic-gold shrink-0" />
                     <span>Warden: <strong className="text-white font-excon-bold">{hostel.wardenName}</strong></span>
@@ -336,7 +334,7 @@ export default function Accommodation() {
               <div className="grid grid-cols-2 gap-2 pt-2">
                 <Link
                   to={`/checkout?accommodation=true&hostel=${encodeURIComponent(hostel.name)}`}
-                  className="w-full py-2.5 bg-arc-cyan hover:bg-white text-black font-black text-[11px] uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-[0_0_12px_#00D4FF] font-excon-black text-center"
+                  className="w-full py-2.5 bg-arc-cyan hover:bg-white text-black font-black text-[11px] uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(0,212,255,0.4)] hover:shadow-[0_0_25px_rgba(0,212,255,0.7)] font-excon-black text-center"
                 >
                   <RiHotelBedLine className="text-sm" />
                   <span>Reserve In Checkout</span>
@@ -344,7 +342,7 @@ export default function Accommodation() {
 
                 <a
                   href={`tel:${hostel.wardenPhone}`}
-                  className="w-full py-2.5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/30 text-white font-bold text-[11px] uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 font-excon-bold"
+                  className="w-full py-2.5 bg-black/30 hover:bg-black/50 border border-white/15 hover:border-white/40 text-white font-bold text-[11px] uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 font-excon-bold backdrop-blur-sm"
                 >
                   <RiPhoneFill className="text-sm text-marvel-red" />
                   <span>Call Warden</span>

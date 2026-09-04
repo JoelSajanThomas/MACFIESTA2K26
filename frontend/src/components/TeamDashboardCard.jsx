@@ -7,17 +7,14 @@ import {
   RiMailLine,
   RiPhoneLine,
   RiBuildingLine,
-  RiUpload2Line,
   RiQrCodeLine,
   RiCloseLine,
   RiCheckLine,
   RiAlertLine,
   RiDeleteBin7Line,
   RiUserStarLine,
-  RiInformationLine,
   RiWhatsappLine,
   RiFileCopyLine,
-  RiShareLine,
 } from "react-icons/ri";
 import StatusChip from "./theme/StatusChip";
 import PaymentProofPanel from "./PaymentProofPanel";

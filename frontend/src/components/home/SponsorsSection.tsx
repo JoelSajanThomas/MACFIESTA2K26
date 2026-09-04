@@ -5,6 +5,7 @@ import { motion, useInView, useMotionValue, useTransform, useSpring } from "fram
 import { RiShieldFlashLine, RiFlashlightLine, RiStarFill } from "react-icons/ri";
 import { Reveal, RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import { useFestivalControl } from "@/lib/festivalStore";
+import { mediaUrl } from "@/services/api";
 
 const defaultPartners = [
   { name: "Stark Industries", tier: "platinum", logo: "🛡️", tagline: "Technology Partner", isImage: false },
@@ -224,9 +225,10 @@ export function SponsorsSection() {
         const tagline = cleanTierBase ? `${cleanTierBase} Partner` : "Official Partner";
 
         let logoUrl = s.logoUrl;
-        if (logoUrl && logoUrl.startsWith("/media/")) {
-          logoUrl = `http://127.0.0.1:8000${logoUrl}`;
-        } else if (!logoUrl || (!logoUrl.startsWith("http") && !logoUrl.startsWith("/"))) {
+        if (logoUrl) {
+          logoUrl = mediaUrl(logoUrl) || logoUrl;
+        }
+        if (!logoUrl || (!logoUrl.startsWith("http") && !logoUrl.startsWith("/"))) {
           logoUrl = "/logo.png";
         }
 

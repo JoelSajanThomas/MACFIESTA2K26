@@ -31,7 +31,7 @@ export default function PurgeDataModal({ open, onClose, onSuccess }) {
   const handlePurge = async (e) => {
     e.preventDefault();
     if (!password) {
-      setError("Please enter your admin password to proceed.");
+      setError("Please enter the Super Admin password to proceed.");
       return;
     }
 
@@ -58,7 +58,7 @@ export default function PurgeDataModal({ open, onClose, onSuccess }) {
       const msg =
         err?.response?.data?.detail ||
         err?.response?.data?.message ||
-        "Verification failed. Please check your password.";
+        "Verification failed. Please check the Super Admin password.";
       setError(msg);
     } finally {
       setLoading(false);
@@ -124,11 +124,12 @@ export default function PurgeDataModal({ open, onClose, onSuccess }) {
                   {successInfo.message || "All registered user records have been wiped clean."}
                 </p>
                 {successInfo.deleted && (
-                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-emerald-500/20 text-white/70 font-mono text-[11px]">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 pt-2 border-t border-emerald-500/20 text-white/70 font-mono text-[11px]">
                     <div>Participants: <strong className="text-emerald-400">{successInfo.deleted.participants ?? 0}</strong></div>
                     <div>Registrations: <strong className="text-emerald-400">{successInfo.deleted.registrations ?? 0}</strong></div>
                     <div>Team Members: <strong className="text-emerald-400">{successInfo.deleted.team_members ?? 0}</strong></div>
                     <div>Hostel Bookings: <strong className="text-emerald-400">{successInfo.deleted.bookings ?? 0}</strong></div>
+                    <div>Event Results: <strong className="text-emerald-400">{successInfo.deleted.results ?? 0}</strong></div>
                   </div>
                 )}
               </div>
@@ -153,8 +154,9 @@ export default function PurgeDataModal({ open, onClose, onSuccess }) {
                 <ul className="list-disc list-inside space-y-1 text-white/70 text-[11px] leading-relaxed">
                   <li>Permanently deletes <strong>all registered participant user accounts</strong>.</li>
                   <li>Wipes all <strong>event registrations, passes, and team member records</strong>.</li>
+                  <li>Clears all <strong>event results, winners, and scoreboard standings</strong>.</li>
                   <li>Clears all <strong>hostel accommodation bookings and allocations</strong>.</li>
-                  <li>Staff / Volunteer accounts and Festival events remain untouched.</li>
+                  <li>Staff / Volunteer accounts and Festival event blueprints remain untouched.</li>
                 </ul>
               </div>
 
@@ -170,7 +172,7 @@ export default function PurgeDataModal({ open, onClose, onSuccess }) {
                   htmlFor="admin-purge-password"
                   className="block text-xs font-black uppercase tracking-wider text-white/80 font-excon-bold"
                 >
-                  Confirm Admin Password
+                  Confirm Super Admin Password
                 </label>
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-white/40">
@@ -183,7 +185,7 @@ export default function PurgeDataModal({ open, onClose, onSuccess }) {
                     disabled={loading}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Enter your administrator password"
+                    placeholder="Enter Super Admin password"
                     className="w-full pl-10 pr-12 py-3 bg-black/50 border border-white/15 focus:border-rose-500 focus:ring-1 focus:ring-rose-500 rounded-xl text-white text-sm placeholder:text-white/30 transition-all font-mono"
                   />
                   <button
@@ -196,7 +198,7 @@ export default function PurgeDataModal({ open, onClose, onSuccess }) {
                   </button>
                 </div>
                 <p className="text-[10px] text-white/40">
-                  You must confirm your account credentials to execute this operation.
+                  You must confirm Super Admin credentials to execute this operation.
                 </p>
               </div>
 

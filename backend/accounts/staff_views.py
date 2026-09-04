@@ -1,6 +1,7 @@
 """Core/Admin staff & volunteer account management (JWT + StaffProfile)."""
 
 import csv
+import hashlib
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
@@ -463,7 +464,7 @@ def purge_registered_users_data(request):
 
     Requires:
       - Admin/Superuser authentication
-      - Valid admin password verification in request body
+      - Valid Super Admin password verification in request body
     """
     if not (request.user.is_superuser or request.user.is_staff):
         return Response(
@@ -471,33 +472,56 @@ def purge_registered_users_data(request):
             status=status.HTTP_403_FORBIDDEN,
         )
 
-    password = request.data.get("password") or request.data.get("admin_password") or ""
+    password = (
+        request.data.get("password")
+        or request.data.get("admin_password")
+        or request.data.get("superadmin_password")
+        or request.headers.get("X-Superadmin-Password")
+        or request.headers.get("X-Admin-Password")
+        or request.query_params.get("password")
+        or ""
+    )
     raw_password = request.data.get("raw_password") or ""
     if not password and not raw_password:
         return Response(
-            {"detail": "Admin password is required to confirm this operation."},
+            {"detail": "Super Admin password is required to confirm this operation."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+    superusers = User.objects.filter(is_superuser=True, is_active=True)
     verified = False
     for pw in [password, raw_password]:
         if not pw:
             continue
-        if request.user.check_password(pw):
-            verified = True
-            break
-        if any(su.check_password(pw) for su in User.objects.filter(is_superuser=True, is_active=True)):
-            verified = True
-            break
+        if superusers.exists():
+            for su in superusers:
+                if su.check_password(pw):
+                    verified = True
+                    break
+                try:
+                    if su.check_password(hashlib.sha256(pw.encode("utf-8")).hexdigest()):
+                        verified = True
+                        break
+                except Exception:
+                    pass
+            if verified:
+                break
+        else:
+            if request.user.check_password(pw):
+                verified = True
+                break
 
     if not verified:
         return Response(
-            {"detail": "Incorrect admin password. Verification failed."},
+            {"detail": "Incorrect Super Admin password. Verification failed."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
     from registrations.models import Registration, TeamMember
     from accommodation.models import AccommodationBooking
+    from results.models import Result
+    from events.models import Event
+    from accounts.models import AuditLog
 
     with transaction.atomic():
         # 1. Target non-staff, non-superuser participant accounts
@@ -514,17 +538,32 @@ def purge_registered_users_data(request):
         booking_count = AccommodationBooking.objects.count()
         AccommodationBooking.objects.all().delete()
 
-        # 4. Delete participant users
+        # 4. Results & Published statuses
+        results_count = Result.objects.count()
+        Result.objects.all().delete()
+        Event.objects.filter(is_result_published=True).update(is_result_published=False)
+
+        # 5. Delete participant users
         participants_qs.delete()
+
+        # 6. Record in Audit Log
+        AuditLog.objects.create(
+            user=request.user,
+            action="DANGER_PURGE_DATA",
+            module="system",
+            ip_address=request.META.get("REMOTE_ADDR"),
+            details=f"Purged {participants_count} participants, {reg_count} registrations, {booking_count} bookings, and {results_count} results.",
+        )
 
     return Response({
         "success": True,
-        "message": "All registered participant data and records have been completely purged.",
+        "message": "All registered participant records, bookings, and event results have been completely purged.",
         "deleted": {
             "participants": participants_count,
             "registrations": reg_count,
             "team_members": team_count,
             "bookings": booking_count,
+            "results": results_count,
         },
     }, status=status.HTTP_200_OK)
 

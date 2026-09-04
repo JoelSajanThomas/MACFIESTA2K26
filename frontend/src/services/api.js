@@ -369,6 +369,10 @@ export function deleteResult(id) {
   return api.delete(`/results/${id}/`, { headers: authHeaders() });
 }
 
+export function clearAllResults() {
+  return api.post("/results/clear-all/", {}, { headers: authHeaders() });
+}
+
 export function createAnnouncement(data) {
   return api.post("/announcements/", data, adminConfig(data));
 }
@@ -648,6 +652,76 @@ export function getHomepageSections(asAdmin = false) {
 export function updateHomepageSection(id, data) {
   return api.patch(`/cms/homepage-sections/${id}/`, data, adminConfig(data));
 }
+
+export function getFestivalRules(asAdmin = false) {
+  if (asAdmin) return api.get("/cms/rules/", { headers: authHeaders() });
+  return cachedGet("cms:rules", () => api.get("/cms/rules/"));
+}
+
+export function createFestivalRule(data) {
+  return api.post("/cms/rules/", data, adminConfig(data));
+}
+
+export function updateFestivalRule(id, data) {
+  return api.patch(`/cms/rules/${id}/`, data, adminConfig(data));
+}
+
+export function deleteFestivalRule(id) {
+  return api.delete(`/cms/rules/${id}/`, { headers: authHeaders() });
+}
+
+export function getFestivalRule(id) {
+  return api.get(`/cms/rules/${id}/`, { headers: authHeaders() });
+}
+
+export function getCoordinatorProfiles(asAdmin = false) {
+  if (asAdmin) return api.get("/cms/coordinators/", { headers: authHeaders() });
+  return cachedGet("cms:coordinators", () => api.get("/cms/coordinators/"));
+}
+
+export function createCoordinatorProfile(data) {
+  return api.post("/cms/coordinators/", data, adminConfig(data));
+}
+
+export function updateCoordinatorProfile(id, data) {
+  return api.patch(`/cms/coordinators/${id}/`, data, adminConfig(data));
+}
+
+export function deleteCoordinatorProfile(id) {
+  return api.delete(`/cms/coordinators/${id}/`, { headers: authHeaders() });
+}
+
+export function getCoordinatorProfile(id) {
+  return api.get(`/cms/coordinators/${id}/`, { headers: authHeaders() });
+}
+
+export function getAdminInstitutions() {
+  return api.get("/admin/institutions/", { headers: authHeaders() });
+}
+
+export function createAdminInstitution(data) {
+  return api.post("/admin/institutions/", data, { headers: authHeaders() });
+}
+
+export function deleteAdminInstitution(id) {
+  return api.delete(`/admin/institutions/${id}/`, { headers: authHeaders() });
+}
+
+export function refundRegistration(id, data) {
+  return api.post(`/admin/registrations/${id}/refund/`, data, { headers: authHeaders() });
+}
+
+export function getAuditLogs(params = {}) {
+  return api.get("/admin/audit-logs/", { headers: authHeaders(), params });
+}
+
+export function downloadSystemBackup() {
+  const token = localStorage.getItem("access_token") || "";
+  const base = api.defaults.baseURL || "";
+  return `${base}/admin/system-backup/?token=${encodeURIComponent(token)}`;
+}
+
+
 
 export async function purgeAllRegisteredData(password) {
   const hashed = await hashPassword(password);

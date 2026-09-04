@@ -1,8 +1,10 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { RiQuestionAnswerLine, RiCompass3Line } from "react-icons/ri";
 import { usePageSeo } from "../hooks/usePageSeo";
+import { getFAQs } from "../services/api";
 
-const faqs = [
+const fallbackFaqs = [
   { id: "1", category: "Eligibility", question: "Who is eligible to participate in MacFiesta 2026?", answer: "All students currently enrolled in verified collegiate programs or schools with valid photo identification cards can participate across respective events." },
   { id: "2", category: "Registration", question: "How do I register for events?", answer: "You can create an agent account online, select your missions, and complete desk registration upon arrival at the MACFAST campus." },
   { id: "3", category: "Prizes", question: "What is the total cash prize pool?", answer: "The overall festival cash bounty pool exceeds ₹1,15,000+ across 23 official college and school competitions." },
@@ -14,6 +16,26 @@ export default function FAQ() {
     title: "Knowledge Base & FAQ · MacFiesta 2026",
     description: "Find answers regarding eligibility, hospitality, registrations, and prize claims.",
   });
+
+  const [faqList, setFaqList] = useState(fallbackFaqs);
+
+  useEffect(() => {
+    getFAQs()
+      .then((res) => {
+        const list = Array.isArray(res.data) ? res.data : res.data.results || [];
+        if (list.length > 0) {
+          setFaqList(
+            list.map((f, i) => ({
+              id: String(f.id || i),
+              category: f.category || "General",
+              question: f.question,
+              answer: f.answer,
+            }))
+          );
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <div className="bg-[#05050A] min-h-screen pt-28 pb-16 text-white font-mono relative overflow-hidden">
@@ -44,7 +66,7 @@ export default function FAQ() {
         </div>
 
         <div className="space-y-4">
-          {faqs.map((f) => (
+          {faqList.map((f) => (
             <div key={f.id} className="marvel-card p-6 rounded-2xl border border-white/10 space-y-2 bg-[#0A0D1A]">
               <span className="text-[10px] font-bold text-arc-cyan uppercase tracking-widest">{f.category}</span>
               <h3 className="text-base font-bold text-white uppercase font-excon-bold">{f.question}</h3>

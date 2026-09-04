@@ -51,18 +51,6 @@ export default function AdminEventParticipants() {
     }
   }
 
-  async function handleGateAttendanceToggle(r, nextVal) {
-    setUpdatingId(r.id);
-    try {
-      const res = await updateAdminRegistration(r.id, { verification_attendance_marked: nextVal });
-      setRows((prev) => prev.map((item) => (item.id === r.id ? { ...item, ...res.data } : item)));
-    } catch {
-      setError("Failed to update gate verification.");
-    } finally {
-      setUpdatingId(null);
-    }
-  }
-
   useEffect(() => {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reload when event id changes

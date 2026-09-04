@@ -174,3 +174,59 @@ def current_user(request):
         "modules": modules,
         "must_change_password": bool(profile and profile.must_change_password),
     })
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def admin_audit_logs(request):
+    if not (request.user.is_superuser or (hasattr(request.user, "staff_profile") and request.user.staff_profile.can_access_module("insights"))):
+        return Response({"detail": "Permission denied."}, status=403)
+
+    from accounts.models import AuditLog
+    from django.db.models import Q
+
+    qs = AuditLog.objects.select_related("user").order_by("-created_at")
+    module = request.GET.get("module")
+    if module:
+        qs = qs.filter(module=module)
+    action = request.GET.get("action")
+    if action:
+        qs = qs.filter(action=action)
+    search = request.GET.get("search")
+    if search:
+        qs = qs.filter(Q(details__icontains=search) | Q(action__icontains=search))
+
+    logs = qs[:200]
+    data = [
+        {
+            "id": log.id,
+            "username": log.user.username if log.user else "System",
+            "action": log.action,
+            "module": log.module,
+            "details": log.details,
+            "ip_address": log.ip_address,
+            "created_at": log.created_at.isoformat(),
+        }
+        for log in logs
+    ]
+    return Response(data)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def admin_system_backup(request):
+    if not request.user.is_superuser:
+        return Response({"detail": "Superuser permission required."}, status=403)
+
+    from io import StringIO
+    from django.core.management import call_command
+    from django.http import HttpResponse
+    from django.utils import timezone
+
+    buf = StringIO()
+    call_command("dumpdata", stdout=buf, indent=2, exclude=["contenttypes", "auth.permission"])
+    response = HttpResponse(buf.getvalue(), content_type="application/json")
+    timestamp = timezone.now().strftime("%Y%m%d_%H%M%S")
+    response["Content-Disposition"] = f'attachment; filename="macfiesta_backup_{timestamp}.json"'
+    return response
+

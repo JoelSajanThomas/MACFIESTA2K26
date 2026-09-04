@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   RiShieldFlashLine,
   RiShieldCheckLine,
@@ -17,7 +17,6 @@ import {
   RiFileList3Line,
   RiAlertFill,
   RiErrorWarningLine,
-  RiTeamLine,
   RiNotification3Line,
   RiCheckLine,
 } from "react-icons/ri";
