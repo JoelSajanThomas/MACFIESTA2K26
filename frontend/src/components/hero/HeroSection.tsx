@@ -112,7 +112,7 @@ export function HeroSection() {
           setAnnouncements(active);
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const displayPoints = useMemo(() => {
@@ -163,7 +163,7 @@ export function HeroSection() {
           audioRef.current.currentTime = 0;
           audioRef.current.src = "";
           audioRef.current.load();
-        } catch {}
+        } catch { }
         audioRef.current = null;
       }
       setPlayState(false);
@@ -196,7 +196,7 @@ export function HeroSection() {
             } else {
               audio.pause();
             }
-          }).catch(() => {});
+          }).catch(() => { });
         } else if (!audio.paused && !isPlayingRef.current) {
           setPlayState(true);
         }
@@ -230,7 +230,7 @@ export function HeroSection() {
         } else {
           audio.pause();
         }
-      }).catch(() => {});
+      }).catch(() => { });
     };
 
     removeFallbackListenersRef.current = removeFallbackListeners;
@@ -389,8 +389,8 @@ export function HeroSection() {
                     fontFamily: "var(--font-anton), 'Anton', sans-serif",
                     fontSize: "clamp(1.1rem, 2.6vw, 2.3rem)",
                     letterSpacing: "0.18em",
-                    color: "#FFE500",
-                    textShadow: "0 0 16px rgba(255,229,0,0.75), 0 0 32px rgba(255,200,0,0.4), 0 2px 8px rgba(0,0,0,0.9)",
+                    color: "#FFD700",
+                    textShadow: "0 2px 10px rgba(0, 0, 0, 0.95), 0 0 14px rgba(255, 215, 0, 0.45)",
                     marginTop: "0.12em",
                   }}
                 >
@@ -480,11 +480,10 @@ export function HeroSection() {
               >
                 <div className="flex items-center gap-2.5 sm:gap-3">
                   <div
-                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border transition-all duration-300 shadow-lg flex items-center justify-center shrink-0 ${
-                      isPlaying
+                    className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border transition-all duration-300 shadow-lg flex items-center justify-center shrink-0 ${isPlaying
                         ? "bg-marvel-red border-marvel-red text-white shadow-[0_0_15px_#ED1D24] group-hover:scale-110"
                         : "bg-white/10 border-white/20 text-arc-cyan hover:border-arc-cyan group-hover:scale-110"
-                    }`}
+                      }`}
                   >
                     {isPlaying ? (
                       <RiPauseFill className="text-sm sm:text-base text-white drop-shadow-[0_0_6px_#FFFFFF]" />
@@ -498,9 +497,8 @@ export function HeroSection() {
                       <span>AVENGERS AUDIO HUD</span>
                     </p>
                     <p
-                      className={`text-[10px] sm:text-xs font-bold transition-colors duration-300 font-excon-bold flex items-center gap-1.5 ${
-                        isPlaying ? "text-arc-cyan animate-pulse" : "text-white/45"
-                      }`}
+                      className={`text-[10px] sm:text-xs font-bold transition-colors duration-300 font-excon-bold flex items-center gap-1.5 ${isPlaying ? "text-arc-cyan animate-pulse" : "text-white/45"
+                        }`}
                     >
                       {isPlaying ? "BEATS ONLINE • TAP TO PAUSE" : "AUDIO MUTED • TAP TO PLAY"}
                     </p>
@@ -521,7 +519,7 @@ export function HeroSection() {
       >
         {/* Left Live Badge */}
         <div
-          className="shrink-0 z-10 px-3 sm:px-4 py-1 ml-2 sm:ml-4 rounded-full bg-marvel-red/20 border border-marvel-red/60 text-marvel-red text-[10px] sm:text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_15px_#ED1D24] group-hover:bg-marvel-red group-hover:text-white transition-all font-space"
+          className="shrink-0 z-10 px-3 sm:px-4 py-1 ml-2 sm:ml-4 rounded-full bg-marvel-red/20 border border-marvel-red/60 text-marvel-red hover:text-black group-hover:text-black text-[10px] sm:text-xs font-black uppercase tracking-wider flex items-center gap-1.5 shadow-[0_0_8px_rgba(237,29,36,0.45)] transition-colors duration-200 font-space cursor-pointer"
         >
           <span className="w-2 h-2 rounded-full bg-marvel-red animate-ping" />
           <RiMegaphoneLine className="text-sm group-hover:scale-110 transition-transform" />
