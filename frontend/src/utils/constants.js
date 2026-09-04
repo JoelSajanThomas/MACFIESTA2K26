@@ -173,36 +173,12 @@ export const SPONSOR_TIERS = [
 ];
 
 export const TESTIMONIALS = [
-  {
-    quote: "The 24-hour hackathon was hands down the best organized we've attended this season. Dedicated gigabit fiber, midnight refreshments, and judges who actually grilled our architecture. That cash prize cleared directly to our account without delays!",
-    name: "Adithya Menon",
-    role: "CET Trivandrum • Hackathon Winner",
-  },
-  {
-    quote: "The acoustic setup and stage lighting at the MACFAST open-air amphitheatre were unbelievable. Our 14-member dance crew had crystal-clear monitor audio and the crowd energy was pure adrenaline. Defending our title next year!",
-    name: "Sneha Elizabeth",
-    role: "St. Teresa's Ernakulam • Synchro Dance Lead",
-  },
-  {
-    quote: "Most college fests struggle with esports, but MacFiesta's LAN gaming arena had 240Hz monitors, zero latency, and live spectator casting. The hospitality team even arranged clean campus accommodation for our entire 5-man squad without hassle.",
-    name: "Gautham Krishna",
-    role: "TKM College of Engg • Valorant Champions",
-  },
-  {
-    quote: "Coming all the way from Bangalore, we were amazed by the operational smoothness. The digital QR entry pass took literally 5 seconds to scan at Mission Control, food was great, and the Best Manager stress rounds were genuinely industry-standard.",
-    name: "Meera Nambiar",
-    role: "Christ University Bangalore • Best Manager Finalist",
-  },
-  {
-    quote: "The sound engineering on the main stage was world-class. Monster subs, crystal-clear vocal monitors, and a 3,000+ crowd screaming every chorus with us till night. MacFiesta sets the benchmark for South Indian collegiate festivals.",
-    name: "Kevin George",
-    role: "Mar Ivanios Trivandrum • Battle of the Bands",
-  },
-  {
-    quote: "The campus-wide Marvel Infinity Hunt was pure genius! Cryptic riddles hidden across MACFAST campus kept dozens of teams sprinting for 4 straight hours. The volunteer coordination and clue validation were incredible.",
-    name: "Devika R.",
-    role: "St. Joseph's Devagiri • Treasure Hunt Winner",
-  },
+  { quote: "The 24-hour hackathon was absolute insanity! Gigabit fiber, midnight refreshments, and judges who grilled our system design to its limits. Best tech fest experience!", name: "Adithya Menon", role: "CET Trivandrum | 24H Hackathon Lead" },
+  { quote: "The stage lighting and acoustic setup at the MACFAST amphitheatre rivaled major music festivals! 3,000+ students roaring through our set gave our crew goosebumps.", name: "Sneha Elizabeth", role: "St. Teresa's College | Synchro Dance Captain" },
+  { quote: "Most college fests treat esports as an afterthought, but MacFiesta built a legit tournament arena with 240Hz rigs, zero latency, and live shoutcasting.", name: "Gautham Krishna", role: "TKM College of Engg | Valorant LAN Champions" },
+  { quote: "Coming from Bangalore, we were blown away by the operational precision. The digital QR pass took 3 seconds at Mission Control, and the Best Manager stress rounds were genuinely industry-standard.", name: "Meera Nambiar", role: "Christ University Bangalore | Best Manager Finalist" },
+  { quote: "World-class sound engineering on the main stage. Monster line arrays, crystal-clear in-ear monitors, and an electric crowd that didn't stop screaming until midnight.", name: "Kevin George", role: "Mar Ivanios Trivandrum | Battle of the Bands" },
+  { quote: "The campus-wide Infinity Protocol hunt had dozens of teams sprinting across campus for 4 straight hours solving high-IQ cryptic ciphers. The adrenaline rush was unreal!", name: "Devika R.", role: "St. Joseph's Devagiri | Marvel Infinity Hunt Winner" },
 ];
 
 export const FAQ_ITEMS = [

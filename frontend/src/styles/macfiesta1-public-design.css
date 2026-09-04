@@ -106,18 +106,7 @@
 
 /* —— Scroll progress —— */
 .mf1-scroll-progress {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  z-index: 120;
-  transform-origin: left center;
-  transform: scaleX(0);
-  background: linear-gradient(90deg, #ed1d24, #ff6b35, #f0c14b, #ffe08a);
-  background-size: 200% 100%;
-  animation: mf1-border-flow 3s linear infinite;
-  pointer-events: none;
+  display: none !important;
 }
 
 .app:has(.admin-shell) .mf1-scroll-progress {
@@ -1021,6 +1010,7 @@
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

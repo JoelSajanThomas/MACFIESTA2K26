@@ -7,6 +7,7 @@ import {
   TOTAL_FRAMES,
   startBackgroundPreload,
   getNearestLoadedFrame,
+  getLoadedFrame,
   subscribeToPreload,
   loadSingleFrame,
 } from "../../utils/framePreloader";
@@ -50,47 +51,56 @@ export function Marvel3DScrollCanvas({
     }
   }, []);
 
-  // Helper to draw an image onto the canvas with true edge-to-edge object-fit: cover
-  const renderCover = useCallback((ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, img: HTMLImageElement) => {
-    const cw = canvas.width;
-    const ch = canvas.height;
-    if (!cw || !ch) return;
+  // Helper to draw an image onto the canvas with true edge-to-edge object-fit: cover and optional alpha blending
+  const renderCover = useCallback(
+    (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, img: HTMLImageElement, alpha = 1.0) => {
+      const cw = canvas.width;
+      const ch = canvas.height;
+      if (!cw || !ch) return;
 
-    const iw = img.naturalWidth || img.width;
-    const ih = img.naturalHeight || img.height;
-    if (!iw || !ih) return;
+      const iw = img.naturalWidth || img.width;
+      const ih = img.naturalHeight || img.height;
+      if (!iw || !ih) return;
 
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = "high";
 
-    const imgAspect = iw / ih;
-    const canvasAspect = cw / ch;
+      const imgAspect = iw / ih;
+      const canvasAspect = cw / ch;
 
-    let drawW = cw;
-    let drawH = ch;
-    let drawX = 0;
-    let drawY = 0;
+      let drawW = cw;
+      let drawH = ch;
+      let drawX = 0;
+      let drawY = 0;
 
-    if (canvasAspect > imgAspect) {
-      // Canvas is wider than image aspect ratio -> fit width, crop height top/bottom evenly
-      drawW = cw;
-      drawH = cw / imgAspect;
-      drawY = (ch - drawH) / 2;
-      drawX = 0;
-    } else {
-      // Canvas is taller than image aspect ratio -> fit height, crop width left/right evenly
-      drawH = ch;
-      drawW = ch * imgAspect;
-      drawX = (cw - drawW) / 2;
-      drawY = 0;
-    }
+      if (canvasAspect > imgAspect) {
+        // Canvas is wider than image aspect ratio -> fit width, crop height top/bottom evenly
+        drawW = cw;
+        drawH = cw / imgAspect;
+        drawY = (ch - drawH) / 2;
+        drawX = 0;
+      } else {
+        // Canvas is taller than image aspect ratio -> fit height, crop width left/right evenly
+        drawH = ch;
+        drawW = ch * imgAspect;
+        drawX = (cw - drawW) / 2;
+        drawY = 0;
+      }
 
-    ctx.drawImage(img, drawX, drawY, drawW, drawH);
-  }, []);
+      if (alpha < 1.0) {
+        ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
+      }
+      ctx.drawImage(img, drawX, drawY, drawW, drawH);
+      if (alpha < 1.0) {
+        ctx.globalAlpha = 1.0;
+      }
+    },
+    []
+  );
 
-  // Draw frame to canvas with object-fit: cover and high clarity
+  // Draw frame to canvas with optical crossfade blending filter for smooth scrolling flow
   const drawFrame = useCallback(
-    (frameIdx: number) => {
+    (frameFloat: number) => {
       const canvas = canvasRef.current;
       if (!canvas) return;
 
@@ -101,14 +111,19 @@ export function Marvel3DScrollCanvas({
       const ctx = canvas.getContext("2d", { alpha: false });
       if (!ctx) return;
 
-      const imgToDraw = getNearestLoadedFrame(sequence, frameIdx, TOTAL_FRAMES);
-      if (!imgToDraw || !imgToDraw.complete || imgToDraw.naturalWidth === 0) {
-        // If not ready yet, request frame 1 load immediately
-        loadSingleFrame(sequence, 1, true).then((img) => {
+      const safeFrame = Math.max(1, Math.min(TOTAL_FRAMES, frameFloat));
+      const baseIdx = Math.floor(safeFrame);
+      const nextIdx = Math.min(TOTAL_FRAMES, baseIdx + 1);
+      const blend = safeFrame - baseIdx;
+
+      const baseImg = getNearestLoadedFrame(sequence, baseIdx, TOTAL_FRAMES);
+      if (!baseImg || !baseImg.complete || baseImg.naturalWidth === 0) {
+        // If not ready yet, request frame load immediately
+        loadSingleFrame(sequence, baseIdx, true).then((img) => {
           if (img && img.complete && img.naturalWidth > 0 && canvasRef.current) {
             const currentCtx = canvasRef.current.getContext("2d", { alpha: false });
             if (currentCtx) {
-              renderCover(currentCtx, canvasRef.current, img);
+              renderCover(currentCtx, canvasRef.current, img, 1.0);
               isReadyRef.current = true;
             }
           }
@@ -116,8 +131,20 @@ export function Marvel3DScrollCanvas({
         return;
       }
 
-      renderCover(ctx, canvas, imgToDraw);
+      // 1. Draw base frame
+      renderCover(ctx, canvas, baseImg, 1.0);
       isReadyRef.current = true;
+
+      // 2. Optical crossfade blend filter: smoothly interpolate into next frame if between frames
+      if (blend > 0.015 && nextIdx > baseIdx) {
+        const nextImg = getLoadedFrame(sequence, nextIdx);
+        if (nextImg && nextImg.complete && nextImg.naturalWidth > 0) {
+          renderCover(ctx, canvas, nextImg, blend);
+        } else {
+          // Preload next frame proactively
+          loadSingleFrame(sequence, nextIdx, false);
+        }
+      }
     },
     [sequence, updateCanvasDimensions, renderCover]
   );
@@ -195,24 +222,25 @@ export function Marvel3DScrollCanvas({
         setScrollProgress(progress);
       }
 
-      // Map progress [0, 1] across all frames
-      const targetIdx = Math.max(1, Math.min(TOTAL_FRAMES, Math.floor(progress * (TOTAL_FRAMES - 1)) + 1));
+      // Map progress [0, 1] continuously across all frames as a float
+      const targetIdx = Math.max(1, Math.min(TOTAL_FRAMES, 1 + progress * (TOTAL_FRAMES - 1)));
       targetFrameRef.current = targetIdx;
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
 
-    // Smooth RAF render loop
+    // Smooth RAF render loop with low-pass damping filter
     const renderLoop = () => {
       if (!isRunning) return;
 
       const diff = targetFrameRef.current - currentFrameRef.current;
-      if (Math.abs(diff) > 0.005) {
-        currentFrameRef.current += diff * 0.32;
-        const frameToDraw = Math.max(1, Math.min(TOTAL_FRAMES, Math.round(currentFrameRef.current)));
+      if (Math.abs(diff) > 0.001) {
+        // Exponential damping filter (0.13 factor) for natural fluid momentum and smooth flow
+        currentFrameRef.current += diff * 0.13;
+        const frameToDraw = Math.max(1, Math.min(TOTAL_FRAMES, currentFrameRef.current));
         if (showHudRef.current) {
-          setCurrentFrameIndex(frameToDraw);
+          setCurrentFrameIndex(Math.round(frameToDraw));
         }
         drawFrameRef.current(frameToDraw);
       }
@@ -257,24 +285,20 @@ export function Marvel3DScrollCanvas({
         >
           <canvas
             ref={canvasRef}
-            className="w-full h-full block object-cover filter brightness-[1.05] contrast-[1.05] saturate-[1.10]"
+            className="w-full h-full block object-cover filter brightness-[0.98] contrast-[1.06] saturate-[1.12]"
+            style={{
+              imageRendering: "auto",
+            }}
           />
 
-          {/* ─── Soft Subtle Edge Blending (Lightened for maximum frame visibility) ─── */}
-          {/* Very soft radial center vignette */}
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_65%,rgba(5,5,10,0.25)_90%,rgba(5,5,10,0.55)_100%)] pointer-events-none" />
-
-          {/* Top light blend */}
-          <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-b from-[#05050A]/45 via-[#05050A]/15 to-transparent pointer-events-none" />
-
-          {/* Bottom light blend */}
-          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-[#05050A]/45 via-[#05050A]/15 to-transparent pointer-events-none" />
-
-          {/* Left subtle edge */}
-          <div className="absolute top-0 bottom-0 left-0 w-16 bg-gradient-to-r from-[#05050A]/30 to-transparent pointer-events-none" />
-
-          {/* Right subtle edge */}
-          <div className="absolute top-0 bottom-0 right-0 w-16 bg-gradient-to-l from-[#05050A]/30 to-transparent pointer-events-none" />
+          {/* Smooth Atmospheric Cinematic Filter — subtle smoothing overlay for flow of scrolling */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              backdropFilter: "blur(0.35px)",
+              backgroundColor: "rgba(5, 5, 10, 0.08)",
+            }}
+          />
         </div>
       </div>
 

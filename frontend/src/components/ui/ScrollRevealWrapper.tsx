@@ -9,6 +9,7 @@ interface ScrollRevealProps {
   className?: string;
   enable3DTilt?: boolean;
   laserColor?: "cyan" | "red" | "gold" | "purple";
+  showLaserLine?: boolean;
 }
 
 const LASER_GRADIENTS = {
@@ -40,8 +41,10 @@ export function ScrollRevealWrapper({
   className = "",
   enable3DTilt = true,
   laserColor = "cyan",
+  showLaserLine,
 }: ScrollRevealProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const shouldShowLaser = showLaserLine ?? (id !== "hero");
 
   // Track scroll position of this section relative to viewport
   const { scrollYProgress } = useScroll({
@@ -72,16 +75,18 @@ export function ScrollRevealWrapper({
   return (
     <div ref={containerRef} id={id} className={`relative w-full ${className}`}>
       {/* ─── Scroll-Driven Holographic Laser Energy Line ─── */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] z-30 pointer-events-none overflow-hidden">
-        <motion.div
-          className={`h-full w-full bg-gradient-to-r ${themeConfig.line}`}
-          style={{
-            scaleX: laserProgress,
-            transformOrigin: "center",
-            boxShadow: `0 0 16px ${themeConfig.glow}`,
-          }}
-        />
-      </div>
+      {shouldShowLaser && (
+        <div className="absolute top-0 left-0 right-0 h-[2px] z-30 pointer-events-none overflow-hidden">
+          <motion.div
+            className={`h-full w-full bg-gradient-to-r ${themeConfig.line}`}
+            style={{
+              scaleX: laserProgress,
+              transformOrigin: "center",
+              boxShadow: `0 0 16px ${themeConfig.glow}`,
+            }}
+          />
+        </div>
+      )}
 
       {/* ─── Ambient Section Entrance Spotlight Aura ─── */}
       <motion.div

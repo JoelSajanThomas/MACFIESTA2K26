@@ -1,4 +1,3 @@
-import { motion, useScroll, useSpring } from "framer-motion";
 import { Marvel3DScrollCanvas } from "../components/three/Marvel3DScrollCanvas";
 import { HeroSection } from "../components/hero/HeroSection";
 import { AboutFestival } from "../components/home/AboutFestival";
@@ -20,26 +19,12 @@ export default function Home() {
     description: "MacFiesta 2026 national collegiate festival at MACFAST — Marvel Universe Theme, 24–25 Sep 2026.",
   });
 
-  const { scrollYProgress } = useScroll();
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001,
-  });
 
   return (
     <div className="relative w-full bg-transparent overflow-hidden min-h-screen">
-      {/* ─── Top Global Multiverse Scroll Energy Indicator ─── */}
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-[3px] z-[60] bg-gradient-to-r from-marvel-red via-metallic-gold to-arc-cyan shadow-[0_0_15px_rgba(0,212,255,0.8)] origin-left pointer-events-none"
-        style={{ scaleX }}
-      />
 
       {/* ─── 3D Marvel Frame-by-Frame Scroll Engine Background ─── */}
       <Marvel3DScrollCanvas initialSequence="frames" showHud={false} />
-
-      {/* ─── Ambient Marvelverse Atmospheric Accents ─── */}
-      <div className="absolute top-0 left-0 right-0 h-[100vh] bg-gradient-to-b from-marvel-red/10 via-arc-cyan/5 to-transparent pointer-events-none z-[1]" />
 
       {/* ─── 01. Hero Section ─── */}
       <ScrollRevealWrapper id="hero" enable3DTilt={false} laserColor="cyan" className="relative z-10">

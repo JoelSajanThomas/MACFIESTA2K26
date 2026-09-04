@@ -6,9 +6,7 @@ import {
   RiShieldFlashLine,
   RiRobot2Line,
   RiFlashlightLine,
-  RiScales3Line,
   RiTeamLine,
-  RiAlertLine,
   RiCheckboxCircleLine,
   RiCompass3Line,
   RiUserStarLine,
@@ -288,81 +286,6 @@ export default function EventDetails() {
                 ))}
               </div>
             </div>
-
-            {/* Manpower Section */}
-            {event.manpower && event.manpower.length > 0 && (
-              <div className="marvel-card p-6 sm:p-8 rounded-3xl border border-white/10 space-y-5 bg-[#0A0D1A]/90">
-                <div className="border-b border-white/10 pb-3 flex items-center justify-between">
-                  <h3 className="text-lg sm:text-xl font-black uppercase text-marvel-red font-excon-black tracking-wide">
-                    Manpower
-                  </h3>
-                  <RiTeamLine className="text-arc-cyan text-xl" />
-                </div>
-
-                <ul className="space-y-2.5 text-xs sm:text-sm font-space">
-                  {event.manpower.map((mp, idx) => {
-                    const text = typeof mp === "string" ? mp : `${mp.count ? `${mp.count} ` : ""}${mp.role}${mp.note ? ` (${mp.note})` : ""}`;
-                    return (
-                      <li key={idx} className="flex items-start gap-2.5 text-white/90">
-                        <span className="text-arc-cyan font-bold text-base leading-none select-none">•</span>
-                        <span className="font-mono text-white/90">{text.replace(/^[•\-\*]\s*/, "")}</span>
-                      </li>
-                    );
-                  })}
-                </ul>
-              </div>
-            )}
-
-            {/* Possible Problems & Solutions */}
-            {event.possibleProblems && event.possibleProblems.length > 0 && (
-              <div className="marvel-card p-6 sm:p-8 rounded-3xl border border-white/10 space-y-5 bg-[#0A0D1A]/90">
-                <div className="border-b border-white/10 pb-3 flex items-center justify-between">
-                  <h3 className="text-lg sm:text-xl font-black uppercase text-marvel-red font-excon-black tracking-wide">
-                    Possible Problems &amp; Solutions
-                  </h3>
-                  <RiAlertLine className="text-amber-400 text-xl" />
-                </div>
-
-                <div className="space-y-3.5 text-xs sm:text-sm font-space leading-relaxed">
-                  {event.possibleProblems.map((item, idx) => (
-                    <div key={idx} className="p-3.5 rounded-xl bg-black/40 border border-white/5 space-y-1">
-                      <p className="text-white/85 leading-relaxed">
-                        <strong className="text-marvel-red font-bold font-mono">{item.problem}: </strong>
-                        <span className="text-white/80">{item.solution}</span>
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Committee Approach */}
-            {(event.committeeApproach || event.judgingRubric) && (
-              <div className="marvel-card p-6 sm:p-8 rounded-3xl border border-white/10 space-y-5 bg-[#0A0D1A]/90">
-                <div className="border-b border-white/10 pb-3 flex items-center justify-between">
-                  <h3 className="text-lg sm:text-xl font-black uppercase text-marvel-red font-excon-black tracking-wide">
-                    Committee Approach
-                  </h3>
-                  <RiScales3Line className="text-metallic-gold text-xl" />
-                </div>
-
-                {event.committeeApproach && (
-                  <p className="text-xs sm:text-sm text-white/85 leading-relaxed font-space">
-                    {event.committeeApproach}
-                  </p>
-                )}
-
-                {event.judgingRubric && (
-                  <div className="p-3.5 rounded-xl bg-metallic-gold/5 border border-metallic-gold/20 text-xs font-mono space-y-1 mt-2">
-                    <span className="text-metallic-gold font-bold uppercase block text-[11px]">
-                      Suggested Scoring / Rubric:
-                    </span>
-                    <span className="text-white/80">{event.judgingRubric}</span>
-                  </div>
-                )}
-              </div>
-            )}
-
           </div>
 
           {/* Right Column (4 cols): Coordinator & Action Card */}
@@ -456,11 +379,6 @@ export default function EventDetails() {
                     <h4 className="text-base font-black text-white font-excon-bold">
                       {event.coordinator?.name}
                     </h4>
-                    {event.coordinator?.department && (
-                      <span className="inline-block text-[11px] text-metallic-gold font-bold font-mono">
-                        {event.coordinator?.department}
-                      </span>
-                    )}
                   </div>
                   <div className="w-9 h-9 rounded-xl bg-arc-cyan/10 border border-arc-cyan/30 flex items-center justify-center text-arc-cyan shrink-0">
                     <RiUserLine size={18} />

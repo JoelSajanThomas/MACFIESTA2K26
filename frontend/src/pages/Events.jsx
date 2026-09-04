@@ -16,6 +16,8 @@ import {
   RiTeamLine,
   RiFilter3Line,
   RiPhoneLine,
+  RiShieldUserLine,
+  RiWhatsappLine,
 } from "react-icons/ri";
 import { getEvents } from "../services/api";
 import { ALL_EVENTS } from "../lib/eventsData";
@@ -86,6 +88,17 @@ export default function Events() {
               powerRating: local?.powerRating || "Power: 95/100",
               borderClass: isSchool ? "border-emerald-500/40 hover:border-emerald-400" : "border-arc-cyan/40 hover:border-arc-cyan",
               accentColor: isSchool ? "#10B981" : "#00D4FF",
+              coordinator: local?.coordinator || (apiEvt.coordinator_name ? {
+                name: apiEvt.coordinator_name.replace(/\s*\([^)]*\)\s*/g, " ").trim(),
+                phone: apiEvt.coordinator_phone || "+91 85909 39674",
+                department: local?.coordinator?.department || apiEvt.department || "",
+                team: local?.coordinator?.team || [],
+              } : {
+                name: "Event In-Charge",
+                phone: "+91 85909 39674",
+                department: apiEvt.department || "",
+                team: [],
+              }),
             };
           });
           setEvents(mapped);
@@ -375,31 +388,60 @@ export default function Events() {
                       </div>
                     </div>
 
-                    {/* Official In-Charge Badge */}
-                    {item.coordinator?.name && (
-                      <div className="flex items-center justify-between gap-1.5 text-[11px] bg-white/[0.04] border border-white/10 rounded-xl px-2.5 py-1.5 mt-2 text-white/80">
-                        <div className="flex items-center gap-1.5 min-w-0">
-                          <RiUserLine className="text-arc-cyan text-xs shrink-0" />
-                          <span className="text-white/50 text-[10px] uppercase font-bold shrink-0">In-Charge:</span>
-                          <span className="font-bold text-white truncate text-xs">{item.coordinator.name}</span>
-                          {item.coordinator.department && (
-                            <span className="text-[10px] text-metallic-gold font-mono shrink-0 hidden sm:inline">
-                              • {item.coordinator.department}
-                            </span>
+                    {/* Event In-Charge & Committee Contact Panel */}
+                    <div className="bg-white/[0.04] hover:bg-white/[0.07] border border-white/10 hover:border-arc-cyan/40 rounded-2xl p-3 my-2 space-y-2 transition-all shadow-inner">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <RiShieldUserLine className="text-arc-cyan text-xs shrink-0" />
+                        <span className="text-[10px] uppercase font-bold text-arc-cyan tracking-wider font-space truncate">
+                          In-Charge &amp; Committee
+                        </span>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-2 pt-0.5">
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-white truncate font-excon-bold">
+                            {item.coordinator?.name || "Event In-Charge"}
+                          </p>
+                          {item.coordinator?.phone && (
+                            <p className="text-[11px] font-mono text-white/70 tracking-wide mt-0.5">
+                              {item.coordinator.phone}
+                            </p>
                           )}
                         </div>
-                        {item.coordinator.phone && (
-                          <a
-                            href={`tel:${item.coordinator.phone.replace(/[^0-9+]/g, "")}`}
-                            onClick={(e) => e.stopPropagation()}
-                            className="shrink-0 text-arc-cyan hover:text-white p-1 rounded-md hover:bg-arc-cyan/20 transition-all ml-1"
-                            title={`Call In-Charge ${item.coordinator.name}`}
-                          >
-                            <RiPhoneLine size={13} />
-                          </a>
+
+                        {item.coordinator?.phone && (
+                          <div className="flex items-center gap-1.5 shrink-0">
+                            <a
+                              href={`tel:${item.coordinator.phone.replace(/[^0-9+]/g, "")}`}
+                              onClick={(e) => e.stopPropagation()}
+                              className="p-1.5 rounded-lg bg-arc-cyan/15 hover:bg-arc-cyan text-arc-cyan hover:text-black transition-all border border-arc-cyan/30"
+                              title={`Call ${item.coordinator.name}`}
+                              aria-label={`Call ${item.coordinator.name}`}
+                            >
+                              <RiPhoneLine size={13} />
+                            </a>
+                            <a
+                              href={`https://wa.me/${item.coordinator.phone.replace(/[^0-9]/g, "")}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="p-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500 text-emerald-400 hover:text-black transition-all border border-emerald-500/30"
+                              title={`WhatsApp ${item.coordinator.name}`}
+                              aria-label={`WhatsApp ${item.coordinator.name}`}
+                            >
+                              <RiWhatsappLine size={13} />
+                            </a>
+                          </div>
                         )}
                       </div>
-                    )}
+
+                      {item.coordinator?.team && item.coordinator.team.length > 0 && (
+                        <div className="text-[9px] text-white/50 border-t border-white/5 pt-1.5 flex items-center justify-between font-space">
+                          <span>Committee Team: {item.coordinator.team.length} Active Leads</span>
+                          <span className="text-arc-cyan font-bold">Coordination Desk</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
                   {/* Actions */}

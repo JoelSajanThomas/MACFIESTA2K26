@@ -57,7 +57,7 @@ export function RegistrationCTA() {
             >
               {[
                 { label: "23", desc: "Missions" },
-                { label: "₹20L+", desc: "Prize Pool" },
+                { label: "₹1,15,000+", desc: "Prize Pool" },
                 { label: "5000+", desc: "Agents" },
               ].map((stat) => (
                 <div key={stat.label} className="text-center">

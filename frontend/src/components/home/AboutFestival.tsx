@@ -47,6 +47,7 @@ function StatCard({
   color,
   index,
   inView,
+  formatLocale = false,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   rawValue: number;
@@ -55,8 +56,10 @@ function StatCard({
   color: string;
   index: number;
   inView: boolean;
+  formatLocale?: boolean;
 }) {
   const count = useCounter(rawValue, 550 + index * 50, inView);
+  const formattedCount = formatLocale ? count.toLocaleString("en-IN") : count;
 
   return (
     <motion.div
@@ -74,9 +77,9 @@ function StatCard({
       </div>
       <div className="space-y-1">
         <span
-          className="block text-2xl sm:text-4xl md:text-5xl font-black text-white uppercase font-anton tracking-tight"
+          className="block text-xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-white uppercase font-anton tracking-tight whitespace-nowrap"
         >
-          {count}
+          {formattedCount}
           {suffix}
         </span>
         <span className="block text-[10px] sm:text-xs text-arc-cyan font-bold uppercase tracking-[0.12em] sm:tracking-[0.16em] font-space">
@@ -88,10 +91,10 @@ function StatCard({
 }
 
 const stats = [
-  { icon: RiAwardLine, rawValue: 23, suffix: "", label: "Avenger Missions", color: "text-metallic-gold" },
-  { icon: RiGroupLine, rawValue: 5000, suffix: "+", label: "Recruited Agents", color: "text-arc-cyan" },
-  { icon: RiFlashlightLine, rawValue: 20, suffix: "L+", label: "Bounty Pool", color: "text-marvel-red" },
-  { icon: RiShieldFlashLine, rawValue: 100, suffix: "%", label: "MCU Immersion", color: "text-vibranium-purple" },
+  { icon: RiAwardLine, rawValue: 23, suffix: "", label: "Avenger Missions", color: "text-metallic-gold", formatLocale: false },
+  { icon: RiGroupLine, rawValue: 5000, suffix: "+", label: "Recruited Agents", color: "text-arc-cyan", formatLocale: false },
+  { icon: RiFlashlightLine, rawValue: 115000, suffix: " +", label: "Bounty Pool", color: "text-marvel-red", formatLocale: true },
+  { icon: RiShieldFlashLine, rawValue: 100, suffix: "%", label: "MCU Immersion", color: "text-vibranium-purple", formatLocale: false },
 ];
 
 export function AboutFestival() {
@@ -176,6 +179,7 @@ export function AboutFestival() {
                 color={stat.color}
                 index={idx}
                 inView={inView}
+                formatLocale={stat.formatLocale}
               />
             ))}
           </motion.div>

@@ -361,47 +361,22 @@ export function HeroSection() {
                 </span>
               </motion.div>
 
-              {/* Title and Edition — matches reference: MACFIESTA (shimmer) + 2K26 (cyan) inline */}
-              <div className="flex flex-row flex-wrap items-baseline justify-center lg:justify-start gap-2 sm:gap-3 md:gap-4">
-                <motion.h1
-                  variants={heroTitleVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="shimmer-text font-black m-0"
-                  style={{
-                    fontFamily: "var(--font-anton), 'Anton', sans-serif",
-                    letterSpacing: "-0.01em",
-                    lineHeight: 0.9,
-                    fontSize: "clamp(2.4rem, 6.5vw, 5.8rem)",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  {settings.name.toUpperCase()}
-                </motion.h1>
-
-                {/* Large "2K26" cyan text — aligned baseline with MACFIESTA */}
-                <motion.div
-                  variants={heroYearSlideVariants}
-                  initial="hidden"
-                  animate="visible"
-                  className="flex items-end pb-0.5 sm:pb-1"
-                >
-                  <span
-                    className="font-black select-none"
-                    style={{
-                      fontFamily: "var(--font-anton), 'Anton', sans-serif",
-                      letterSpacing: "-0.01em",
-                      lineHeight: 0.9,
-                      fontSize: "clamp(1.8rem, 4.8vw, 4.4rem)",
-                      textTransform: "uppercase",
-                      color: "#00D4FF",
-                      textShadow: "0 0 20px rgba(0,212,255,0.7), 0 0 40px rgba(0,212,255,0.4)",
-                    }}
-                  >
-                    {settings.edition ? settings.edition.toUpperCase() : "2K26"}
-                  </span>
-                </motion.div>
-              </div>
+              {/* Official MACFIESTA 2K26 Logo Image */}
+              <motion.div
+                variants={heroTitleVariants}
+                initial="hidden"
+                animate="visible"
+                className="py-1 flex justify-center lg:justify-start"
+              >
+                <h1 className="sr-only">MACFIESTA 2K26</h1>
+                <img
+                  src="/MACFIESTA_page-0001.png?v=2"
+                  alt="MACFIESTA 2K26"
+                  className="h-16 sm:h-20 md:h-24 lg:h-28 xl:h-32 w-auto max-w-[90vw] sm:max-w-none object-contain select-none pointer-events-none drop-shadow-[0_4px_24px_rgba(0,0,0,0.95)] drop-shadow-[0_0_12px_rgba(0,0,0,0.8)]"
+                  loading="eager"
+                  draggable={false}
+                />
+              </motion.div>
 
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -414,8 +389,8 @@ export function HeroSection() {
                     fontFamily: "var(--font-anton), 'Anton', sans-serif",
                     fontSize: "clamp(1.1rem, 2.6vw, 2.3rem)",
                     letterSpacing: "0.18em",
-                    color: "#ED1D24",
-                    textShadow: "0 0 16px rgba(237,29,36,0.8), 0 0 32px rgba(237,29,36,0.4)",
+                    color: "#FFE500",
+                    textShadow: "0 0 16px rgba(255,229,0,0.75), 0 0 32px rgba(255,200,0,0.4), 0 2px 8px rgba(0,0,0,0.9)",
                     marginTop: "0.12em",
                   }}
                 >
@@ -446,7 +421,7 @@ export function HeroSection() {
                 <button
                   type="button"
                   onClick={handleNavigate("/register")}
-                  className="btn-urgency group font-space flex items-center justify-center gap-1 sm:gap-2 px-2.5 sm:px-5 py-2.5 sm:py-3 rounded-full shadow-[0_0_25px_rgba(237,29,36,0.5)] hover:shadow-[0_0_40px_rgba(237,29,36,0.8)] transition-all duration-300 w-full text-center cursor-pointer relative z-30 pointer-events-auto select-none hover:scale-[1.04] active:scale-[0.96]"
+                  className="group font-space flex items-center justify-center gap-1 sm:gap-2 px-2.5 sm:px-5 py-2.5 sm:py-3 rounded-full bg-[#F01A21] hover:bg-[#d8141b] text-white font-bold tracking-[0.05em] sm:tracking-[0.14em] uppercase border-0 outline-none shadow-[0_4px_20px_rgba(240,26,33,0.4)] hover:shadow-[0_6px_28px_rgba(240,26,33,0.65)] transition-all duration-300 w-full text-center cursor-pointer relative z-30 pointer-events-auto select-none hover:scale-[1.03] active:scale-[0.97]"
                 >
                   <span className="relative z-10 font-bold tracking-[0.05em] sm:tracking-[0.14em] uppercase text-[11px] sm:text-xs md:text-sm whitespace-nowrap pointer-events-none">
                     {settings.registrationOpen ? "Register Now" : "Closed"}

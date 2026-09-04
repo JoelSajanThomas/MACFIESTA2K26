@@ -50,30 +50,13 @@
   border-top: 1px solid rgba(237, 29, 36, 0.0) !important;
 }
 
-/* Animated gradient top border */
+/* Animated gradient top border — disabled for clean edge */
 .site-navbar.pro-navbar::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(237, 29, 36, 0.6) 25%,
-    rgba(255, 214, 102, 0.6) 50%,
-    rgba(0, 212, 255, 0.6) 75%,
-    transparent 100%
-  );
-  background-size: 200% 100%;
-  animation: navbar-border-flow 4s linear infinite;
-  opacity: 0;
-  transition: opacity 0.3s ease;
+  display: none !important;
 }
 
 .site-navbar.pro-navbar.is-scrolled::before {
-  opacity: 1;
+  display: none !important;
 }
 
 @keyframes navbar-border-flow {

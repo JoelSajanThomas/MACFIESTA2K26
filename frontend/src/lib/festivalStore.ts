@@ -130,6 +130,8 @@ export interface TestimonialItem {
   comment: string;
   photoUrl: string;
   approved: boolean;
+  role?: string;
+  quote?: string;
 }
 
 // ── 9. FAQ Item ────────────────────────────────────────────────────────
@@ -336,12 +338,12 @@ export const DEFAULT_GUESTS: GuestItem[] = [
 ];
 
 const DEFAULT_TESTIMONIALS: TestimonialItem[] = [
-  { id: "t-1", name: "Adithya Menon", college: "CET Trivandrum • Hackathon Winner", rating: 5, comment: "The 24-hour hackathon was hands down the best organized we've attended this season. Dedicated gigabit fiber, midnight refreshments, and judges who actually grilled our architecture. That cash prize cleared directly to our account without delays!", photoUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", approved: true },
-  { id: "t-2", name: "Sneha Elizabeth", college: "St. Teresa's Ernakulam • Synchro Dance Lead", rating: 5, comment: "The acoustic setup and stage lighting at the MACFAST open-air amphitheatre were unbelievable. Our 14-member dance crew had crystal-clear monitor audio and the crowd energy was pure adrenaline. Defending our title next year!", photoUrl: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150", approved: true },
-  { id: "t-3", name: "Gautham Krishna", college: "TKM College of Engg • Valorant Champions", rating: 5, comment: "Most college fests struggle with esports, but MacFiesta's LAN gaming arena had 240Hz monitors, zero latency, and live spectator casting. The hospitality team even arranged clean campus accommodation for our entire 5-man squad without hassle.", photoUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150", approved: true },
-  { id: "t-4", name: "Meera Nambiar", college: "Christ University Bangalore • Best Manager Finalist", rating: 5, comment: "Coming all the way from Bangalore, we were amazed by the operational smoothness. The digital QR entry pass took literally 5 seconds to scan at Mission Control, food was great, and the Best Manager stress rounds were genuinely industry-standard.", photoUrl: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=150", approved: true },
-  { id: "t-5", name: "Kevin George", college: "Mar Ivanios Trivandrum • Battle of the Bands", rating: 5, comment: "The sound engineering on the main stage was world-class. Monster subs, crystal-clear vocal monitors, and a 3,000+ crowd screaming every chorus with us till night. MacFiesta sets the benchmark for South Indian collegiate festivals.", photoUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150", approved: true },
-  { id: "t-6", name: "Devika R.", college: "St. Joseph's Devagiri • Treasure Hunt Winner", rating: 5, comment: "The campus-wide Marvel Infinity Hunt was pure genius! Cryptic riddles hidden across MACFAST campus kept dozens of teams sprinting for 4 straight hours. The volunteer coordination and clue validation were incredible.", photoUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", approved: true },
+  { id: "t-1", name: "Adithya Menon", college: "CET Trivandrum", role: "24H Hackathon Lead", rating: 5, comment: "The 24-hour hackathon was absolute insanity! Gigabit fiber, midnight refreshments, and judges who grilled our system design to its limits. Best tech fest experience in South India!", photoUrl: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150", approved: true },
+  { id: "t-2", name: "Sneha Elizabeth", college: "St. Teresa's College, Ernakulam", role: "Synchro Dance Captain", rating: 5, comment: "The stage lighting and acoustic setup at the MACFAST amphitheatre rivaled major music festivals! 3,000+ students roaring through our set gave our crew goosebumps.", photoUrl: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150", approved: true },
+  { id: "t-3", name: "Gautham Krishna", college: "TKM College of Engg, Kollam", role: "Valorant LAN Champions", rating: 5, comment: "Most college fests treat esports as an afterthought, but MacFiesta built a legit tournament arena with 240Hz rigs, zero latency, and live shoutcasting.", photoUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150", approved: true },
+  { id: "t-4", name: "Meera Nambiar", college: "Christ University Bangalore", role: "Best Manager Finalist", rating: 5, comment: "Coming from Bangalore, we were blown away by the operational precision. The digital QR pass took 3 seconds at Mission Control, and the Best Manager stress rounds were genuinely industry-standard.", photoUrl: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150", approved: true },
+  { id: "t-5", name: "Kevin George", college: "Mar Ivanios Trivandrum", role: "Battle of the Bands Winner", rating: 5, comment: "World-class sound engineering on the main stage. Monster line arrays, crystal-clear in-ear monitors, and an electric crowd that didn't stop screaming until midnight.", photoUrl: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150", approved: true },
+  { id: "t-6", name: "Devika R.", college: "St. Joseph's College, Devagiri", role: "Infinity Protocol Winner", rating: 5, comment: "The campus-wide Infinity Protocol hunt had dozens of teams sprinting across campus for 4 straight hours solving high-IQ cryptic ciphers. The adrenaline rush was unreal!", photoUrl: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150", approved: true },
 ];
 
 const DEFAULT_FAQS: FaqItem[] = [
@@ -571,7 +573,7 @@ export function saveGuestsList(guests: GuestItem[]) {
 export function getTestimonialsList(): TestimonialItem[] {
   if (typeof window === "undefined") return DEFAULT_TESTIMONIALS;
   try {
-    const saved = localStorage.getItem("macfiesta_control_testimonials_v2");
+    const saved = localStorage.getItem("macfiesta_control_testimonials");
     return saved ? JSON.parse(saved) : DEFAULT_TESTIMONIALS;
   } catch {
     return DEFAULT_TESTIMONIALS;
@@ -580,7 +582,7 @@ export function getTestimonialsList(): TestimonialItem[] {
 
 export function saveTestimonialsList(items: TestimonialItem[]) {
   try {
-    localStorage.setItem("macfiesta_control_testimonials_v2", JSON.stringify(items));
+    localStorage.setItem("macfiesta_control_testimonials", JSON.stringify(items));
   } catch { }
   notifyListeners();
   return items;

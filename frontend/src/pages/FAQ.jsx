@@ -5,7 +5,7 @@ import { usePageSeo } from "../hooks/usePageSeo";
 const faqs = [
   { id: "1", category: "Eligibility", question: "Who is eligible to participate in MacFiesta 2026?", answer: "All students currently enrolled in verified collegiate programs or schools with valid photo identification cards can participate across respective events." },
   { id: "2", category: "Registration", question: "How do I register for events?", answer: "You can create an agent account online, select your missions, and complete desk registration upon arrival at the MACFAST campus." },
-  { id: "3", category: "Prizes", question: "What is the total cash prize pool?", answer: "The overall festival cash bounty pool exceeds ₹20,00,000 across 23 official college and school competitions." },
+  { id: "3", category: "Prizes", question: "What is the total cash prize pool?", answer: "The overall festival cash bounty pool exceeds ₹1,15,000+ across 23 official college and school competitions." },
   { id: "4", category: "Hospitality", question: "Is food and accommodation provided?", answer: "Accommodation is provided in campus hostels at nominal rates. Multi-cuisine food stalls and mess meals are available." }
 ];
 
