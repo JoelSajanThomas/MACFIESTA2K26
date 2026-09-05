@@ -14,7 +14,7 @@ import {
 } from "../../utils/framePreloader";
 
 interface Marvel3DScrollCanvasProps {
-  initialSequence?: "frames" | "frames2";
+  initialSequence?: "frames" | "frames1";
   showHud?: boolean;
 }
 
@@ -23,7 +23,7 @@ export function Marvel3DScrollCanvas({
   showHud = false,
 }: Marvel3DScrollCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const [sequence, setSequence] = useState<"frames" | "frames2">(initialSequence);
+  const [sequence, setSequence] = useState<"frames" | "frames1">(initialSequence);
   const [currentFrameIndex, setCurrentFrameIndex] = useState(1);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [hudVisible, setHudVisible] = useState(true);

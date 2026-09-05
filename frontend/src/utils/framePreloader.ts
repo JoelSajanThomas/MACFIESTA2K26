@@ -153,15 +153,22 @@ export function startBackgroundPreload(seq = "frames"): Promise<void> {
   }
 
   preloadingPromises[seq] = (async () => {
-    // 1. Load Frame 1 with maximum priority
-    await loadSingleFrame(seq, 1, true);
+    // 1. Load first 3 frames with maximum priority so the canvas is visible immediately
+    await Promise.all([1, 2, 3].map((i) => loadSingleFrame(seq, i, true)));
 
-    // 2. Keep the initial decode budget small on mobile and low-end devices.
+    // 2. Aggressively pre-load the first 30 frames at high concurrency
     const heroFrames: number[] = [];
-    for (let i = 2; i <= Math.min(12, TOTAL_FRAMES); i++) {
+    for (let i = 4; i <= Math.min(30, TOTAL_FRAMES); i++) {
       heroFrames.push(i);
     }
-    await processQueue(seq, heroFrames, 8);
+    await processQueue(seq, heroFrames, 16);
+
+    // 3. Load remaining frames in the background
+    const remainingFrames: number[] = [];
+    for (let i = 31; i <= TOTAL_FRAMES; i++) {
+      remainingFrames.push(i);
+    }
+    processQueue(seq, remainingFrames, 12);
   })();
 
   return preloadingPromises[seq]!;
