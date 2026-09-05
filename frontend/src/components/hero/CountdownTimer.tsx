@@ -53,20 +53,20 @@ export function CountdownTimer() {
         <div key={unit.label} className="flex items-center gap-1 sm:gap-1.5 md:gap-2">
           <div className="flex flex-col items-center">
             <div
-              className="relative overflow-hidden rounded-xl px-2 py-2 sm:px-2.5 sm:py-2.5 min-w-[50px] sm:min-w-[56px] md:min-w-[62px] border border-white/20 shadow-[0_4px_12px_rgba(0,0,0,0.2)] group transition-all duration-300 hover:border-arc-cyan/60 hover:shadow-[0_0_16px_rgba(0,212,255,0.3)]"
+              className="relative overflow-hidden rounded-xl px-2 py-2 sm:px-2.5 sm:py-2.5 min-w-[52px] sm:min-w-[58px] md:min-w-[64px] border border-white/20 hover:border-arc-cyan/70 shadow-[0_8px_20px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.2)] group transition-all duration-300 hover:shadow-[0_0_18px_rgba(0,212,255,0.4)]"
               style={{
-                backdropFilter: "blur(10px)",
-                WebkitBackdropFilter: "blur(10px)",
-                backgroundColor: "rgba(255, 255, 255, 0.08)",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
+                background: "linear-gradient(180deg, rgba(7, 13, 28, 0.6) 0%, rgba(2, 5, 15, 0.45) 100%)",
               }}
             >
               {/* Holographic mid-split seam */}
-              <div className="absolute inset-x-0 top-1/2 h-[1px] bg-arc-cyan/25 pointer-events-none z-20" />
-              <span className="relative z-10 block text-center text-lg sm:text-xl md:text-2xl font-black font-orbitron tabular-nums tracking-wide text-[#FFD700] drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+              <div className="absolute inset-x-0 top-1/2 h-[1px] bg-arc-cyan/35 pointer-events-none z-20" />
+              <span className="relative z-10 block text-center text-lg sm:text-xl md:text-2xl font-black font-orbitron tabular-nums tracking-wide text-[#FFD700]">
                 {String(unit.value).padStart(2, "0")}
               </span>
             </div>
-            <span className="mt-1 text-[8px] sm:text-[9px] md:text-[9.5px] text-white/80 font-bold tracking-[0.2em] uppercase font-orbitron drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+            <span className="mt-1.5 text-[8.5px] sm:text-[9.5px] md:text-[10px] text-white/90 font-bold tracking-[0.2em] uppercase font-orbitron">
               {unit.label}
             </span>
           </div>

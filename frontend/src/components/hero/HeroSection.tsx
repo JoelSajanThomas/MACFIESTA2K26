@@ -320,20 +320,20 @@ export function HeroSection() {
               initial={{ opacity: 0, scale: 0.92, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="relative w-full max-w-[340px] sm:max-w-[365px] rounded-2xl p-3.5 sm:p-4.5 space-y-2.5 sm:space-y-3 flex flex-col items-center justify-center mx-auto lg:mx-0 overflow-hidden border border-white/20 shadow-[0_12px_36px_rgba(0,0,0,0.3),0_0_20px_rgba(0,212,255,0.15)] border-glow-flow"
+              className="relative w-full max-w-[340px] sm:max-w-[365px] rounded-2xl p-3.5 sm:p-4.5 space-y-2.5 sm:space-y-3 flex flex-col items-center justify-center mx-auto lg:mx-0 overflow-hidden border border-white/20 shadow-[0_16px_40px_rgba(0,0,0,0.55),0_0_24px_rgba(0,212,255,0.18)] border-glow-flow"
               style={{
-                backdropFilter: "blur(12px)",
-                WebkitBackdropFilter: "blur(12px)",
-                background: "linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%)",
-                boxShadow: "inset 0 1px 1px 0 rgba(255, 255, 255, 0.2), 0 12px 36px rgba(0, 0, 0, 0.25), 0 0 20px rgba(0, 212, 255, 0.15)",
+                backdropFilter: "blur(20px) saturate(180%)",
+                WebkitBackdropFilter: "blur(20px) saturate(180%)",
+                background: "linear-gradient(135deg, rgba(6, 11, 24, 0.52) 0%, rgba(2, 5, 14, 0.42) 100%)",
+                boxShadow: "inset 0 1px 1px 0 rgba(255, 255, 255, 0.22), inset 0 0 24px rgba(0, 212, 255, 0.08), 0 16px 40px rgba(0, 0, 0, 0.6), 0 0 24px rgba(0, 212, 255, 0.16)",
               }}
             >
               {/* Top Dynamic Marvel vs DC Beam */}
               <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-marvel-red via-[#00D4FF] to-marvel-red pointer-events-none z-20" />
 
               {/* Ambient Energy Glows (Marvel Red top-left, DC/Arc Cyan bottom-right) */}
-              <div className="absolute -top-14 -left-14 w-36 h-36 rounded-full bg-marvel-red/15 blur-[50px] pointer-events-none" />
-              <div className="absolute -bottom-14 -right-14 w-36 h-36 rounded-full bg-arc-cyan/15 blur-[50px] pointer-events-none" />
+              <div className="absolute -top-12 -left-12 w-28 h-28 rounded-full bg-marvel-red/15 blur-[40px] pointer-events-none" />
+              <div className="absolute -bottom-12 -right-12 w-28 h-28 rounded-full bg-arc-cyan/15 blur-[40px] pointer-events-none" />
 
               {/* Corner HUD Markers with Marvel vs DC dual glow */}
               <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-marvel-red rounded-tl shadow-[0_0_8px_#ED1D24] z-20 pointer-events-none" />
@@ -344,21 +344,21 @@ export function HeroSection() {
               {/* Header: Marvel vs DC Clash Badge & Protocol Title */}
               <div className="w-full text-center space-y-1 relative z-10">
                 <div className="flex items-center justify-center gap-1.5 font-orbitron text-[8px] sm:text-[8.5px] font-black uppercase tracking-[0.2em]">
-                  <span className="px-2 py-0.5 rounded-full bg-marvel-red/20 text-[#FF3B42] border border-marvel-red/50 shadow-xs">
+                  <span className="px-2.5 py-0.5 rounded-full bg-marvel-red/30 text-[#FF3B42] border border-marvel-red/60 shadow-[0_0_8px_rgba(237,29,36,0.35)]">
                     MARVEL
                   </span>
-                  <span className="text-white/40 text-[7px] font-black">VS</span>
-                  <span className="px-2 py-0.5 rounded-full bg-arc-cyan/20 text-[#00D4FF] border border-arc-cyan/50 shadow-xs">
+                  <span className="text-white/60 text-[7px] font-black">VS</span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-arc-cyan/25 text-[#00D4FF] border border-arc-cyan/60 shadow-[0_0_8px_rgba(0,212,255,0.35)]">
                     DC
                   </span>
                 </div>
 
-                <h3 className="text-[10.5px] sm:text-xs font-black text-white tracking-[0.22em] uppercase flex items-center justify-center gap-1.5 font-orbitron drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
-                  <RiFlashlightLine className="text-arc-cyan shrink-0 drop-shadow-[0_0_6px_#00D4FF]" />
+                <h3 className="text-[11px] sm:text-xs font-black text-white tracking-[0.22em] uppercase flex items-center justify-center gap-1.5 font-orbitron">
+                  <RiFlashlightLine className="text-arc-cyan shrink-0 drop-shadow-[0_0_8px_#00D4FF]" />
                   <span>MULTIVERSE COUNTDOWN</span>
                 </h3>
 
-                <p className="text-[10.5px] sm:text-xs font-bold text-[#FFD700] font-space tracking-widest drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
+                <p className="text-[11px] sm:text-xs font-black text-[#FFD700] font-space tracking-widest">
                   {settings.motto}
                 </p>
               </div>
