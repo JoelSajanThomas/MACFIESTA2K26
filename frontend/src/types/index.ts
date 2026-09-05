@@ -39,7 +39,7 @@ export interface Event {
   };
   category: "general" | "technical" | "cultural" | "gaming" | "sports" | "management" | "media";
   type: "solo" | "duo" | "trio" | "squad" | "group";
-  prizePool: number;
+  prizePool: number | null;
   difficulty: "easy" | "medium" | "hard" | "expert";
   maxSeats: number;
   registeredCount: number;

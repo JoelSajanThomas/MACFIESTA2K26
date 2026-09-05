@@ -19,7 +19,7 @@ interface Marvel3DScrollCanvasProps {
 }
 
 export function Marvel3DScrollCanvas({
-  initialSequence = "frames",
+  initialSequence = "frames1",
   showHud = false,
 }: Marvel3DScrollCanvasProps) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);

@@ -46,7 +46,7 @@ export default function Home() {
     <div className="relative w-full bg-transparent overflow-hidden min-h-screen">
 
       {/* ─── 3D Marvel Frame-by-Frame Scroll Engine Background ─── */}
-      <Marvel3DScrollCanvas initialSequence="frames" showHud={false} />
+      <Marvel3DScrollCanvas initialSequence="frames1" showHud={false} />
 
       {/* ─── 01. Hero Section ─── */}
       {isVisible("hero") && (

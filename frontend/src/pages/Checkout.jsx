@@ -24,6 +24,7 @@ import {
   RiRestaurantLine,
   RiAddLine,
   RiTicketLine,
+  RiExternalLinkLine,
 } from "react-icons/ri";
 import LoadingState from "../components/ui/LoadingState";
 import CollegeSchoolPicker from "../components/CollegeSchoolPicker";
@@ -31,6 +32,7 @@ import { BackgroundVideo } from "../components/ui/BackgroundVideo";
 import { usePageSeo } from "../hooks/usePageSeo";
 import { loadParticipantProfile, saveParticipantProfile } from "../utils/participantProfile";
 import { ALL_EVENTS } from "../lib/eventsData";
+import { MACFIESTA_PAYMENT, buildUpiPayLink } from "../utils/registrationFees";
 import {
   getEvents,
   getCurrentUser,
@@ -181,8 +183,6 @@ export default function Checkout() {
     participant_name: savedProfile?.name || "",
     college_name: savedProfile?.college_name || "",
     phone: savedProfile?.phone || "",
-    department: savedProfile?.department || "",
-    register_number: "",
     gender: savedProfile?.gender || "male",
   });
 
@@ -565,7 +565,6 @@ export default function Checkout() {
       name: pName,
       college_name: teamForm.college_name.trim(),
       phone: teamForm.phone.trim(),
-      department: teamForm.department.trim(),
       gender: teamForm.gender,
     });
 
@@ -730,8 +729,8 @@ export default function Checkout() {
         college_name: teamForm.college_name.trim(),
         phone: teamForm.phone.trim(),
         email: account?.email || "",
-        department: teamForm.department.trim(),
-        register_number: teamForm.register_number.trim(),
+        department: "",
+        register_number: "",
         gender: teamForm.gender,
         needs_accommodation: false,
         squads_by_event: {},
@@ -1619,6 +1618,14 @@ export default function Checkout() {
                   <p className="text-[11px] text-white/50 font-mono">
                     Scan via Google Pay, PhonePe, Paytm, BHIM, or any UPI banking app.
                   </p>
+
+                  <a
+                    href={`upi://pay?pa=stalphonsahostel@iob&pn=ST%20ALPHONSA%20HOSTEL&am=${accTotalAmount.toFixed(2)}&cu=INR&tn=MacFiesta%20Hostel`}
+                    className="w-full py-3.5 px-4 bg-arc-cyan hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_20px_rgba(0,212,255,0.35)] font-excon-black inline-flex items-center justify-center gap-2 cursor-pointer"
+                  >
+                    <span>Open UPI / GPay App (₹{accTotalAmount.toLocaleString("en-IN")})</span>
+                    <RiExternalLinkLine className="text-sm" />
+                  </a>
                 </div>
 
                 {/* Verification Inputs */}
@@ -2161,32 +2168,6 @@ export default function Checkout() {
 
               <div className="space-y-2">
                 <label className="text-xs font-bold text-white uppercase font-mono tracking-wider">
-                  Department / Program / Class
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Computer Science, Class 12 Science, MCA"
-                  value={teamForm.department}
-                  onChange={(e) => setTeamForm({ ...teamForm, department: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/15 text-white placeholder-white/30 text-sm focus:border-metallic-gold outline-none font-mono"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-white uppercase font-mono tracking-wider">
-                  Register / Admission / Roll Number
-                </label>
-                <input
-                  type="text"
-                  placeholder="Student ID / Roll No"
-                  value={teamForm.register_number}
-                  onChange={(e) => setTeamForm({ ...teamForm, register_number: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-black/50 border border-white/15 text-white placeholder-white/30 text-sm focus:border-metallic-gold outline-none font-mono"
-                />
-              </div>
-
-              <div className="space-y-2 md:col-span-2">
-                <label className="text-xs font-bold text-white uppercase font-mono tracking-wider">
                   Gender Preference
                 </label>
                 <select
@@ -2588,10 +2569,6 @@ export default function Checkout() {
                 <span className="text-white/40 block text-[10px] uppercase">Institution</span>
                 <span className="font-bold text-white truncate block">{teamForm.college_name}</span>
               </div>
-              <div>
-                <span className="text-white/40 block text-[10px] uppercase">Department / Roll</span>
-                <span className="font-bold text-white truncate block">{teamForm.department || "General"}</span>
-              </div>
             </div>
 
             {/* Step 4 Actions */}
@@ -2687,6 +2664,16 @@ export default function Checkout() {
                     </div>
                     <span className="text-[11px] text-white/60">Scan with GPay / PhonePe / Paytm</span>
                     <span className="text-[10px] text-metallic-gold font-bold">UPI ID: macfast12230qr@fbl</span>
+                    <a
+                      href={buildUpiPayLink(MACFIESTA_PAYMENT, {
+                        amount: totalFee,
+                        note: `MacFiesta batch ${batchResult?.payment_batch_id || "payment"}`,
+                      })}
+                      className="w-full py-3.5 px-4 bg-metallic-gold hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_20px_rgba(212,175,55,0.35)] font-excon-black inline-flex items-center justify-center gap-2 cursor-pointer mt-1"
+                    >
+                      <span>Open UPI / GPay App (₹{Number(totalFee || 0).toLocaleString("en-IN")})</span>
+                      <RiExternalLinkLine className="text-sm" />
+                    </a>
                   </div>
 
                   {/* Payment Inputs */}

@@ -1,18 +1,20 @@
 // Global High-Speed Frame Cache & Preload Manager
-export const TOTAL_FRAMES = 110;
+export const TOTAL_FRAMES = 156;
 
-export function getFramePath(seq = "frames", index: number): string {
+export function getFramePath(seq = "frames1", index: number): string {
   const safeIndex = Math.max(1, Math.min(TOTAL_FRAMES, Math.round(index) || 1));
   const padded = String(safeIndex).padStart(3, "0");
-  return `/MARVEL/frames/frame_${padded}.webp`;
+  return `/MARVEL/frames1/ezgif-frame-${padded}.jpg`;
 }
 
 // In-memory global cache across component mounts/unmounts
 const globalFrameCache: Record<string, (HTMLImageElement | null)[]> = {
+  frames1: new Array(TOTAL_FRAMES + 1).fill(null),
   frames: new Array(TOTAL_FRAMES + 1).fill(null),
 };
 
 const preloadingPromises: Record<string, Promise<void> | null> = {
+  frames1: null,
   frames: null,
 };
 
@@ -46,7 +48,7 @@ export function subscribeToPreload(callback: () => void): () => void {
   return () => listeners.delete(callback);
 }
 
-export function getLoadedFrame(seq = "frames", index: number): HTMLImageElement | null {
+export function getLoadedFrame(seq = "frames1", index: number): HTMLImageElement | null {
   const cache = globalFrameCache[seq];
   if (!cache) return null;
   const img = cache[index];
@@ -57,7 +59,7 @@ export function getLoadedFrame(seq = "frames", index: number): HTMLImageElement 
 }
 
 export function getNearestLoadedFrame(
-  seq = "frames",
+  seq = "frames1",
   targetIndex: number,
   totalFrames = TOTAL_FRAMES
 ): HTMLImageElement | null {
@@ -80,7 +82,7 @@ export function getNearestLoadedFrame(
   return null;
 }
 
-export function loadSingleFrame(seq = "frames", idx: number, highPriority = false): Promise<HTMLImageElement> {
+export function loadSingleFrame(seq = "frames1", idx: number, highPriority = false): Promise<HTMLImageElement> {
   if (!globalFrameCache[seq]) {
     globalFrameCache[seq] = new Array(TOTAL_FRAMES + 1).fill(null);
   }
@@ -118,7 +120,7 @@ export function loadSingleFrame(seq = "frames", idx: number, highPriority = fals
 /**
  * Dynamically prioritize frames around current scrub/scroll position
  */
-export function prioritizeFramesAround(seq = "frames", centerIdx: number, radius = 12): void {
+export function prioritizeFramesAround(seq = "frames1", centerIdx: number, radius = 12): void {
   const min = Math.max(1, centerIdx - radius);
   const max = Math.min(TOTAL_FRAMES, centerIdx + radius);
   for (let i = min; i <= max; i++) {
@@ -147,7 +149,7 @@ async function processQueue(seq: string, queue: number[], concurrency: number) {
  * Load only the initial viewport frames. Later frames are requested on demand
  * by prioritizeFramesAround as the user scrolls.
  */
-export function startBackgroundPreload(seq = "frames"): Promise<void> {
+export function startBackgroundPreload(seq = "frames1"): Promise<void> {
   if (preloadingPromises[seq]) {
     return preloadingPromises[seq]!;
   }
