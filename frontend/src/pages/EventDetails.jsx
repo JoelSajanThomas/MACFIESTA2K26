@@ -17,6 +17,7 @@ import { ALL_EVENTS } from "../lib/eventsData";
 import { BackgroundVideo } from "../components/ui/BackgroundVideo";
 import CreateTeamModal from "../components/CreateTeamModal";
 import { usePageSeo } from "../hooks/usePageSeo";
+import { getCartItems, addToCart, toggleInCart } from "../utils/eventCart";
 
 export default function EventDetails() {
   const { idOrSlug } = useParams();
@@ -27,6 +28,13 @@ export default function EventDetails() {
   const [loading, setLoading] = useState(true);
   const [showTeamModal, setShowTeamModal] = useState(false);
   const [isAlreadyRegistered, setIsAlreadyRegistered] = useState(false);
+  const [cartKeys, setCartKeys] = useState(() => getCartItems());
+
+  useEffect(() => {
+    const handleCartChange = (event) => setCartKeys(event.detail || getCartItems());
+    window.addEventListener("macfiesta-cart-change", handleCartChange);
+    return () => window.removeEventListener("macfiesta-cart-change", handleCartChange);
+  }, []);
 
   useEffect(() => {
     if (isLoggedIn()) {
@@ -158,6 +166,8 @@ export default function EventDetails() {
   const feeDisplay = isFree ? "FREE PASS" : `₹${event.registrationFee}`;
   const isExpo = event.slug === "school-stark-expo";
   const isTeamEvent = (event.max_team_size || 1) > 1;
+  const eventKey = event.slug || event._id || event.id;
+  const isInCheckout = cartKeys.includes(String(eventKey));
 
   const isExternalReg = Boolean(
     event.externalRegistrationUrl ||
@@ -176,7 +186,20 @@ export default function EventDetails() {
       navigate(`/login?next=/events/${event.slug || event.id}`);
       return;
     }
-    navigate(`/checkout?event=${event.slug || event.id}`);
+    addToCart(eventKey);
+    navigate(`/checkout?event=${encodeURIComponent(eventKey)}`);
+  }
+
+  function handleAddToCheckout() {
+    if (isInCheckout) {
+      navigate("/checkout");
+      return;
+    }
+    if (!isLoggedIn()) {
+      navigate(`/login?next=${encodeURIComponent(`/events/${event.slug || event.id}`)}`);
+      return;
+    }
+    toggleInCart(eventKey);
   }
 
   return (
@@ -417,19 +440,22 @@ export default function EventDetails() {
                   <RiExternalLinkLine className="text-sm" />
                 </a>
               ) : (
-                <button
-                  type="button"
-                  onClick={handleRegisterClick}
-                  className="w-full py-3.5 bg-metallic-gold hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_20px_rgba(212,175,55,0.4)] font-excon-black cursor-pointer text-center block"
-                >
-                  {isLoggedIn()
-                    ? (isTeamEvent
-                        ? (isFree ? "Claim Free Squad Pass" : `Assemble Squad & Pay Online · ${feeDisplay}`)
-                        : (isFree ? "Claim Free Mission Pass" : `Enroll & Pay Online · ${feeDisplay}`))
-                    : (isTeamEvent
-                        ? (isFree ? "Claim Free Squad Pass" : `Register Squad & Pay Online · ${feeDisplay}`)
-                        : (isFree ? "Claim Free Mission Pass" : `Register & Pay Online · ${feeDisplay}`))}
-                </button>
+                <div className="space-y-2">
+                  <button
+                    type="button"
+                    onClick={handleRegisterClick}
+                    className="w-full py-3.5 bg-metallic-gold hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_20px_rgba(212,175,55,0.4)] font-excon-black cursor-pointer text-center block"
+                  >
+                    Register &amp; Checkout Now
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleAddToCheckout}
+                    className="w-full py-3 bg-white/10 hover:bg-white/20 border border-white/20 text-white font-black text-[11px] uppercase tracking-wider rounded-2xl transition-all font-excon-black"
+                  >
+                    {isInCheckout ? `✓ In Checkout · Go to Checkout (${cartKeys.length} Missions) →` : `+ Add to Checkout (${cartKeys.length} in Cart)`}
+                  </button>
+                </div>
               )}
 
               <div className="text-[10px] text-white/50 space-y-1.5 pt-2 border-t border-white/10 font-mono">

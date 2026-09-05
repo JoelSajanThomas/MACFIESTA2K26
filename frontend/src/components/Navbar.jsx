@@ -30,6 +30,7 @@ import {
 import { getCurrentUser, isLoggedIn } from "../services/api";
 import { AUTH_CHANGE_EVENT, logout, isUnauthorized } from "../utils/auth";
 import { BRAND } from "../utils/brand";
+import { getCartItems } from "../utils/eventCart";
 
 const mainNavItems = [
   { href: "/", label: "MISSION CONTROL" },
@@ -68,6 +69,7 @@ export default function Navbar() {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [user, setUser] = useState(null);
+  const [cartCount, setCartCount] = useState(() => getCartItems().length);
   const isAuth = Boolean(user || isLoggedIn());
 
   const dropdownRef = useRef(null);
@@ -84,6 +86,12 @@ export default function Navbar() {
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const handleCartChange = (event) => setCartCount((event.detail || getCartItems()).length);
+    window.addEventListener("macfiesta-cart-change", handleCartChange);
+    return () => window.removeEventListener("macfiesta-cart-change", handleCartChange);
   }, []);
 
   useEffect(() => {
@@ -142,7 +150,7 @@ export default function Navbar() {
         className="fixed top-0 left-0 right-0 z-50 transition-all duration-300 bg-transparent py-3 sm:py-4"
       >
         <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-2 md:gap-4">
-          
+
           {/* Brand Logo & Title */}
           <Link
             to="/"
@@ -170,11 +178,10 @@ export default function Navbar() {
                 <Link
                   key={item.href}
                   to={item.href}
-                  className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5 relative ${
-                    active
+                  className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all duration-200 flex items-center gap-1.5 relative ${active
                       ? "text-white bg-gradient-to-r from-marvel-red to-[#b30e14] shadow-[0_0_15px_rgba(237,29,36,0.6)]"
                       : "text-white/70 hover:text-white hover:bg-white/5"
-                  }`}
+                    }`}
                 >
                   {active && (
                     <span className="w-1.5 h-1.5 rounded-full bg-arc-cyan animate-pulse shadow-[0_0_6px_#00D4FF]" />
@@ -189,17 +196,15 @@ export default function Navbar() {
               <button
                 type="button"
                 onClick={() => setDropdownOpen(!dropdownOpen)}
-                className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer ${
-                  dropdownOpen
+                className={`px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all flex items-center gap-1 cursor-pointer ${dropdownOpen
                     ? "text-arc-cyan bg-white/10"
                     : "text-white/70 hover:text-white hover:bg-white/5"
-                }`}
+                  }`}
               >
                 <span>HQ HUB</span>
                 <RiArrowDownSLine
-                  className={`text-xs transition-transform duration-200 ${
-                    dropdownOpen ? "rotate-180 text-arc-cyan" : ""
-                  }`}
+                  className={`text-xs transition-transform duration-200 ${dropdownOpen ? "rotate-180 text-arc-cyan" : ""
+                    }`}
                 />
               </button>
 
@@ -234,6 +239,12 @@ export default function Navbar() {
 
           {/* Desktop Right Auth / Action Buttons */}
           <div className="hidden lg:flex items-center gap-2.5 font-space">
+            {cartCount > 0 && (
+              <Link to="/checkout" className="relative w-9 h-9 rounded-full bg-metallic-gold/15 border border-metallic-gold/50 text-metallic-gold flex items-center justify-center hover:bg-metallic-gold hover:text-black transition-all" title={`${cartCount} missions in checkout`} aria-label={`${cartCount} missions in checkout`}>
+                <RiTicketLine />
+                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-marvel-red text-white text-[9px] font-black flex items-center justify-center">{cartCount}</span>
+              </Link>
+            )}
             {isAuth ? (
               <div className="flex items-center gap-2">
                 <Link
@@ -273,6 +284,12 @@ export default function Navbar() {
 
           {/* Mobile Menu Controls */}
           <div className="flex items-center gap-2 lg:hidden">
+            {cartCount > 0 && (
+              <Link to="/checkout" className="relative w-8 h-8 rounded-full bg-metallic-gold/15 border border-metallic-gold/50 text-metallic-gold flex items-center justify-center" title={`${cartCount} missions in checkout`} aria-label={`${cartCount} missions in checkout`}>
+                <RiTicketLine className="text-sm" />
+                <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-marvel-red text-white text-[8px] font-black flex items-center justify-center">{cartCount}</span>
+              </Link>
+            )}
             {!isAuth ? (
               <Link
                 to="/register"
@@ -294,11 +311,10 @@ export default function Navbar() {
             <button
               type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className={`p-1.5 rounded-xl border transition-all cursor-pointer ${
-                mobileMenuOpen
+              className={`p-1.5 rounded-xl border transition-all cursor-pointer ${mobileMenuOpen
                   ? "bg-marvel-red/20 border-marvel-red text-marvel-red shadow-[0_0_12px_rgba(237,29,36,0.4)]"
                   : "bg-white/5 border-white/15 text-white/80 hover:text-arc-cyan hover:border-arc-cyan/40"
-              }`}
+                }`}
               aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             >
               {mobileMenuOpen ? <RiCloseLine size={20} /> : <RiMenuLine size={20} />}
@@ -344,7 +360,7 @@ export default function Navbar() {
 
             {/* Scrollable Command Content */}
             <div className="flex-1 overflow-y-auto py-3 space-y-3.5 relative z-10 w-full no-scrollbar">
-              
+
               {/* Agent Identity Card */}
               {isAuth ? (
                 <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10 relative overflow-hidden">
@@ -434,11 +450,10 @@ export default function Navbar() {
                         key={tile.href}
                         to={tile.href}
                         onClick={closeMobile}
-                        className={`p-2.5 rounded-xl border transition-all text-left flex flex-col justify-between min-h-[64px] group relative overflow-hidden ${
-                          isActive
+                        className={`p-2.5 rounded-xl border transition-all text-left flex flex-col justify-between min-h-[64px] group relative overflow-hidden ${isActive
                             ? "bg-white/[0.08] border-arc-cyan/60 shadow-[0_0_12px_rgba(0,212,255,0.2)]"
                             : "bg-white/[0.03] border-white/10 hover:border-white/25 hover:bg-white/[0.06]"
-                        }`}
+                          }`}
                       >
                         {isActive && (
                           <span className="absolute top-2 right-2 w-1.5 h-1.5 rounded-full bg-arc-cyan animate-ping" />
@@ -447,9 +462,8 @@ export default function Navbar() {
                           <Icon className={`text-base ${tile.color} transition-transform group-hover:scale-110`} />
                         </div>
                         <div className="mt-1">
-                          <span className={`block text-xs font-bold tracking-wide uppercase font-space transition-colors ${
-                            isActive ? "text-white font-black" : "text-white/85 group-hover:text-white"
-                          }`}>
+                          <span className={`block text-xs font-bold tracking-wide uppercase font-space transition-colors ${isActive ? "text-white font-black" : "text-white/85 group-hover:text-white"
+                            }`}>
                             {tile.label}
                           </span>
                           <span className="block text-[8.5px] text-white/45 truncate">

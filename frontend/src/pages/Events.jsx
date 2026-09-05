@@ -21,6 +21,7 @@ import {
 import { getEvents } from "../services/api";
 import { ALL_EVENTS } from "../lib/eventsData";
 import { usePageSeo } from "../hooks/usePageSeo";
+import { getCartItems, toggleInCart, clearCart } from "../utils/eventCart";
 
 const CATEGORY_TABS = [
   { id: "all", label: "All Sectors" },
@@ -38,6 +39,7 @@ export default function Events() {
   const [selectedScope, setSelectedScope] = useState("all");
   const [selectedType, setSelectedType] = useState("all"); // 'all' | 'solo' | 'squad'
   const [selectedCat, setSelectedCat] = useState("all");
+  const [cartKeys, setCartKeys] = useState(() => getCartItems());
 
   usePageSeo({
     title: "Event Missions · MacFiesta 2026",
@@ -45,6 +47,8 @@ export default function Events() {
   });
 
   useEffect(() => {
+    const handleCartChange = (event) => setCartKeys(event.detail || getCartItems());
+    window.addEventListener("macfiesta-cart-change", handleCartChange);
     getEvents()
       .then((res) => {
         const rawEvents = Array.isArray(res.data)
@@ -109,7 +113,17 @@ export default function Events() {
         }
       })
       .catch(() => {});
+    return () => window.removeEventListener("macfiesta-cart-change", handleCartChange);
   }, []);
+
+  const cartEvents = useMemo(
+    () => events.filter((event) => cartKeys.includes(String(event.slug || event._id || event.id))),
+    [events, cartKeys]
+  );
+  const cartTotal = useMemo(
+    () => cartEvents.reduce((total, event) => total + Number(event.registrationFee || event.registration_fee || 0), 0),
+    [cartEvents]
+  );
 
   const collegeCount = useMemo(() => events.filter((e) => e.scope === "college").length, [events]);
   const schoolCount = useMemo(() => events.filter((e) => e.scope === "school").length, [events]);
@@ -552,22 +566,40 @@ export default function Events() {
                       <RiArrowRightLine className="shrink-0" />
                     </Link>
                     {item.externalRegistrationUrl || item.slug === "vibe-coding-hackathon" ? (
-                      <a
-                        href={item.externalRegistrationUrl || "https://hackathon.macfast.org/"}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="text-[10px] sm:text-[11px] font-black text-black bg-arc-cyan px-4 py-1.5 rounded-full hover:bg-white transition-all uppercase tracking-wider shadow-[0_0_12px_#00D4FF] font-excon-black shrink-0 text-center whitespace-nowrap inline-flex items-center gap-1"
-                      >
-                        <span>Register ↗</span>
-                      </a>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => toggleInCart(item.slug || item._id || item.id)}
+                          className={`text-[10px] font-black px-3 py-1.5 rounded-full transition-all uppercase tracking-wider font-excon-black whitespace-nowrap ${cartKeys.includes(String(item.slug || item._id || item.id)) ? "bg-emerald-400 text-black" : "bg-metallic-gold text-black hover:bg-white"}`}
+                        >
+                          {cartKeys.includes(String(item.slug || item._id || item.id)) ? "✓ In Checkout" : "+ Add to Checkout"}
+                        </button>
+                        <a
+                          href={item.externalRegistrationUrl || "https://hackathon.macfast.org/"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          onClick={(e) => e.stopPropagation()}
+                          className="text-[10px] sm:text-[11px] font-black text-black bg-arc-cyan px-4 py-1.5 rounded-full hover:bg-white transition-all uppercase tracking-wider shadow-[0_0_12px_#00D4FF] font-excon-black text-center whitespace-nowrap inline-flex items-center gap-1"
+                        >
+                          <span>Register ↗</span>
+                        </a>
+                      </div>
                     ) : (
-                      <Link
-                        to={`/events/${item.slug || item._id}`}
-                        className="text-[10px] sm:text-[11px] font-black text-black bg-arc-cyan px-4 py-1.5 rounded-full hover:bg-white transition-all uppercase tracking-wider shadow-[0_0_12px_#00D4FF] font-excon-black shrink-0 text-center whitespace-nowrap"
-                      >
-                        Join Mission
-                      </Link>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => toggleInCart(item.slug || item._id || item.id)}
+                          className={`text-[10px] sm:text-[11px] font-black px-3 py-1.5 rounded-full transition-all uppercase tracking-wider font-excon-black whitespace-nowrap ${cartKeys.includes(String(item.slug || item._id || item.id)) ? "bg-emerald-400 text-black" : "bg-metallic-gold text-black hover:bg-white"}`}
+                        >
+                          {cartKeys.includes(String(item.slug || item._id || item.id)) ? "✓ In Checkout" : "+ Add to Checkout"}
+                        </button>
+                        <Link
+                          to={`/events/${item.slug || item._id}`}
+                          className="text-[10px] sm:text-[11px] font-black text-black bg-arc-cyan px-4 py-1.5 rounded-full hover:bg-white transition-all uppercase tracking-wider shadow-[0_0_12px_#00D4FF] font-excon-black text-center whitespace-nowrap"
+                        >
+                          Join Mission
+                        </Link>
+                      </div>
                     )}
                   </div>
                 </div>
@@ -577,6 +609,15 @@ export default function Events() {
         </div>
 
       </div>
+      {cartEvents.length > 0 && (
+        <div className="fixed bottom-4 left-4 right-4 z-40 max-w-5xl mx-auto p-3 sm:p-4 rounded-2xl bg-[#0A0D1A]/95 border border-metallic-gold/50 shadow-2xl backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+          <span className="text-xs sm:text-sm text-metallic-gold font-black font-mono text-center">⚡ {cartEvents.length} Missions in Checkout · Total: ₹{cartTotal.toLocaleString("en-IN")}</span>
+          <div className="flex items-center gap-2">
+            <Link to="/checkout" className="px-4 py-2 rounded-xl bg-metallic-gold text-black text-[10px] font-black uppercase font-mono">Proceed to Checkout →</Link>
+            <button type="button" onClick={clearCart} className="px-3 py-2 rounded-xl bg-white/10 text-white/70 text-[10px] font-black uppercase font-mono">Clear</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

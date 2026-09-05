@@ -31,6 +31,7 @@ import CollegeSchoolPicker from "../components/CollegeSchoolPicker";
 import { BackgroundVideo } from "../components/ui/BackgroundVideo";
 import { usePageSeo } from "../hooks/usePageSeo";
 import { loadParticipantProfile, saveParticipantProfile } from "../utils/participantProfile";
+import { getCartItems, syncCart, clearCart } from "../utils/eventCart";
 import { ALL_EVENTS } from "../lib/eventsData";
 import { MACFIESTA_PAYMENT, buildUpiPayLink } from "../utils/registrationFees";
 import {
@@ -73,14 +74,17 @@ function isSchoolEvent(event) {
 
 function isSoloEvent(event) {
   if (!event) return false;
-  if (event.slug && SOLO_EVENT_SLUGS.has(event.slug)) return true;
-  const maxS = event.max_team_size != null 
-    ? Number(event.max_team_size) 
+  // If max_team_size > 1 it is definitively a squad event — never treat as solo
+  const maxS = event.max_team_size != null
+    ? Number(event.max_team_size)
     : (event.maxTeamSize != null ? Number(event.maxTeamSize) : null);
+  if (maxS != null && maxS > 1) return false;
+  // Slug-based override (these are explicitly solo)
+  if (event.slug && SOLO_EVENT_SLUGS.has(event.slug)) return true;
+  // max_team_size explicitly 1 or 0
   if (maxS != null && maxS <= 1) return true;
-  if (event.type === "solo" || event.type === "individual") {
-    if (maxS == null || maxS <= 1) return true;
-  }
+  // Type-based fallback only when no team size is available
+  if (maxS == null && (event.type === "solo" || event.type === "individual")) return true;
   return false;
 }
 
@@ -199,6 +203,7 @@ export default function Checkout() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
+  const [returningToSelection, setReturningToSelection] = useState(false);
 
   usePageSeo({
     title: checkoutMode === "accommodation"
@@ -276,37 +281,43 @@ export default function Checkout() {
           setAccForm((prev) => ({ ...prev, hostel_id: matched.id }));
         }
 
-        // Check if event was passed via URL query
-        const eventParam = searchParams.get("event");
-        if (eventParam && finalEvents.length > 0) {
-          const match = finalEvents.find(
-            (e) => String(e.id) === eventParam || String(e._id) === eventParam || e.slug === eventParam
-          );
-          if (match) {
-            setSelectedEvents([match]);
-            const isMatchSolo = isSoloEvent(match);
-            if (!isMatchSolo) {
-              setSquadsData({
-                [match.id]: {
-                  team_name: "",
-                  members: [],
-                  newMember: {
-                    name: "",
-                    email: "",
-                    phone: "",
-                    college_name: user?.college_name || "",
-                    department: "",
-                    register_number: "",
-                    gender: "male",
-                  },
+        const urlKeys = [
+          ...searchParams.getAll("event"),
+          ...(searchParams.get("events") || "").split(",").map((key) => key.trim()).filter(Boolean),
+        ];
+        const cartKeys = getCartItems();
+        const matches = finalEvents.filter((e) => {
+          const keys = [e.id, e._id, e.slug].map((key) => String(key || ""));
+          return [...cartKeys, ...urlKeys].some((key) => keys.includes(String(key)));
+        });
+        if (matches.length > 0) {
+          setSelectedEvents(matches.slice(0, 12));
+          syncCart(matches.slice(0, 12).map((e) => e.slug || e.id || e._id));
+          setSquadsData((prev) => {
+            const next = { ...prev };
+            matches.filter((match) => !isSoloEvent(match)).forEach((match) => {
+              next[match.id] = next[match.id] || {
+                team_name: "",
+                members: [],
+                newMember: {
+                  name: "",
+                  email: "",
+                  phone: "",
+                  college_name: user?.college_name || "",
+                  department: "",
+                  register_number: "",
+                  gender: "male",
                 },
-              });
-            }
-            setTeamForm((prev) => ({
-              ...prev,
-              participant_name: prev.participant_name || uName,
-              team_name: isMatchSolo ? (prev.participant_name || uName || "Solo Participant") : prev.team_name,
-            }));
+              };
+            });
+            return next;
+          });
+          setTeamForm((prev) => ({
+            ...prev,
+            participant_name: prev.participant_name || uName,
+            team_name: prev.team_name || (matches.length === 1 && isSoloEvent(matches[0]) ? (prev.participant_name || uName || "Solo Participant") : prev.team_name),
+          }));
+          if (urlKeys.length > 0) {
             setStep(2);
             setCheckoutMode("event");
           }
@@ -386,6 +397,10 @@ export default function Checkout() {
   function handleToggleEvent(ev) {
     setSelectedEvents((prev) => {
       const exists = prev.some((e) => String(e.id) === String(ev.id));
+      if (!exists && prev.length >= 12) {
+        setError("You can select up to 12 missions in one checkout.");
+        return prev;
+      }
       let next;
       if (exists) {
         next = prev.filter((e) => String(e.id) !== String(ev.id));
@@ -414,8 +429,40 @@ export default function Checkout() {
           };
         });
       }
+      syncCart(next.map((item) => item.slug || item.id || item._id));
+      setError("");
       return next;
     });
+  }
+
+  function handleSelectEvents(missionList) {
+    const selected = missionList.slice(0, 12);
+    setSelectedEvents((prev) => {
+      const byKey = new Map(prev.map((event) => [String(event.id), event]));
+      selected.forEach((event) => byKey.set(String(event.id), event));
+      const next = [...byKey.values()].slice(0, 12);
+      syncCart(next.map((item) => item.slug || item.id || item._id));
+      return next;
+    });
+  }
+
+  function handleRemoveEvent(ev) {
+    setSelectedEvents((prev) => {
+      const next = prev.filter((item) => String(item.id) !== String(ev.id));
+      syncCart(next.map((item) => item.slug || item.id || item._id));
+      return next;
+    });
+    setSquadsData((prev) => {
+      const next = { ...prev };
+      delete next[ev.id];
+      return next;
+    });
+  }
+
+  function handleAddMoreEvents() {
+    setStep(1);
+    setSuccessMsg("Add or modify missions in your checkout. Your registrant and squad details are saved.");
+    setTimeout(() => setSuccessMsg(""), 3500);
   }
 
   // Accommodation Calculations
@@ -534,6 +581,7 @@ export default function Checkout() {
       return;
     }
     setError("");
+    setReturningToSelection(false);
     setStep(2);
   }
 
@@ -542,6 +590,7 @@ export default function Checkout() {
     if (e) e.preventDefault();
     if (selectedEvents.length === 0) {
       setError("Please select at least one tournament mission first.");
+      setReturningToSelection(true);
       setStep(1);
       return;
     }
@@ -685,6 +734,13 @@ export default function Checkout() {
 
   // Step 3: Validate all squad requirements before review
   function handleProceedToReview() {
+    // If somehow no squad events are left (all deselected), skip straight to review
+    if (squadSelected.length === 0) {
+      setError("");
+      setStep(4);
+      return;
+    }
+
     for (const ev of squadSelected) {
       const sq = squadsData[ev.id] || { team_name: "", members: [] };
       const minS = ev.min_team_size || 1;
@@ -736,7 +792,10 @@ export default function Checkout() {
         squads_by_event: {},
       };
 
+      // Only include squad events in squads_by_event — solo events must NOT be keyed here
+      // otherwise the backend may create unintended TeamMember rows
       for (const ev of squadSelected) {
+        if (isSoloEvent(ev)) continue; // safety guard
         const sq = squadsData[ev.id] || { team_name: "", members: [] };
         payload.squads_by_event[String(ev.id)] = {
           team_name: sq.team_name?.trim() || `${teamForm.participant_name}'s Team`,
@@ -805,6 +864,7 @@ export default function Checkout() {
       setRegistrations(updated);
       if (updated.length > 0) setRegistration(updated[0]);
       setSuccessMsg("Payment proof submitted! Verifying credentials...");
+      clearCart();
       setStep(6);
     } catch (err) {
       const d = err?.response?.data;
@@ -837,6 +897,7 @@ export default function Checkout() {
       setRegistrations(updated);
       if (updated.length > 0) setRegistration(updated[0]);
       setSuccessMsg("Registrations verified and confirmed!");
+      clearCart();
       setStep(6);
     } catch (err) {
       const d = err?.response?.data;
@@ -976,7 +1037,10 @@ export default function Checkout() {
             <div className={`grid ${eventSteps.length === 5 ? "grid-cols-5" : "grid-cols-6"} gap-1 sm:gap-2`}>
               {eventSteps.map((s, idx) => {
                 const isActive = step === s.num;
-                const isDone = step > s.num;
+                // Compare visual index positions rather than step numbers so the
+                // solo flow (steps 1,2,4,5,6) renders the done check-mark correctly.
+                const currentIdx = eventSteps.findIndex((x) => x.num === step);
+                const isDone = currentIdx > idx;
                 return (
                   <div
                     key={s.num}
@@ -1844,6 +1908,13 @@ export default function Checkout() {
               </div>
             </div>
 
+            {successMsg && <div className="p-3 rounded-xl bg-arc-cyan/10 border border-arc-cyan/30 text-xs text-arc-cyan font-mono">{successMsg}</div>}
+            <div className="flex flex-wrap gap-2">
+              <button type="button" onClick={() => handleSelectEvents(events.filter((ev) => !isSchoolEvent(ev)))} className="px-3 py-2 rounded-xl bg-arc-cyan/10 border border-arc-cyan/30 text-arc-cyan text-[10px] font-bold uppercase font-mono">Select All College</button>
+              <button type="button" onClick={() => handleSelectEvents(events.filter(isSchoolEvent))} className="px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-[10px] font-bold uppercase font-mono">Select All School</button>
+              <button type="button" onClick={() => { setSelectedEvents([]); syncCart([]); setSquadsData({}); }} className="px-3 py-2 rounded-xl bg-white/5 border border-white/15 text-white/60 text-[10px] font-bold uppercase font-mono">Reset Selection</button>
+            </div>
+
             {/* Division & Category Filter Tabs */}
             <div className="flex flex-wrap items-center gap-2 p-1.5 rounded-2xl bg-black/40 border border-white/10">
               <button
@@ -2052,7 +2123,9 @@ export default function Checkout() {
                   className="w-full sm:w-auto px-7 py-3.5 bg-metallic-gold hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg font-excon-black cursor-pointer inline-flex items-center justify-center gap-2"
                 >
                   <span>
-                    {isOnlySolo
+                    {returningToSelection
+                      ? `Return to Checkout (${selectedEvents.length} Missions)`
+                      : isOnlySolo
                       ? "Continue to Solo Details"
                       : hasSquadEvents && hasSoloEvents
                       ? "Continue to Participant & Squad Setup"
@@ -2099,6 +2172,21 @@ export default function Checkout() {
                 <RiArrowLeftLine />
                 <span>Change Missions</span>
               </button>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-black/40 border border-metallic-gold/30 space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <h3 className="text-sm font-black uppercase text-metallic-gold font-mono">Missions in this Checkout ({selectedEvents.length})</h3>
+                <button type="button" onClick={handleAddMoreEvents} className="text-[10px] text-arc-cyan font-bold uppercase font-mono hover:underline">➕ Add More Events</button>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {selectedEvents.map((ev) => (
+                  <span key={ev.id} className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 border border-white/15 text-[10px] text-white font-mono">
+                    <span>{ev.title} · {Number(ev.registration_fee) === 0 ? "FREE" : `₹${ev.registration_fee}`} · {isSoloEvent(ev) ? "Solo" : "Squad"} · {isSchoolEvent(ev) ? "School" : "College"}</span>
+                    <button type="button" onClick={() => handleRemoveEvent(ev)} aria-label={`Remove ${ev.title}`} className="text-white/50 hover:text-marvel-red text-sm">×</button>
+                  </span>
+                ))}
+              </div>
             </div>
 
             {/* Designated Captain / Solo Participant Pre-Population Card */}
@@ -2209,7 +2297,7 @@ export default function Checkout() {
         {/* ───────────────────────────────────────────────────────────── */}
         {/* STEP 3: ASSEMBLE SQUADS & TEAMMATES (SQUAD MISSIONS ONLY)     */}
         {/* ───────────────────────────────────────────────────────────── */}
-        {step === 3 && hasSquadEvents && (
+        {step === 3 && (
           <div className="marvel-card p-6 sm:p-8 rounded-3xl border border-white/15 bg-[#0A0D1A]/95 shadow-2xl space-y-6">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
               <div>
@@ -2231,6 +2319,16 @@ export default function Checkout() {
                 <RiArrowLeftLine />
                 <span>Edit Captain Details</span>
               </button>
+              <button type="button" onClick={handleAddMoreEvents} className="text-xs text-arc-cyan font-bold hover:underline font-mono">➕ Add More Events</button>
+            </div>
+
+            <div className="flex flex-wrap gap-2 p-3 rounded-2xl bg-black/30 border border-white/10">
+              {selectedEvents.map((ev) => (
+                <span key={ev.id} className="inline-flex items-center gap-2 px-3 py-2 rounded-xl bg-white/10 border border-white/15 text-[10px] text-white font-mono">
+                  <span>{ev.title}</span>
+                  <button type="button" onClick={() => handleRemoveEvent(ev)} aria-label={`Remove ${ev.title}`} className="text-white/50 hover:text-marvel-red text-sm">×</button>
+                </span>
+              ))}
             </div>
 
             {/* Informational banner for Solo Missions in mixed checkout */}
@@ -2492,6 +2590,7 @@ export default function Checkout() {
                 <RiArrowLeftLine />
                 <span>{isOnlySolo ? "Edit Details" : "Edit Squads"}</span>
               </button>
+              <button type="button" onClick={handleAddMoreEvents} className="text-xs text-arc-cyan font-bold hover:underline font-mono">➕ Add More Events</button>
             </div>
 
             {/* Itemized Missions Breakdown Card */}
@@ -2517,6 +2616,7 @@ export default function Checkout() {
                   <span className="font-black font-mono text-white text-sm shrink-0">
                     {Number(ev.registration_fee) === 0 ? "FREE" : `₹${ev.registration_fee}`}
                   </span>
+                  <button type="button" onClick={() => handleRemoveEvent(ev)} className="text-[10px] text-marvel-red font-bold uppercase hover:underline shrink-0">Remove</button>
                 </div>
               ))}
 
@@ -2542,6 +2642,7 @@ export default function Checkout() {
                     <span className="font-black font-mono text-white text-sm shrink-0">
                       {Number(ev.registration_fee) === 0 ? "FREE" : `₹${ev.registration_fee}`}
                     </span>
+                    <button type="button" onClick={() => handleRemoveEvent(ev)} className="text-[10px] text-marvel-red font-bold uppercase hover:underline shrink-0">Remove</button>
                   </div>
                 );
               })}
@@ -2811,6 +2912,7 @@ export default function Checkout() {
                 type="button"
                 onClick={() => {
                   setSelectedEvents([]);
+                  clearCart();
                   setBatchResult(null);
                   setRegistrations([]);
                   setStep(1);

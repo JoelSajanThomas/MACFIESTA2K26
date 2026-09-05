@@ -6,40 +6,62 @@ function read() {
   try {
     const raw = localStorage.getItem(KEY);
     const parsed = raw ? JSON.parse(raw) : [];
-    return Array.isArray(parsed) ? parsed.map(Number).filter((n) => Number.isFinite(n)) : [];
+    return Array.isArray(parsed)
+      ? [...new Set(parsed.map((value) => String(value || "").trim()).filter(Boolean))]
+      : [];
   } catch {
     return [];
   }
 }
 
-function write(ids) {
-  const unique = [...new Set(ids.map(Number).filter((n) => Number.isFinite(n)))];
+function write(keys) {
+  const unique = [...new Set(keys.map((value) => String(value || "").trim()).filter(Boolean))];
   localStorage.setItem(KEY, JSON.stringify(unique));
   window.dispatchEvent(new CustomEvent("macfiesta-cart-change", { detail: unique }));
   return unique;
 }
 
-export function getCartEventIds() {
+export function getCartItems() {
   return read();
 }
 
-export function isInCart(eventId) {
-  return read().includes(Number(eventId));
+export function getCartEventIds() {
+  return getCartItems();
 }
 
-export function toggleCartEvent(eventId) {
-  const id = Number(eventId);
+export function hasInCart(eventKey) {
+  return read().includes(String(eventKey));
+}
+
+export function addToCart(eventKey) {
+  return write([...read(), eventKey]);
+}
+
+export function removeFromCart(eventKey) {
+  return write(read().filter((key) => key !== String(eventKey)));
+}
+
+export function toggleInCart(eventKey) {
+  const key = String(eventKey);
   const cur = read();
-  if (cur.includes(id)) return write(cur.filter((x) => x !== id));
-  return write([...cur, id]);
+  if (cur.includes(key)) return removeFromCart(key);
+  return addToCart(key);
 }
 
-export function addCartEvents(eventIds) {
-  return write([...read(), ...eventIds]);
+export function isInCart(eventKey) {
+  return hasInCart(eventKey);
 }
 
-export function removeCartEvent(eventId) {
-  return write(read().filter((x) => x !== Number(eventId)));
+export function addCartEvents(eventKeys) {
+  return write([...read(), ...eventKeys]);
+}
+
+export function removeCartEvent(eventKey) {
+  return removeFromCart(eventKey);
+}
+
+export function syncCart(eventKeys) {
+  return write(eventKeys);
 }
 
 export function clearCart() {
