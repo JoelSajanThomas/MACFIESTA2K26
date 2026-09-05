@@ -6,6 +6,7 @@ import re
 
 SEED_INSTITUTIONS = [
     # Pathanamthitta & Central Travancore Colleges
+    "Mar Athanasios College For Advanced Studies Tiruvalla (MACFAST)",
     "Titus II Teachers College, Tiruvalla",
     "Mar Thoma College, Tiruvalla",
     "Believers Church Medical College Hospital, Thiruvalla",
