@@ -1,6 +1,9 @@
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from django.db.models import Count, Q, Sum
+from django.utils import timezone
+from datetime import datetime, time, timedelta
 from events.models import Event
 from registrations.models import Registration
 from results.models import Result
@@ -68,68 +71,96 @@ def public_fest_config(request):
 @api_view(["GET"])
 @permission_classes([HasModule("insights")])
 def dashboard_stats(request):
-    from django.db.models import Count, Sum, Q
-    from django.utils import timezone
-
     regs = Registration.objects.exclude(approval_status="cancelled")
-    payment_rows = (
-        regs.values("payment_status")
-        .annotate(count=Count("id"))
-        .order_by("payment_status")
-    )
-    payment_summary = {row["payment_status"]: row["count"] for row in payment_rows}
-    for key in ("pending", "initiated", "paid", "failed", "cancelled", "refunded", "waived"):
-        payment_summary.setdefault(key, 0)
 
-    attended = regs.filter(attendance_marked=True).count()
-    total_regs = regs.count()
     today = timezone.localdate()
-    today_regs = regs.filter(registered_at__date=today).count()
-
-    verified_revenue = (
-        regs.filter(payment_status="paid").aggregate(t=Sum("payment_amount"))["t"] or 0
+    today_start = timezone.make_aware(datetime.combine(today, time.min))
+    tomorrow_start = today_start + timedelta(days=1)
+    metrics = regs.aggregate(
+        total=Count("id"),
+        attended=Count("id", filter=Q(attendance_marked=True)),
+        registrations_today=Count(
+            "id", filter=Q(registered_at__gte=today_start, registered_at__lt=tomorrow_start)
+        ),
+        verified_revenue=Sum("payment_amount", filter=Q(payment_status="paid")),
+        pending_payment_amount=Sum("payment_amount", filter=Q(payment_status="pending")),
+        approval_pending=Count("id", filter=Q(approval_status="pending")),
+        waitlisted=Count("id", filter=Q(is_waiting_list=True)),
+        accommodation_requests=Count("id", filter=Q(needs_accommodation=True)),
+        accommodation_pending=Count(
+            "id", filter=Q(needs_accommodation=True, accommodation_status="pending")
+        ),
+        accommodation_allocated=Count(
+            "id", filter=Q(
+                needs_accommodation=True,
+                accommodation_status__in=["allocated", "checked_in"],
+            )
+        ),
+        accommodation_male=Count("id", filter=Q(needs_accommodation=True, gender="male")),
+        accommodation_female=Count("id", filter=Q(needs_accommodation=True, gender="female")),
+        food_requests=Count("id", filter=~Q(food_preference="none")),
+        food_veg=Count("id", filter=Q(food_preference="veg")),
+        food_non_veg=Count("id", filter=Q(food_preference="non_veg")),
+        food_jain=Count("id", filter=Q(food_preference="jain")),
+        gender_male=Count("id", filter=Q(gender="male")),
+        gender_female=Count("id", filter=Q(gender="female")),
+        gender_other=Count("id", filter=Q(gender="other")),
+        gender_unspecified=Count("id", filter=Q(gender="unspecified")),
+        payment_pending=Count("id", filter=Q(payment_status="pending")),
+        payment_initiated=Count("id", filter=Q(payment_status="initiated")),
+        payment_paid=Count("id", filter=Q(payment_status="paid")),
+        payment_failed=Count("id", filter=Q(payment_status="failed")),
+        payment_cancelled=Count("id", filter=Q(payment_status="cancelled")),
+        payment_refunded=Count("id", filter=Q(payment_status="refunded")),
+        payment_waived=Count("id", filter=Q(payment_status="waived")),
     )
-    pending_amount = (
-        regs.filter(payment_status="pending").aggregate(t=Sum("payment_amount"))["t"] or 0
-    )
 
-    stay_qs = regs.filter(needs_accommodation=True)
-    food_qs = regs.exclude(food_preference="none")
+    event_metrics = Event.objects.aggregate(
+        total=Count("id", filter=~Q(status="cancelled")),
+        results_pending=Count(
+            "id", filter=Q(is_result_published=False) & ~Q(status="cancelled")
+        ),
+        events_today=Count("id", filter=Q(event_date=today) & ~Q(status="cancelled")),
+    )
+    result_metrics = Result.objects.aggregate(
+        total=Count("id"),
+        published=Count("id", filter=Q(event__is_result_published=True)),
+    )
+    payment_summary = {
+        key: metrics[f"payment_{key}"]
+        for key in ("pending", "initiated", "paid", "failed", "cancelled", "refunded", "waived")
+    }
 
     data = {
-        "total_events": Event.objects.exclude(status="cancelled").count(),
-        "total_registrations": total_regs,
-        "registrations_today": today_regs,
-        "total_results": Result.objects.count(),
-        "published_results": Result.objects.filter(event__is_result_published=True).count(),
-        "results_pending_events": Event.objects.filter(
-            is_result_published=False
-        ).exclude(status="cancelled").count(),
+        "total_events": event_metrics["total"],
+        "total_registrations": metrics["total"],
+        "registrations_today": metrics["registrations_today"],
+        "total_results": result_metrics["total"],
+        "published_results": result_metrics["published"],
+        "results_pending_events": event_metrics["results_pending"],
         "total_gallery_images": GalleryImage.objects.count(),
-        "attended": attended,
-        "not_attended": total_regs - attended,
+        "attended": metrics["attended"],
+        "not_attended": metrics["total"] - metrics["attended"],
         "payment_summary": payment_summary,
-        "verified_revenue": float(verified_revenue),
-        "pending_payment_amount": float(pending_amount),
-        "approval_pending": regs.filter(approval_status="pending").count(),
-        "waitlisted": regs.filter(is_waiting_list=True).count(),
-        "accommodation_requests": stay_qs.count(),
-        "accommodation_pending": stay_qs.filter(accommodation_status="pending").count(),
-        "accommodation_allocated": stay_qs.filter(
-            accommodation_status__in=["allocated", "checked_in"]
-        ).count(),
-        "accommodation_male": stay_qs.filter(gender="male").count(),
-        "accommodation_female": stay_qs.filter(gender="female").count(),
-        "food_requests": food_qs.count(),
-        "food_veg": food_qs.filter(food_preference="veg").count(),
-        "food_non_veg": food_qs.filter(food_preference="non_veg").count(),
-        "food_jain": food_qs.filter(food_preference="jain").count(),
-        "events_today": Event.objects.filter(event_date=today).exclude(status="cancelled").count(),
+        "verified_revenue": float(metrics["verified_revenue"] or 0),
+        "pending_payment_amount": float(metrics["pending_payment_amount"] or 0),
+        "approval_pending": metrics["approval_pending"],
+        "waitlisted": metrics["waitlisted"],
+        "accommodation_requests": metrics["accommodation_requests"],
+        "accommodation_pending": metrics["accommodation_pending"],
+        "accommodation_allocated": metrics["accommodation_allocated"],
+        "accommodation_male": metrics["accommodation_male"],
+        "accommodation_female": metrics["accommodation_female"],
+        "food_requests": metrics["food_requests"],
+        "food_veg": metrics["food_veg"],
+        "food_non_veg": metrics["food_non_veg"],
+        "food_jain": metrics["food_jain"],
+        "events_today": event_metrics["events_today"],
         "gender_distribution": {
-            "male": regs.filter(gender="male").count(),
-            "female": regs.filter(gender="female").count(),
-            "other": regs.filter(gender="other").count(),
-            "unspecified": regs.filter(gender="unspecified").count(),
+            "male": metrics["gender_male"],
+            "female": metrics["gender_female"],
+            "other": metrics["gender_other"],
+            "unspecified": metrics["gender_unspecified"],
         },
     }
     return Response(data)

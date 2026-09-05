@@ -107,13 +107,17 @@
 
   /* ============== BOLD EXCON FONT SYSTEM ============== */
   /* Primary Headline / Display — Anton (Google Fonts) with tight tracking */
-  --font-headline: var(--font-anton), 'Anton', 'Excon-Black', sans-serif;
-  --font-display: var(--font-anton), 'Anton', var(--font-excon), 'Excon-Black', sans-serif;
-  --font-heading: var(--font-anton), 'Anton', var(--font-excon), 'Excon-Bold', sans-serif;
+  --font-excon: 'Excon', sans-serif;
+  --font-anton: 'Anton', 'Excon-Black', sans-serif;
+  --font-space-grotesk: 'Space Grotesk', 'Excon', sans-serif;
+  --font-orbitron: 'Orbitron', 'Excon-Bold', sans-serif;
+  --font-bebas: 'Anton', 'Excon-Black', sans-serif;
+  --font-headline: var(--font-anton);
+  --font-display: var(--font-anton), var(--font-excon);
+  --font-heading: var(--font-anton), var(--font-excon);
   /* Primary Body — Space Grotesk (Google Fonts) */
   --font-body: var(--font-space-grotesk), 'Space Grotesk', var(--font-excon), sans-serif;
   --font-space: var(--font-space-grotesk), 'Space Grotesk', sans-serif;
-  --font-anton: var(--font-anton), 'Anton', sans-serif;
   --font-syne: var(--font-anton), 'Anton', 'Syne', sans-serif;
   /* Mono for HUD telemetry */
   --font-mono: var(--font-space-grotesk), 'Space Grotesk', 'Rajdhani', ui-monospace, monospace;

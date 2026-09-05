@@ -45,13 +45,27 @@ class SecurityHeadersMiddleware:
             "payment=(), usb=(), interest-cohort=()"
         )
 
-        # ── Cache control: API responses must never be cached ──────────────
-        # This prevents browser/proxy caches from storing JSON payloads that
-        # may contain user data, tokens, or registration info.
+        # ── Cache control: only anonymous, read-only public data is cacheable
         path = request.path_info
         if path.startswith("/api/"):
-            response["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
-            response["Pragma"] = "no-cache"
-            response["Expires"] = "0"
+            public_prefixes = (
+                "/api/events/",
+                "/api/results/",
+                "/api/gallery/",
+                "/api/announcements/",
+                "/api/public/",
+                "/api/cms/",
+            )
+            is_public_read = (
+                request.method == "GET"
+                and not request.headers.get("Authorization")
+                and path.startswith(public_prefixes)
+            )
+            if is_public_read and response.status_code == 200:
+                response["Cache-Control"] = "public, max-age=30, stale-while-revalidate=120"
+            else:
+                response["Cache-Control"] = "no-store, no-cache, must-revalidate, private"
+                response["Pragma"] = "no-cache"
+                response["Expires"] = "0"
 
         return response

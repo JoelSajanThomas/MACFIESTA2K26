@@ -1,7 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useLoading } from "../../providers/LoadingProvider";
 import { motion, AnimatePresence } from "framer-motion";
-import { startBackgroundPreload } from "../../utils/framePreloader";
 
 // ─── Gold palette ─────────────────────────────────────────────────────────────
 const GOLD = ["#D4AF37", "#F5D76E", "#FFE680", "#C8960C", "#FFC200", "#FFFFFF"];
@@ -38,10 +37,9 @@ export default function LoadingScreen({ skip = false }) {
   const burstRef = useRef([]);
   const burstFiredRef = useRef(false);
 
-  // ── Mount: activate background preloading immediately ────────────────────
+  // ── Mount: keep the loader visual-only; page-specific media loads in place ─
   useEffect(() => {
     setIsMounted(true);
-    startBackgroundPreload("frames");
   }, []);
 
   // ── Canvas: ambient dust + burst particles ───────────────────────────────

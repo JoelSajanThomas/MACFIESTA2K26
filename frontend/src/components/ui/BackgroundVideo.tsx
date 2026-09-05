@@ -26,6 +26,15 @@ export function BackgroundVideo({
     video.muted = true;
     video.defaultMuted = true;
 
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const syncPlayback = () => {
+      if (document.hidden || reduceMotion.matches) {
+        video.pause();
+        return;
+      }
+      video.play().catch(() => {});
+    };
+
     // Robust hardware play trigger
     const playPromise = video.play();
     if (playPromise !== undefined) {
@@ -44,6 +53,18 @@ export function BackgroundVideo({
         window.addEventListener("scroll", handleInteraction, { once: true, passive: true });
       });
     }
+
+    document.addEventListener("visibilitychange", syncPlayback);
+    reduceMotion.addEventListener?.("change", syncPlayback);
+    syncPlayback();
+
+    return () => {
+      document.removeEventListener("visibilitychange", syncPlayback);
+      reduceMotion.removeEventListener?.("change", syncPlayback);
+      video.pause();
+      video.removeAttribute("src");
+      video.load();
+    };
   }, [src]);
 
   const getMimeType = (url?: string) => {
@@ -62,7 +83,7 @@ export function BackgroundVideo({
         loop
         muted
         playsInline
-        preload="auto"
+        preload="metadata"
         disablePictureInPicture
         disableRemotePlayback
         className="w-full h-full object-cover object-center"

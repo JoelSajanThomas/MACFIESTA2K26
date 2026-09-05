@@ -51,6 +51,7 @@ class AudioEngine {
   private listeners: Set<StateListener> = new Set();
   private isUnlocked: boolean = false;
   private hasInitialized: boolean = false;
+  private libraryLoadStarted: boolean = false;
 
   private constructor() {
     this.slotA = new Audio();
@@ -71,7 +72,7 @@ class AudioEngine {
   }
 
   private setupAudioElement(audio: HTMLAudioElement, id: "A" | "B") {
-    audio.preload = "auto";
+    audio.preload = "metadata";
     audio.volume = 0;
 
     audio.addEventListener("ended", () => {
@@ -88,15 +89,6 @@ class AudioEngine {
   private init() {
     if (this.hasInitialized) return;
     this.hasInitialized = true;
-
-    // Load dynamic library asynchronously
-    loadSongLibrary().then((tracks) => {
-      if (tracks && tracks.length > 0) {
-        this.playlist = tracks;
-        this.emitState();
-        this.preloadNext();
-      }
-    });
 
     // Mobile & autoplay user interaction unlockers
     const unlockAudio = () => {
@@ -141,6 +133,19 @@ class AudioEngine {
   private getEffectiveVolume(): number {
     if (this.userMuted) return 0;
     return Math.max(0, Math.min(1, this.baseVolume));
+  }
+
+  private loadLibraryOnDemand() {
+    if (this.libraryLoadStarted) return;
+    this.libraryLoadStarted = true;
+
+    loadSongLibrary().then((tracks) => {
+      if (tracks && tracks.length > 0) {
+        this.playlist = tracks;
+        this.emitState();
+        if (this.isPlaying) this.preloadNext();
+      }
+    });
   }
 
   private getActiveSlot(): HTMLAudioElement {
@@ -233,6 +238,7 @@ class AudioEngine {
     }
 
     this.userMuted = false;
+    this.loadLibraryOnDemand();
     const currentTrack = this.playlist[this.currentIndex];
     if (!currentTrack) return;
 
@@ -416,7 +422,7 @@ class AudioEngine {
     const standby = this.getStandbySlot();
     if (!this.isTransitioning && (!standby.src || !standby.src.includes(encodeURIComponent(nextTrack.filename)))) {
       standby.src = nextTrack.url;
-      standby.preload = "auto";
+      standby.preload = "metadata";
       standby.load();
     }
   }

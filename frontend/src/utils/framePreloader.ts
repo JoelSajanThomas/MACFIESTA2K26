@@ -1,10 +1,10 @@
 // Global High-Speed Frame Cache & Preload Manager
-export const TOTAL_FRAMES = 286;
+export const TOTAL_FRAMES = 110;
 
 export function getFramePath(seq = "frames", index: number): string {
   const safeIndex = Math.max(1, Math.min(TOTAL_FRAMES, Math.round(index) || 1));
-  const padded = String(safeIndex - 1).padStart(5, "0");
-  return `/MARVEL/compressed_frames/frame_${padded}.webp`;
+  const padded = String(safeIndex).padStart(3, "0");
+  return `/MARVEL/front_frames/frame_${padded}.png`;
 }
 
 // In-memory global cache across component mounts/unmounts
@@ -144,8 +144,8 @@ async function processQueue(seq: string, queue: number[], concurrency: number) {
 }
 
 /**
- * Start aggressive background preloading immediately.
- * Uses high concurrency (18 workers) so all frames load rapidly into memory.
+ * Load only the initial viewport frames. Later frames are requested on demand
+ * by prioritizeFramesAround as the user scrolls.
  */
 export function startBackgroundPreload(seq = "frames"): Promise<void> {
   if (preloadingPromises[seq]) {
@@ -156,42 +156,14 @@ export function startBackgroundPreload(seq = "frames"): Promise<void> {
     // 1. Load Frame 1 with maximum priority
     await loadSingleFrame(seq, 1, true);
 
-    // 2. Priority Batch: Hero frames (1 to 30)
+    // 2. Keep the initial decode budget small on mobile and low-end devices.
     const heroFrames: number[] = [];
-    for (let i = 2; i <= Math.min(30, TOTAL_FRAMES); i++) {
+    for (let i = 2; i <= Math.min(12, TOTAL_FRAMES); i++) {
       heroFrames.push(i);
     }
     await processQueue(seq, heroFrames, 8);
-
-    // 3. Keyframes stride 3 for seamless fast scrub preview
-    const keyframes: number[] = [];
-    for (let i = 31; i <= TOTAL_FRAMES; i += 3) {
-      keyframes.push(i);
-    }
-    if (keyframes[keyframes.length - 1] !== TOTAL_FRAMES) {
-      keyframes.push(TOTAL_FRAMES);
-    }
-    await processQueue(seq, keyframes, 6);
-
-    // 4. Fill all remaining frames
-    const remaining: number[] = [];
-    const cache = globalFrameCache[seq];
-    for (let i = 1; i <= TOTAL_FRAMES; i++) {
-      if (!cache || !cache[i] || !cache[i]?.complete) {
-        remaining.push(i);
-      }
-    }
-    await processQueue(seq, remaining, 6);
   })();
 
   return preloadingPromises[seq]!;
 }
 
-// Automatically start preloading when this module is evaluated in the browser
-if (typeof window !== "undefined") {
-  if ("requestIdleCallback" in window) {
-    (window as any).requestIdleCallback(() => startBackgroundPreload("frames"));
-  } else {
-    setTimeout(() => startBackgroundPreload("frames"), 50);
-  }
-}
