@@ -62,7 +62,15 @@ class AccommodationBookingSerializer(serializers.ModelSerializer):
             "persons_count",
             "check_in_date",
             "check_out_date",
+            "include_breakfast",
+            "include_lunch",
+            "include_dinner",
             "special_requests",
+            "payment_status",
+            "payment_amount",
+            "payment_method",
+            "payment_transaction_id",
+            "payment_proof",
             "status",
             "allocated_hostel",
             "allocated_room",
@@ -100,6 +108,12 @@ class AccommodationBookingSerializer(serializers.ModelSerializer):
             except Exception as e:
                 raise serializers.ValidationError({"phone": str(e)})
         return super().validate(attrs)
+
+    def create(self, validated_data):
+        payment_status = validated_data.get("payment_status", "pending")
+        if payment_status in ("confirmed", "paid"):
+            validated_data["status"] = "confirmed"
+        return super().create(validated_data)
 
 
 class AdminAccommodationBookingSerializer(serializers.ModelSerializer):

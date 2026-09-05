@@ -15,8 +15,10 @@ class Registration(models.Model):
 
     PAYMENT_STATUS_CHOICES = [
         ("pending", "Pending"),
+        ("initiated", "Initiated"),
         ("paid", "Paid"),
         ("failed", "Failed"),
+        ("cancelled", "Cancelled"),
         ("rejected", "Rejected"),
         ("refunded", "Refunded"),
         ("waived", "Waived"),
@@ -68,10 +70,10 @@ class Registration(models.Model):
         max_length=20, choices=GENDER_CHOICES, default="unspecified", blank=True
     )
     payment_status = models.CharField(
-        max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending"
+        max_length=20, choices=PAYMENT_STATUS_CHOICES, default="pending", db_index=True
     )
     approval_status = models.CharField(
-        max_length=20, choices=APPROVAL_STATUS_CHOICES, default="approved"
+        max_length=20, choices=APPROVAL_STATUS_CHOICES, default="approved", db_index=True
     )
     is_waiting_list = models.BooleanField(default=False)
     waitlist_position = models.PositiveIntegerField(null=True, blank=True)
@@ -88,6 +90,7 @@ class Registration(models.Model):
     )
     registration_number = models.CharField(max_length=32, blank=True, unique=True, null=True)
     registered_at = models.DateTimeField(auto_now_add=True)
+    is_locked = models.BooleanField(default=False, help_text="Locked after payment confirmation to freeze team details.")
 
     # Lightweight ops fields (desk / committee planning — not full ERP)
     food_preference = models.CharField(max_length=20, choices=FOOD_CHOICES, default="none")
@@ -190,20 +193,39 @@ class Registration(models.Model):
 
     @property
     def total_team_members_count(self):
-        # 1 Captain + accepted/joined team members
-        return 1 + self.team_members.filter(invitation_status="accepted").count()
+        # Count all members in team_members (Captain + team members)
+        count = self.team_members.exclude(invitation_status="declined").count()
+        has_captain = self.team_members.filter(role="captain").exclude(invitation_status="declined").exists()
+        if not has_captain:
+            count += 1
+        return count
+
+    @property
+    def meets_minimum_team_size(self):
+        min_size = self.event.min_team_size or 1
+        return self.total_team_members_count >= min_size
+
+    @property
+    def exceeds_maximum_team_size(self):
+        max_size = self.event.max_team_size or 999
+        return self.total_team_members_count > max_size
+
+    @property
+    def can_proceed_to_payment(self):
+        return self.meets_minimum_team_size and not self.exceeds_maximum_team_size
 
     @property
     def is_team_full(self):
-        target_size = self.event.max_team_size or self.event.min_team_size or 1
-        min_size = self.event.min_team_size or 1
-        count = self.total_team_members_count
-        return count >= min_size
+        return self.meets_minimum_team_size
 
     @property
     def is_team_paid(self):
         # One single payment by Captain covers the entire team
         return self.payment_status in ("paid", "waived")
+
+    @property
+    def is_team_locked(self):
+        return bool(self.is_locked or self.is_team_paid)
 
     def __str__(self):
         return f"{self.participant_name} - {self.event.title}"

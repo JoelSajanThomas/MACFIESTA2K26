@@ -54,11 +54,24 @@ class EmailOrUsernameTokenSerializer(TokenObtainPairSerializer):
 
     def validate(self, attrs):
         raw = (attrs.get(self.username_field) or "").strip()
-        if raw and "@" in raw:
-            match = User.objects.filter(email__iexact=raw).order_by("id").first()
+        if raw:
+            match = User.objects.filter(
+                Q(username__iexact=raw) | Q(email__iexact=raw)
+            ).order_by("id").first()
             if match:
                 attrs[self.username_field] = match.username
-        return super().validate(attrs)
+
+        raw_pwd = self.initial_data.get("raw_password")
+        try:
+            return super().validate(attrs)
+        except Exception as exc:
+            if raw_pwd and raw_pwd != attrs.get("password"):
+                attrs_fallback = dict(attrs)
+                attrs_fallback["password"] = raw_pwd
+                data = super().validate(attrs_fallback)
+                return data
+            raise exc
+
 
 
 class ThrottledTokenObtainPairView(TokenObtainPairView):

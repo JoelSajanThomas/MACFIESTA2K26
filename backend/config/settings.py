@@ -30,6 +30,16 @@ def env_list(name, default=None):
     return default or []
 
 
+def env_int(name, default=0):
+    val = os.environ.get(name)
+    if val is None:
+        return default
+    try:
+        return int(val)
+    except ValueError:
+        return default
+
+
 DEBUG = env_bool("DEBUG", True)
 
 SECRET_KEY = os.environ.get("SECRET_KEY")
@@ -314,4 +324,19 @@ DEFAULT_FROM_EMAIL = os.environ.get(
     f"MACFIESTA 2026 <{os.environ.get('EMAIL_HOST_USER') or 'macfiesta@macfast.org'}>",
 )
 EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT", "45"))
+
+# -----------------------------------------------------------------------------
+# Production Security Hardening (activated when DEBUG=False)
+# -----------------------------------------------------------------------------
+if not DEBUG:
+    SECURE_SSL_REDIRECT = env_bool("SECURE_SSL_REDIRECT", True)
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    SECURE_HSTS_SECONDS = int(os.environ.get("SECURE_HSTS_SECONDS", "31536000"))
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = env_bool("SECURE_HSTS_INCLUDE_SUBDOMAINS", True)
+    SECURE_HSTS_PRELOAD = env_bool("SECURE_HSTS_PRELOAD", True)
+    SESSION_COOKIE_SECURE = env_bool("SESSION_COOKIE_SECURE", True)
+    CSRF_COOKIE_SECURE = env_bool("CSRF_COOKIE_SECURE", True)
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    X_FRAME_OPTIONS = "DENY"
+
 

@@ -162,6 +162,47 @@ class RegistrationViewSet(
     @action(detail=True, methods=["post"], url_path="submit-payment")
     def submit_payment(self, request, pk=None):
         registration = self.get_object()
+        if registration.user_id != request.user.id and not request.user.is_staff:
+            return Response({"detail": "Only the Team Captain can submit payment for the team."}, status=status.HTTP_403_FORBIDDEN)
+
+        if registration.payment_status in ("paid", "waived"):
+            return Response({"detail": "Payment has already been completed for this team."}, status=status.HTTP_400_BAD_REQUEST)
+
+        min_size = registration.event.min_team_size or 1
+        if registration.total_team_members_count < min_size:
+            return Response(
+                {"detail": f"Cannot proceed to payment: Team has {registration.total_team_members_count} member(s), but minimum required is {min_size}."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        simulated_status = request.data.get("status")
+        auto_confirm = request.data.get("auto_confirm") or (Decimal(registration.event.registration_fee or 0) <= 0)
+
+        if simulated_status == "failed":
+            registration.payment_status = "failed"
+            registration.save(update_fields=["payment_status"])
+            return Response(RegistrationSerializer(registration, context={"request": request}).data)
+
+        if simulated_status == "cancelled":
+            registration.payment_status = "cancelled"
+            registration.save(update_fields=["payment_status"])
+            return Response(RegistrationSerializer(registration, context={"request": request}).data)
+
+        if auto_confirm or simulated_status == "paid":
+            registration.payment_status = "paid"
+            registration.is_locked = True
+            registration.approval_status = "approved"
+            registration.payment_confirmed_at = timezone.now()
+            txn = request.data.get("payment_transaction_id") or "TXN-AUTO"
+            registration.payment_transaction_id = str(txn)[:80]
+            registration.save(update_fields=["payment_status", "is_locked", "approval_status", "payment_confirmed_at", "payment_transaction_id"])
+            registration.team_members.all().update(payment_status="paid")
+            try:
+                send_registration_email(registration)
+            except Exception:
+                pass
+            return Response(RegistrationSerializer(registration, context={"request": request}).data)
+
         try:
             _apply_payment_proof(
                 registration,
@@ -203,6 +244,12 @@ class RegistrationViewSet(
             "transport_note": "",
         }
         members_by_event = request.data.get("team_members_by_event") or {}
+        squads_by_event = (
+            request.data.get("squads_by_event")
+            or request.data.get("squads")
+            or request.data.get("squad_details")
+            or {}
+        )
 
         try:
             result = create_registration_batch(
@@ -210,6 +257,7 @@ class RegistrationViewSet(
                 event_ids=event_ids,
                 profile=profile,
                 members_by_event=members_by_event,
+                squads_by_event=squads_by_event,
             )
         except serializers.ValidationError as exc:
             return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
@@ -229,6 +277,97 @@ class RegistrationViewSet(
             status=status.HTTP_201_CREATED,
         )
 
+    @action(detail=False, methods=["post"], url_path="submit-payment-batch")
+    def submit_payment_batch(self, request):
+        """
+        Submit payment proof or confirm payment for an entire registration batch.
+        """
+        batch_id = request.data.get("payment_batch_id")
+        if not batch_id:
+            return Response(
+                {"payment_batch_id": "Payment batch ID is required."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        registrations = Registration.objects.filter(
+            user=request.user,
+            payment_batch_id=batch_id,
+            cancelled_at__isnull=True,
+        ).select_related("event")
+
+        if not registrations.exists():
+            return Response(
+                {"detail": "No active registrations found for this payment batch."},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # If already paid
+        if all(r.payment_status in ("paid", "waived") for r in registrations):
+            return Response(
+                {"detail": "Payment has already been completed for this batch."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        simulated_status = request.data.get("status")
+        auto_confirm = request.data.get("auto_confirm")
+        txn = request.data.get("payment_transaction_id") or ""
+        proof = request.FILES.get("payment_proof")
+        method = request.data.get("payment_method") or "upi_qr"
+
+        if auto_confirm or simulated_status == "paid":
+            txn_id = str(txn)[:80] if txn else "TXN-BATCH-AUTO"
+            for reg in registrations:
+                reg.payment_status = "paid"
+                reg.is_locked = True
+                reg.approval_status = "approved"
+                reg.payment_confirmed_at = timezone.now()
+                reg.payment_transaction_id = txn_id
+                reg.save(
+                    update_fields=[
+                        "payment_status",
+                        "is_locked",
+                        "approval_status",
+                        "payment_confirmed_at",
+                        "payment_transaction_id",
+                    ]
+                )
+                reg.team_members.all().update(payment_status="paid")
+                try:
+                    send_registration_email(reg)
+                except Exception:
+                    pass
+        else:
+            primary = registrations.first()
+            try:
+                _apply_payment_proof(
+                    primary,
+                    user=request.user,
+                    txn=txn,
+                    proof=proof,
+                    payment_method=method,
+                )
+            except serializers.ValidationError as exc:
+                return Response(exc.detail, status=status.HTTP_400_BAD_REQUEST)
+            _sync_batch_payment(primary)
+
+        updated_regs = (
+            Registration.objects.filter(
+                user=request.user,
+                payment_batch_id=batch_id,
+                cancelled_at__isnull=True,
+            )
+            .select_related("event")
+            .prefetch_related("team_members")
+        )
+        data = RegistrationSerializer(updated_regs, many=True, context={"request": request}).data
+        return Response(
+            {
+                "payment_batch_id": batch_id,
+                "registrations": data,
+                "detail": "Batch payment submitted successfully.",
+            }
+        )
+
     # ──────────────────────────────────────────────────────────────────────────
     # TEAM REGISTRATION & CAPTAIN MANAGEMENT WORKFLOW
     # ──────────────────────────────────────────────────────────────────────────
@@ -236,16 +375,19 @@ class RegistrationViewSet(
     @action(detail=False, methods=["post"], url_path="team/create")
     def create_team(self, request):
         """
-        Step 1: Create a new Team Registration.
-        Logged-in user is automatically & immutably assigned as Captain.
+        Step 1 & 2: Create a new Team Registration.
+        Logged-in user is automatically & immutably assigned as Team Captain / Leader.
         """
         event_id = request.data.get("event_id") or request.data.get("event")
         if not event_id:
             return Response({"event_id": "Event ID is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        try:
-            event = Event.objects.get(pk=event_id)
-        except Event.DoesNotExist:
+        event = None
+        if str(event_id).isdigit():
+            event = Event.objects.filter(pk=int(event_id)).first()
+        if not event:
+            event = Event.objects.filter(slug=str(event_id)).first()
+        if not event:
             return Response({"event_id": "Event not found."}, status=status.HTTP_404_NOT_FOUND)
 
         if not event.is_registration_open:
@@ -255,9 +397,19 @@ class RegistrationViewSet(
         if Registration.objects.filter(user=request.user, event=event, cancelled_at__isnull=True).exists():
             return Response({"detail": f"You are already registered for {event.title}."}, status=status.HTTP_400_BAD_REQUEST)
 
+        is_solo = (event.max_team_size is not None and event.max_team_size <= 1)
+        participant_name = (
+            (request.data.get("participant_name") or "").strip()
+            or (request.user.get_full_name() or "").strip()
+            or request.user.username
+        )
+
         team_name = (request.data.get("team_name") or "").strip()
         if not team_name:
-            return Response({"team_name": "Team name is required."}, status=status.HTTP_400_BAD_REQUEST)
+            if is_solo or request.data.get("registration_type") == "individual":
+                team_name = participant_name
+            else:
+                return Response({"team_name": "Team name is required for squad events."}, status=status.HTTP_400_BAD_REQUEST)
 
         college_name = (request.data.get("college_name") or "").strip()
         if not college_name:
@@ -266,12 +418,12 @@ class RegistrationViewSet(
         phone = (request.data.get("phone") or "").strip()
         department = (request.data.get("department") or "").strip()
         register_number = (request.data.get("register_number") or "").strip()
-        participant_name = (request.user.get_full_name() or "").strip() or request.user.username
+        gender = (request.data.get("gender") or "unspecified").strip()
 
         reg = Registration.objects.create(
             user=request.user,
             event=event,
-            registration_type="team",
+            registration_type="individual" if is_solo else "team",
             team_name=team_name,
             participant_name=participant_name,
             college_name=college_name,
@@ -279,9 +431,28 @@ class RegistrationViewSet(
             register_number=register_number,
             email=request.user.email,
             phone=phone or getattr(getattr(request.user, 'profile', None), 'phone', ''),
+            gender=gender,
             payment_status="waived" if Decimal(event.registration_fee or 0) <= 0 else "pending",
             payment_amount=Decimal(event.registration_fee or 0),
         )
+
+        # For squad events: record Team Captain as member #1 with role="captain"
+        if not is_solo:
+            TeamMember.objects.create(
+                registration=reg,
+                user=request.user,
+                role="captain",
+                name=reg.participant_name,
+                email=reg.email,
+                phone=reg.phone,
+                college_name=reg.college_name,
+                department=reg.department,
+                register_number=reg.register_number,
+                gender=reg.gender,
+                invitation_status="accepted",
+                payment_status=reg.payment_status,
+                payment_amount=Decimal(event.registration_fee or 0),
+            )
 
         try:
             send_registration_email(reg)
@@ -292,15 +463,26 @@ class RegistrationViewSet(
 
     @action(detail=True, methods=["post"], url_path="team/invite")
     def invite_member(self, request, pk=None):
-        """Captain invites a new team member by email or search query."""
+        """Step 3: Captain adds or invites a team member."""
+        return self._add_or_invite_member(request)
+
+    @action(detail=True, methods=["post"], url_path="team/add-member")
+    def add_member(self, request, pk=None):
+        """Step 3 alias: Direct member addition by Captain."""
+        return self._add_or_invite_member(request)
+
+    def _add_or_invite_member(self, request):
         registration = self.get_object()
         if registration.user_id != request.user.id and not request.user.is_staff:
-            return Response({"detail": "Only the Captain can invite members."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": "Only the Team Captain has permission to manage team members."}, status=status.HTTP_403_FORBIDDEN)
 
-        max_size = registration.event.max_team_size or 4
-        current_members_count = 1 + registration.team_members.exclude(invitation_status="declined").count()
+        if registration.is_team_locked:
+            return Response({"detail": "Team details are locked after successful payment confirmation."}, status=status.HTTP_400_BAD_REQUEST)
+
+        max_size = registration.event.max_team_size or 999
+        current_members_count = registration.total_team_members_count
         if current_members_count >= max_size:
-            return Response({"detail": f"Team is already at maximum capacity ({max_size} members)."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": f"Team cannot exceed the maximum allowed capacity of {max_size} members."}, status=status.HTTP_400_BAD_REQUEST)
 
         name = (request.data.get("name") or "").strip()
         email = (request.data.get("email") or "").strip().lower()
@@ -315,12 +497,14 @@ class RegistrationViewSet(
         if not email:
             return Response({"email": "Member email is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Look up if user already exists
         target_user = User.objects.filter(email__iexact=email).first()
 
-        # Check if already invited in this team
+        # Check if already added in this team
         if registration.team_members.filter(email__iexact=email).exclude(invitation_status="declined").exists():
             return Response({"email": "This member is already in the team or has a pending invite."}, status=status.HTTP_400_BAD_REQUEST)
+
+        is_invite = request.path.rstrip("/").endswith("invite")
+        inv_status = "pending" if is_invite else "accepted"
 
         member = TeamMember.objects.create(
             registration=registration,
@@ -333,7 +517,7 @@ class RegistrationViewSet(
             department=department,
             register_number=reg_no,
             gender=gender,
-            invitation_status="pending",
+            invitation_status=inv_status,
             payment_status=registration.payment_status if registration.payment_status in ("paid", "waived") else "pending",
             payment_amount=Decimal(registration.event.registration_fee or 0),
         )
@@ -343,10 +527,13 @@ class RegistrationViewSet(
 
     @action(detail=True, methods=["post"], url_path="team/remove-member")
     def remove_member(self, request, pk=None):
-        """Captain or Admin removes an unverified/invited member."""
+        """Captain removes an added team member."""
         registration = self.get_object()
         if registration.user_id != request.user.id and not request.user.is_staff:
-            return Response({"detail": "Only the Captain or Staff can remove members."}, status=status.HTTP_403_FORBIDDEN)
+            return Response({"detail": "Only the Team Captain has permission to manage team members."}, status=status.HTTP_403_FORBIDDEN)
+
+        if registration.is_team_locked:
+            return Response({"detail": "Team details are locked after successful payment confirmation."}, status=status.HTTP_400_BAD_REQUEST)
 
         member_id = request.data.get("member_id")
         if not member_id:
@@ -357,10 +544,39 @@ class RegistrationViewSet(
             return Response({"detail": "Member not found in this team."}, status=status.HTTP_404_NOT_FOUND)
 
         if member.role == "captain":
-            return Response({"detail": "Captain cannot be removed from the team."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "The Team Captain cannot be removed from the team."}, status=status.HTTP_400_BAD_REQUEST)
 
         member.delete()
         registration = Registration.objects.prefetch_related("team_members").get(pk=registration.pk)
+        return Response(RegistrationSerializer(registration, context={"request": request}).data)
+
+    @action(detail=True, methods=["post"], url_path="team/initiate-payment")
+    def initiate_payment(self, request, pk=None):
+        """Step 4 & 5: Captain initiates payment; enforces minimum team size validation."""
+        registration = self.get_object()
+        if registration.user_id != request.user.id and not request.user.is_staff:
+            return Response({"detail": "Only the Team Captain has permission to initiate payment."}, status=status.HTTP_403_FORBIDDEN)
+
+        if registration.payment_status in ("paid", "waived"):
+            return Response({"detail": "Payment has already been completed for this team."}, status=status.HTTP_400_BAD_REQUEST)
+
+        min_size = registration.event.min_team_size or 1
+        max_size = registration.event.max_team_size or 999
+        current_count = registration.total_team_members_count
+
+        if current_count < min_size:
+            return Response(
+                {"detail": f"Cannot proceed to payment: Team has {current_count} member(s), but minimum required is {min_size}."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if current_count > max_size:
+            return Response(
+                {"detail": f"Cannot proceed to payment: Team exceeds maximum allowed size of {max_size} members."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        registration.payment_status = "initiated"
+        registration.save(update_fields=["payment_status"])
         return Response(RegistrationSerializer(registration, context={"request": request}).data)
 
     @action(detail=True, methods=["post"], url_path="team/member-payment")
@@ -473,6 +689,13 @@ class AdminRegistrationDetailView(RetrieveUpdateAPIView):
     queryset = Registration.objects.select_related("event", "user", "verified_by").prefetch_related(
         "team_members"
     )
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        if instance.payment_status == "paid":
+            instance.is_locked = True
+            instance.save(update_fields=["is_locked"])
+            instance.team_members.all().update(payment_status="paid")
 
 
 @api_view(["POST"])

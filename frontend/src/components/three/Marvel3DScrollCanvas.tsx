@@ -10,6 +10,7 @@ import {
   getLoadedFrame,
   subscribeToPreload,
   loadSingleFrame,
+  prioritizeFramesAround,
 } from "../../utils/framePreloader";
 
 interface Marvel3DScrollCanvasProps {
@@ -39,9 +40,11 @@ export function Marvel3DScrollCanvas({
   const updateCanvasDimensions = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const w = window.innerWidth;
-    const h = window.innerHeight;
+    // Ultra-sharp 4K / Retina buffer sizing
+    const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 2), 3);
+    const rect = canvas.getBoundingClientRect();
+    const w = rect.width > 0 ? rect.width : window.innerWidth * 1.15;
+    const h = rect.height > 0 ? rect.height : window.innerHeight * 1.15;
     const targetW = Math.round(w * dpr);
     const targetH = Math.round(h * dpr);
 
@@ -51,9 +54,9 @@ export function Marvel3DScrollCanvas({
     }
   }, []);
 
-  // Helper to draw an image onto the canvas with true edge-to-edge object-fit: cover and optional alpha blending
+  // Helper to draw an image onto the canvas with true edge-to-edge object-fit: cover and high-fidelity smoothing
   const renderCover = useCallback(
-    (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, img: HTMLImageElement, alpha = 1.0) => {
+    (ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement, img: HTMLImageElement) => {
       const cw = canvas.width;
       const ch = canvas.height;
       if (!cw || !ch) return;
@@ -87,18 +90,12 @@ export function Marvel3DScrollCanvas({
         drawY = 0;
       }
 
-      if (alpha < 1.0) {
-        ctx.globalAlpha = Math.max(0, Math.min(1, alpha));
-      }
       ctx.drawImage(img, drawX, drawY, drawW, drawH);
-      if (alpha < 1.0) {
-        ctx.globalAlpha = 1.0;
-      }
     },
     []
   );
 
-  // Draw frame to canvas with optical crossfade blending filter for smooth scrolling flow
+  // Draw frame to canvas with discrete nearest-frame rendering (eliminates ghosting/motion blur)
   const drawFrame = useCallback(
     (frameFloat: number) => {
       const canvas = canvasRef.current;
@@ -112,18 +109,19 @@ export function Marvel3DScrollCanvas({
       if (!ctx) return;
 
       const safeFrame = Math.max(1, Math.min(TOTAL_FRAMES, frameFloat));
-      const baseIdx = Math.floor(safeFrame);
-      const nextIdx = Math.min(TOTAL_FRAMES, baseIdx + 1);
-      const blend = safeFrame - baseIdx;
+      const targetIdx = Math.round(safeFrame);
 
-      const baseImg = getNearestLoadedFrame(sequence, baseIdx, TOTAL_FRAMES);
-      if (!baseImg || !baseImg.complete || baseImg.naturalWidth === 0) {
-        // If not ready yet, request frame load immediately
-        loadSingleFrame(sequence, baseIdx, true).then((img) => {
+      // Proactively ensure frames around current position are loading with top priority
+      prioritizeFramesAround(sequence, targetIdx, 10);
+
+      const targetImg = getNearestLoadedFrame(sequence, targetIdx, TOTAL_FRAMES);
+      if (!targetImg || !targetImg.complete || targetImg.naturalWidth === 0) {
+        // If exact/nearest frame is still loading, request it immediately
+        loadSingleFrame(sequence, targetIdx, true).then((img) => {
           if (img && img.complete && img.naturalWidth > 0 && canvasRef.current) {
             const currentCtx = canvasRef.current.getContext("2d", { alpha: false });
             if (currentCtx) {
-              renderCover(currentCtx, canvasRef.current, img, 1.0);
+              renderCover(currentCtx, canvasRef.current, img);
               isReadyRef.current = true;
             }
           }
@@ -131,20 +129,9 @@ export function Marvel3DScrollCanvas({
         return;
       }
 
-      // 1. Draw base frame
-      renderCover(ctx, canvas, baseImg, 1.0);
+      // Draw exact frame at 100% crisp sharpness without double-vision blend
+      renderCover(ctx, canvas, targetImg);
       isReadyRef.current = true;
-
-      // 2. Optical crossfade blend filter: smoothly interpolate into next frame if between frames
-      if (blend > 0.015 && nextIdx > baseIdx) {
-        const nextImg = getLoadedFrame(sequence, nextIdx);
-        if (nextImg && nextImg.complete && nextImg.naturalWidth > 0) {
-          renderCover(ctx, canvas, nextImg, blend);
-        } else {
-          // Preload next frame proactively
-          loadSingleFrame(sequence, nextIdx, false);
-        }
-      }
     },
     [sequence, updateCanvasDimensions, renderCover]
   );
@@ -236,8 +223,8 @@ export function Marvel3DScrollCanvas({
 
       const diff = targetFrameRef.current - currentFrameRef.current;
       if (Math.abs(diff) > 0.001) {
-        // Exponential damping filter (0.13 factor) for natural fluid momentum and smooth flow
-        currentFrameRef.current += diff * 0.13;
+        // High-precision damping filter for silky-smooth responsive 60fps scrolling
+        currentFrameRef.current += diff * 0.16;
         const frameToDraw = Math.max(1, Math.min(TOTAL_FRAMES, currentFrameRef.current));
         if (showHudRef.current) {
           setCurrentFrameIndex(Math.round(frameToDraw));
@@ -285,18 +272,9 @@ export function Marvel3DScrollCanvas({
         >
           <canvas
             ref={canvasRef}
-            className="w-full h-full block object-cover filter brightness-[0.98] contrast-[1.06] saturate-[1.12]"
+            className="w-full h-full block object-cover"
             style={{
-              imageRendering: "auto",
-            }}
-          />
-
-          {/* Smooth Atmospheric Cinematic Filter — subtle smoothing overlay for flow of scrolling */}
-          <div
-            className="absolute inset-0 pointer-events-none"
-            style={{
-              backdropFilter: "blur(0.35px)",
-              backgroundColor: "rgba(5, 5, 10, 0.08)",
+              imageRendering: "-webkit-optimize-contrast",
             }}
           />
         </div>

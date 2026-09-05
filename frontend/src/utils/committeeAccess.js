@@ -15,6 +15,7 @@ export const ADMIN_NAV = [
   { to: "/admin/schedule", label: "Schedule", module: "schedule", group: "Operations" },
   { to: "/admin/announcements", label: "Announcements", module: "announcements", group: "Website" },
   { to: "/admin/gallery", label: "Gallery", module: "gallery", group: "Website" },
+  { to: "/admin/brochure", label: "Upload Brochure", module: "content", group: "Website" },
   { to: "/admin/content/sponsors", label: "Sponsors", module: "sponsors", group: "Website" },
   { to: "/admin/content/guests", label: "Guests", module: "guests", group: "Website" },
   { to: "/admin/content", label: "Website CMS", module: "content", end: true, group: "Website" },

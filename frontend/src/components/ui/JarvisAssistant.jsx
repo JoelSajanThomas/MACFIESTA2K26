@@ -98,7 +98,15 @@ export default function JarvisAssistant() {
 
   return (
     <>
-      <div ref={constraintsRef} className="fixed inset-0 pointer-events-none z-[9990]" />
+      <style>{`
+        @media print {
+          .jarvis-assistant, [data-jarvis-bot], [data-html2canvas-ignore] {
+            display: none !important;
+            visibility: hidden !important;
+          }
+        }
+      `}</style>
+      <div ref={constraintsRef} className="fixed inset-0 pointer-events-none z-[9990] print-hide" data-html2canvas-ignore="true" />
 
       {/* Floating Tactical Orb Button */}
       <motion.div
@@ -106,7 +114,9 @@ export default function JarvisAssistant() {
         dragConstraints={constraintsRef}
         dragElastic={0.1}
         dragMomentum={false}
-        className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-[9994] pointer-events-auto"
+        data-jarvis-bot="true"
+        data-html2canvas-ignore="true"
+        className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-[9994] pointer-events-auto print-hide jarvis-assistant"
       >
         <button
           type="button"
@@ -166,6 +176,9 @@ export default function JarvisAssistant() {
             dragConstraints={constraintsRef}
             dragElastic={0.08}
             dragMomentum={false}
+            data-jarvis-bot="true"
+            data-html2canvas-ignore="true"
+            className="print-hide jarvis-assistant"
             initial={{ opacity: 0, y: 30, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}

@@ -11,7 +11,7 @@ interface BackgroundVideoProps {
 }
 
 export function BackgroundVideo({
-  src,
+  src = "/MARVEL/Video Project 5.mp4",
   fallbackSrc = "/MARVEL/Video Project 4.mp4",
   opacity = "opacity-75",
   className = "",
@@ -46,7 +46,8 @@ export function BackgroundVideo({
     }
   }, [src]);
 
-  const getMimeType = (url: string) => {
+  const getMimeType = (url?: string) => {
+    if (!url || typeof url !== "string") return "video/mp4";
     const clean = url.split("?")[0].toLowerCase();
     if (clean.endsWith(".webm")) return "video/webm";
     if (clean.endsWith(".ogg") || clean.endsWith(".ogv")) return "video/ogg";
@@ -71,7 +72,7 @@ export function BackgroundVideo({
           backfaceVisibility: "hidden",
         }}
       >
-        <source src={encodeURI(src)} type={getMimeType(src)} />
+        {src && <source src={encodeURI(src)} type={getMimeType(src)} />}
         {fallbackSrc && fallbackSrc !== src && (
           <source src={encodeURI(fallbackSrc)} type={getMimeType(fallbackSrc)} />
         )}

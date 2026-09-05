@@ -13,6 +13,7 @@ const INFINITY_STONES = [
     glow: "shadow-[0_0_20px_#00D4FF]",
     domain: "Networking & Cloud Warfare",
     desc: "Control over spatial computing, cloud architecture, and serverless hackathons.",
+    image: "/MARVEL/stones/spacestone.png",
   },
   {
     name: "Reality Stone",
@@ -20,6 +21,7 @@ const INFINITY_STONES = [
     glow: "shadow-[0_0_20px_#ED1D24]",
     domain: "AR/VR & UI/UX Realm",
     desc: "Alter perception through 3D modeling, game design, and immersive digital worlds.",
+    image: "/MARVEL/stones/realitystone.png",
   },
   {
     name: "Power Stone",
@@ -27,6 +29,7 @@ const INFINITY_STONES = [
     glow: "shadow-[0_0_20px_#7B2FBE]",
     domain: "Esports & Gaming Gauntlet",
     desc: "Raw competitive strength in BGMI, Valorant, FIFA, and console battles.",
+    image: "/MARVEL/stones/powerstone.png",
   },
   {
     name: "Mind Stone",
@@ -34,6 +37,7 @@ const INFINITY_STONES = [
     glow: "shadow-[0_0_20px_#FFD700]",
     domain: "AI & Algorithmic Conquest",
     desc: "Unleash machine learning, competitive programming, and neural networking brilliance.",
+    image: "/MARVEL/stones/mindstone.png",
   },
   {
     name: "Time Stone",
@@ -41,6 +45,7 @@ const INFINITY_STONES = [
     glow: "shadow-[0_0_20px_#10B981]",
     domain: "Speed Coding & Live Debates",
     desc: "Master time-pressured challenges, rapid debugging, and fast-paced quizzes.",
+    image: "/MARVEL/stones/timestone.png",
   },
   {
     name: "Soul Stone",
@@ -48,6 +53,7 @@ const INFINITY_STONES = [
     glow: "shadow-[0_0_20px_#FF8C00]",
     domain: "Cultural Arts & Pro Concert",
     desc: "Infuse your passion into dance, beatboxing, music bands, and dramatic arts.",
+    image: "/MARVEL/stones/soulstone.png",
   },
 ];
 
@@ -112,7 +118,7 @@ export function InfinityChallenge() {
                   onClick={() => setActiveStone(stone)}
                   whileHover={{ y: -6, scale: 1.04 }}
                   whileTap={{ scale: 0.96 }}
-                  className={`w-full p-2 sm:p-4 rounded-xl sm:rounded-2xl border flex flex-col items-center gap-1 sm:gap-2.5 transition-all duration-300 cursor-pointer backdrop-blur-md ${isSelected
+                  className={`w-full p-2 sm:p-4 rounded-xl sm:rounded-2xl border flex flex-col items-center gap-1 sm:gap-2.5 transition-all duration-300 cursor-pointer backdrop-blur-md group ${isSelected
                     ? "bg-white/15 border-white text-white scale-105 shadow-2xl"
                     : "bg-black/70 border-white/15 text-white/70 hover:border-white/35 hover:text-white"
                     }`}
@@ -121,12 +127,25 @@ export function InfinityChallenge() {
                     boxShadow: isSelected ? `0 0 25px ${stone.color}50` : undefined,
                   }}
                 >
-                  <div
-                    className={`w-6 h-6 sm:w-9 sm:h-9 rounded-full border border-white/40 flex items-center justify-center transition-all ${isSelected ? "animate-pulse scale-110" : ""
+                  {/* Infinity Stone 3D Image with Dynamic Glow */}
+                  <div className="relative w-9 h-9 sm:w-14 sm:h-14 flex items-center justify-center my-0.5 sm:my-1">
+                    <div
+                      className={`absolute inset-0 rounded-full blur-md opacity-40 transition-all duration-300 ${
+                        isSelected ? "opacity-90 scale-125" : "group-hover:opacity-70"
                       }`}
-                    style={{ background: stone.color, boxShadow: `0 0 18px ${stone.color}` }}
-                  >
-                    <span className="text-[8px] sm:text-[11px] font-black text-black font-excon-black">★</span>
+                      style={{ background: stone.color }}
+                    />
+                    <img
+                      src={stone.image}
+                      alt={stone.name}
+                      className={`relative w-8 h-8 sm:w-12 sm:h-12 object-contain transition-all duration-300 ${
+                        isSelected ? "scale-110 animate-pulse" : "group-hover:scale-110 opacity-90"
+                      }`}
+                      style={{
+                        filter: `drop-shadow(0 0 10px ${stone.color})`,
+                      }}
+                      loading="lazy"
+                    />
                   </div>
                   <span className="text-[9px] sm:text-xs font-bold font-excon-bold tracking-wider uppercase text-center leading-tight truncate max-w-full">
                     {stone.name}
@@ -148,10 +167,24 @@ export function InfinityChallenge() {
             style={{ borderColor: `${activeStone.color}70` }}
           >
             <div
-              className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl shrink-0 flex items-center justify-center border-2 border-white/60 shadow-2xl"
-              style={{ background: activeStone.color, boxShadow: `0 0 35px ${activeStone.color}` }}
+              className="relative w-16 h-16 sm:w-22 sm:h-22 rounded-xl sm:rounded-2xl shrink-0 flex items-center justify-center border-2 border-white/40 bg-white/[0.04] backdrop-blur-md shadow-2xl"
+              style={{
+                borderColor: `${activeStone.color}80`,
+                boxShadow: `0 0 35px ${activeStone.color}50, inset 0 0 20px ${activeStone.color}20`,
+              }}
             >
-              <RiShieldFlashLine className="text-2xl sm:text-4xl text-black" />
+              <div
+                className="absolute inset-1 rounded-full blur-md opacity-60"
+                style={{ background: activeStone.color }}
+              />
+              <img
+                src={activeStone.image}
+                alt={activeStone.name}
+                className="relative w-12 h-12 sm:w-16 sm:h-16 object-contain animate-pulse"
+                style={{
+                  filter: `drop-shadow(0 0 14px ${activeStone.color})`,
+                }}
+              />
             </div>
 
             <div className="space-y-1.5 sm:space-y-2 text-center md:text-left">

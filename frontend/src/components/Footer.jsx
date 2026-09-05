@@ -9,7 +9,6 @@ import {
   RiPhoneLine,
   RiMailLine,
   RiArrowUpLine,
-  RiShieldFlashLine,
   RiFlashlightLine,
   RiDownloadLine,
   RiSwordLine,

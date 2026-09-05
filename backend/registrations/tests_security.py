@@ -24,6 +24,7 @@ class SecurityHardeningTests(TestCase):
         self.staff = User.objects.create_user("eventdesk", password="TestPass123!", is_staff=True)
         StaffProfile.objects.create(user=self.staff, committee="event", must_change_password=False)
         self.orphan_staff = User.objects.create_user("orphan", password="TestPass123!", is_staff=True)
+        self.superuser = User.objects.create_superuser("superadmin", password="SuperPassword123!")
 
         self.event = Event.objects.create(
             title="Coding Challenge",
@@ -76,8 +77,12 @@ class SecurityHardeningTests(TestCase):
         self.assertIn(res.status_code, (401, 403))
 
     def test_cannot_delete_event_with_registrations(self):
-        self.client.force_authenticate(self.staff)
-        res = self.client.delete(f"/api/events/{self.event.id}/")
+        self.client.force_authenticate(self.superuser)
+        res = self.client.delete(
+            f"/api/events/{self.event.id}/",
+            {"password": "SuperPassword123!"},
+            format="json",
+        )
         self.assertEqual(res.status_code, 409)
         self.assertTrue(Event.objects.filter(pk=self.event.id).exists())
 

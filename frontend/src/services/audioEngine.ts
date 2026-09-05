@@ -38,7 +38,6 @@ class AudioEngine {
   private userMuted: boolean = false;
 
   private baseVolume: number = 0.4;
-  private scrollFactor: number = 1.0;
 
   // Dual slots for crossfading
   private slotA: HTMLAudioElement;
@@ -107,6 +106,8 @@ class AudioEngine {
       window.removeEventListener("click", unlockAudio);
       window.removeEventListener("keydown", unlockAudio);
       window.removeEventListener("touchstart", unlockAudio);
+      window.removeEventListener("pointerdown", unlockAudio);
+      window.removeEventListener("wheel", unlockAudio);
 
       // Warm up audio elements
       try {
@@ -115,7 +116,8 @@ class AudioEngine {
       } catch {}
 
       // If we are on homepage and not explicitly muted, auto-start playback
-      if (window.location.pathname === "/" && !this.userMuted && !this.isPlaying) {
+      const isHome = window.location.pathname === "/" || window.location.pathname === "";
+      if (isHome && !this.userMuted && !this.isPlaying) {
         this.play();
       }
     };
@@ -123,43 +125,8 @@ class AudioEngine {
     window.addEventListener("click", unlockAudio, { passive: true });
     window.addEventListener("keydown", unlockAudio, { passive: true });
     window.addEventListener("touchstart", unlockAudio, { passive: true });
-
-    // Scroll fade listener
-    const updateScrollVolume = () => {
-      if (typeof window === "undefined") return;
-      if (window.location.pathname !== "/") {
-        this.stopAll();
-        return;
-      }
-
-      const fadeDistance = Math.max(320, window.innerHeight * 0.65);
-      const scrollY = window.scrollY;
-      const factor = Math.max(0, Math.min(1, 1 - scrollY / fadeDistance));
-      this.scrollFactor = factor;
-
-      if (factor <= 0.02) {
-        if (this.isPlaying && !this.userMuted) {
-          this.getActiveSlot().volume = 0;
-        }
-      } else {
-        if (!this.userMuted && this.isPlaying) {
-          const active = this.getActiveSlot();
-          if (active.paused) {
-            active.play().catch(() => {});
-          }
-          if (!this.isTransitioning) {
-            active.volume = this.getEffectiveVolume();
-          }
-        }
-      }
-    };
-
-    let scrollRaf: number;
-    const handleScroll = () => {
-      cancelAnimationFrame(scrollRaf);
-      scrollRaf = requestAnimationFrame(updateScrollVolume);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("pointerdown", unlockAudio, { passive: true });
+    window.addEventListener("wheel", unlockAudio, { passive: true });
 
     // Global stop event (e.g. navigation away from home)
     const handleGlobalStop = () => {
@@ -173,7 +140,7 @@ class AudioEngine {
 
   private getEffectiveVolume(): number {
     if (this.userMuted) return 0;
-    return Math.max(0, Math.min(1, this.baseVolume * this.scrollFactor));
+    return Math.max(0, Math.min(1, this.baseVolume));
   }
 
   private getActiveSlot(): HTMLAudioElement {
@@ -260,8 +227,9 @@ class AudioEngine {
    * Starts or resumes playback
    */
   public play() {
-    if (typeof window !== "undefined" && window.location.pathname !== "/") {
-      return;
+    if (typeof window !== "undefined") {
+      const isHome = window.location.pathname === "/" || window.location.pathname === "";
+      if (!isHome) return;
     }
 
     this.userMuted = false;

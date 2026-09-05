@@ -64,7 +64,7 @@ export function AvengersAudioHud() {
   return (
     <div className="w-full pt-2 sm:pt-2.5 border-t border-white/10 relative select-none font-space">
       {/* ─── Top Telemetry & Controls Bar ─── */}
-      <div className="flex items-center justify-between gap-1 pb-1 mb-1 border-b border-white/[0.06] text-[8.5px] sm:text-[9px]">
+      <div className="flex items-center justify-between gap-1 pb-1 mb-1 border-b border-white/[0.08] text-[8.5px] sm:text-[9px]">
         {/* Left: Status Indicator & Hero Telemetry */}
         <div className="flex items-center gap-1.5 min-w-0">
           <span className="relative flex h-2 w-2 shrink-0">
@@ -73,28 +73,28 @@ export function AvengersAudioHud() {
             )}
             <span
               className={`relative inline-flex rounded-full h-2 w-2 transition-colors duration-300 ${
-                isPlaying ? "bg-arc-cyan" : "bg-white/30"
+                isPlaying ? "bg-arc-cyan" : "bg-white/40"
               }`}
             />
           </span>
 
-          <span className="font-bold text-white/75 tracking-[0.14em] uppercase text-[8.5px] sm:text-[9px] truncate">
+          <span className="font-extrabold text-white tracking-[0.14em] uppercase text-[8.5px] sm:text-[9px] truncate drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
             AVENGERS HUD
           </span>
 
-          <span className="text-white/20">•</span>
+          <span className="text-white/40">•</span>
 
-          <span className="font-mono font-bold text-arc-cyan text-[8.5px] sm:text-[9px] shrink-0">
+          <span className="font-mono font-black text-arc-cyan text-[8.5px] sm:text-[9px] shrink-0 drop-shadow-[0_0_6px_rgba(0,212,255,0.6)]">
             {activeTrackNumber}/{totalTrackCount}
           </span>
 
           {currentTrack && (
             <span
-              className="text-[7.5px] px-1 py-0.2 rounded font-bold uppercase tracking-wider shrink-0 border"
+              className="text-[7.5px] px-1.5 py-0.5 rounded font-black uppercase tracking-wider shrink-0 border"
               style={{
                 color: currentTrack.accentColor || "#00D4FF",
-                borderColor: `${currentTrack.accentColor || "#00D4FF"}33`,
-                backgroundColor: `${currentTrack.accentColor || "#00D4FF"}10`,
+                borderColor: `${currentTrack.accentColor || "#00D4FF"}44`,
+                backgroundColor: `${currentTrack.accentColor || "#00D4FF"}15`,
               }}
             >
               {heroBadgeName}
@@ -112,8 +112,8 @@ export function AvengersAudioHud() {
             }}
             className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider border transition-all cursor-pointer flex items-center gap-0.5 ${
               highlightMode
-                ? "bg-marvel-red/20 border-marvel-red/60 text-marvel-red shadow-[0_0_8px_rgba(237,29,36,0.25)]"
-                : "bg-white/5 border-white/10 text-white/45 hover:text-white"
+                ? "bg-marvel-red/30 border-marvel-red text-[#FF3B42] shadow-[0_0_8px_rgba(237,29,36,0.35)]"
+                : "bg-white/10 border-white/20 text-white/80 hover:text-arc-cyan hover:border-arc-cyan/40"
             }`}
             title={
               highlightMode
@@ -134,8 +134,8 @@ export function AvengersAudioHud() {
             }}
             className={`px-1.5 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider border transition-all cursor-pointer flex items-center gap-1 ${
               isPlaylistOpen
-                ? "bg-arc-cyan/25 border-arc-cyan text-arc-cyan shadow-[0_0_10px_rgba(0,212,255,0.35)]"
-                : "bg-white/5 border-white/10 text-white/60 hover:text-arc-cyan hover:border-white/20"
+                ? "bg-arc-cyan/30 border-arc-cyan text-arc-cyan shadow-[0_0_10px_rgba(0,212,255,0.45)]"
+                : "bg-white/10 border-white/20 text-white/80 hover:text-arc-cyan hover:border-arc-cyan/40"
             }`}
             title="Browse all songs"
             aria-label="Toggle Playlist"
@@ -156,7 +156,7 @@ export function AvengersAudioHud() {
               e.stopPropagation();
               prev();
             }}
-            className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-white/45 hover:text-arc-cyan hover:bg-white/10 active:scale-90 transition-all cursor-pointer focus:outline-none"
+            className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-white/60 hover:text-arc-cyan hover:bg-white/10 active:scale-90 transition-all cursor-pointer focus:outline-none"
             title="Previous Track"
             aria-label="Previous Track"
           >
@@ -169,10 +169,10 @@ export function AvengersAudioHud() {
               e.stopPropagation();
               togglePlay();
             }}
-            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border transition-all duration-300 shadow-lg flex items-center justify-center shrink-0 cursor-pointer focus:outline-none ${
+            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border transition-all duration-300 shadow-md flex items-center justify-center shrink-0 cursor-pointer focus:outline-none ${
               isPlaying
                 ? "bg-marvel-red border-marvel-red text-white shadow-[0_0_15px_#ED1D24] hover:scale-105 active:scale-95"
-                : "bg-white/10 border-white/20 text-arc-cyan hover:border-arc-cyan hover:scale-105 active:scale-95"
+                : "bg-white/15 border-white/25 text-arc-cyan hover:border-arc-cyan hover:scale-105 active:scale-95"
             }`}
             title={isPlaying ? "Pause Music" : "Play Music"}
             aria-label={isPlaying ? "Pause theme music" : "Play theme music"}
@@ -190,7 +190,7 @@ export function AvengersAudioHud() {
               e.stopPropagation();
               next();
             }}
-            className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-white/45 hover:text-arc-cyan hover:bg-white/10 active:scale-90 transition-all cursor-pointer focus:outline-none"
+            className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center text-white/60 hover:text-arc-cyan hover:bg-white/10 active:scale-90 transition-all cursor-pointer focus:outline-none"
             title="Next Track"
             aria-label="Next Track"
           >
@@ -206,30 +206,30 @@ export function AvengersAudioHud() {
         >
           {/* Song Title & Artist */}
           <div className="overflow-hidden w-full">
-            <p className="text-[11px] sm:text-xs font-bold font-excon-bold truncate text-white group-hover/deck:text-arc-cyan transition-colors">
+            <p className="text-[11px] sm:text-xs font-black font-excon-bold truncate text-white group-hover/deck:text-arc-cyan transition-colors drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">
               {isPlaying ? (
                 isTransitioning ? (
-                  <span className="text-metallic-gold flex items-center gap-1 animate-pulse">
+                  <span className="text-[#FFD700] flex items-center gap-1 animate-pulse drop-shadow-[0_0_8px_rgba(255,215,0,0.6)]">
                     <RiEqualizerFill className="text-[11px] shrink-0" />
                     <span>CROSSFADING BEATS...</span>
                   </span>
                 ) : (
                   <span>
-                    {currentTrack?.title || "Avengers Anthem"}{" "}
-                    <span className="text-white/40 font-normal">
+                    <span className="text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.95)]">{currentTrack?.title || "Avengers Anthem"}</span>{" "}
+                    <span className="text-arc-cyan font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                       • {currentTrack?.artist}
                     </span>
                   </span>
                 )
               ) : (
-                <span className="text-white/45">AUDIO MUTED • TAP TO PLAY</span>
+                <span className="text-white/80 font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">AUDIO MUTED • TAP TO PLAY</span>
               )}
             </p>
           </div>
 
           {/* Subtitle & Timestamp */}
-          <div className="flex items-center justify-between text-[8.5px] font-space text-white/40 mt-0.5">
-            <span className="truncate">
+          <div className="flex items-center justify-between text-[8.5px] font-space text-white/80 font-medium mt-0.5">
+            <span className="truncate drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
               {isPlaying
                 ? highlightMode && currentTrack?.highlight?.description
                   ? currentTrack.highlight.description
@@ -237,14 +237,14 @@ export function AvengersAudioHud() {
                 : "READY TO LAUNCH"}
             </span>
             {isPlaying && (
-              <span className="text-[8px] font-mono text-white/35 shrink-0 ml-1">
+              <span className="text-[8.5px] font-mono font-bold text-white/85 shrink-0 ml-1 drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                 {formatTime(currentTime)}
               </span>
             )}
           </div>
 
           {/* Glowing HUD Progress Bar */}
-          <div className="w-full h-[2px] bg-white/10 rounded-full mt-1 overflow-hidden">
+          <div className="w-full h-[2px] bg-white/15 rounded-full mt-1 overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-arc-cyan via-metallic-gold to-marvel-red transition-all duration-300 shadow-[0_0_8px_#00D4FF]"
               style={{ width: `${Math.round(progress * 100)}%` }}

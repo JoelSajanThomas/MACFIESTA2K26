@@ -77,12 +77,14 @@ const AdminEventParticipants = lazy(() => import("./pages/admin/AdminEventPartic
 const AdminEventWinners = lazy(() => import("./pages/admin/AdminEventWinners"));
 const AdminContentDashboard = lazy(() => import("./pages/admin/cms/AdminContentDashboard"));
 const AdminSiteSettingsForm = lazy(() => import("./pages/admin/cms/AdminSiteSettingsForm"));
+const AdminBrochure = lazy(() => import("./pages/admin/AdminBrochure"));
 const AdminHomepageSectionsList = lazy(() => import("./pages/admin/cms/AdminHomepageSectionsList"));
 const AdminInstitutions = lazy(() => import("./pages/admin/AdminInstitutions"));
 const AdminAuditLogs = lazy(() => import("./pages/admin/AdminAuditLogs"));
 const AdminThemeForm = lazy(() => import("./pages/admin/cms/AdminThemeForm"));
 const AdminCmsList = lazy(() => import("./pages/admin/cms/AdminCmsList"));
 const AdminCmsForm = lazy(() => import("./pages/admin/cms/AdminCmsForm"));
+const NotFound = lazy(() => import("./pages/NotFound"));
 
 function PageLoader() {
   return (
@@ -169,6 +171,7 @@ function AppRoutes() {
         <Route path="hospitality" element={<AdminHospitality />} />
         <Route path="audit-logs" element={<AdminAuditLogs />} />
         <Route path="reports" element={<AdminReports />} />
+        <Route path="brochure" element={<AdminBrochure />} />
         <Route path="content" element={<AdminContentDashboard />} />
         <Route path="content/site-settings" element={<AdminSiteSettingsForm />} />
         <Route path="content/homepage-sections" element={<AdminHomepageSectionsList />} />
@@ -177,7 +180,7 @@ function AppRoutes() {
         <Route path="content/:resource/:id/edit" element={<AdminCmsForm />} />
         <Route path="content/:resource" element={<AdminCmsList />} />
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
@@ -223,13 +226,15 @@ function AppShell() {
     </main>
   );
 
+  const isTicketOrDocPage = pathname.startsWith("/pass/") || pathname.startsWith("/certificates/");
+
   return (
     <div className={`app${isAdmin ? " app--admin" : ""}`}>
       <a href="#main-content" className="skip-link">Skip to main content</a>
       {!isAdmin && <LoadingScreen />}
       {!isAdmin && <CursorGlow />}
       {!isAdmin && <ParticleAtmosphere />}
-      {!isAdmin && <JarvisAssistant />}
+      {!isAdmin && !isTicketOrDocPage && <JarvisAssistant />}
       {isAdmin ? (
         main
       ) : (

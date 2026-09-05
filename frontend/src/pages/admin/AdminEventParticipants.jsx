@@ -7,6 +7,7 @@ import EmptyState from "../../components/ui/EmptyState";
 import StatusChip from "../../components/theme/StatusChip";
 import { getAdminRegistrations, getEvent, updateAdminRegistration } from "../../services/api";
 import { exportPdf, exportExcel } from "../../utils/adminUtils";
+import SquadMembersDetailModal from "../../components/admin/SquadMembersDetailModal";
 
 /**
  * Per-event participant / team roster for Event Operations.
@@ -21,6 +22,7 @@ export default function AdminEventParticipants() {
   const [search, setSearch] = useState("");
   const [institution, setInstitution] = useState("all");
   const [status, setStatus] = useState("all");
+  const [selectedSquadReg, setSelectedSquadReg] = useState(null);
 
   function load() {
     setLoading(true);
@@ -264,7 +266,7 @@ export default function AdminEventParticipants() {
                     <td>
                       {r.registration_type === "team" ? (
                         <>
-                          <div>{r.team_name || "—"}</div>
+                          <div style={{ fontWeight: 600 }}>{r.team_name || "—"}</div>
                           {members.length > 0 ? (
                             <ul className="admin-team-list">
                               {members.map((m) => (
@@ -274,6 +276,26 @@ export default function AdminEventParticipants() {
                           ) : (
                             <div className="muted-line">No teammates listed</div>
                           )}
+                          <button
+                            type="button"
+                            onClick={() => setSelectedSquadReg(r)}
+                            className="btn btn-outline btn-sm"
+                            style={{
+                              marginTop: "0.35rem",
+                              padding: "0.2rem 0.5rem",
+                              fontSize: "0.72rem",
+                              borderColor: "rgba(245, 158, 11, 0.4)",
+                              color: "#fbbf24",
+                              background: "rgba(245, 158, 11, 0.08)",
+                              cursor: "pointer",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "0.3rem",
+                            }}
+                            title="View complete squad roster and member details"
+                          >
+                            <span>View Roster ({teamSize}) ↗</span>
+                          </button>
                         </>
                       ) : (
                         "—"
@@ -312,6 +334,27 @@ export default function AdminEventParticipants() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {selectedSquadReg && (
+        <SquadMembersDetailModal
+          isOpen={Boolean(selectedSquadReg)}
+          onClose={() => setSelectedSquadReg(null)}
+          registration={selectedSquadReg}
+          onStatusUpdate={async (reg, field, val) => {
+            setUpdatingId(reg.id);
+            try {
+              const res = await updateAdminRegistration(reg.id, { [field]: val });
+              setRows((prev) => prev.map((item) => (item.id === reg.id ? { ...item, ...res.data } : item)));
+              setSelectedSquadReg(res.data);
+            } catch {
+              setError("Could not update squad registration.");
+            } finally {
+              setUpdatingId(null);
+            }
+          }}
+          isUpdating={updatingId === selectedSquadReg.id}
+        />
       )}
     </div>
   );

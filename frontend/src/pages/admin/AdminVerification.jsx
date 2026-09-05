@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import LoadingState from "../../components/ui/LoadingState";
-
 import ErrorState from "../../components/ui/ErrorState";
-
-import { verifyCheckIn, verifyRegistrationLookup } from "../../services/api";
+import { verifyCheckIn, verifyRegistrationLookup, updateAdminRegistration } from "../../services/api";
+import SquadMembersDetailModal from "../../components/admin/SquadMembersDetailModal";
 
 
 
@@ -67,6 +66,7 @@ export default function AdminVerification() {
   const [scanError, setScanError] = useState("");
 
   const [busy, setBusy] = useState(false);
+  const [showSquadModal, setShowSquadModal] = useState(false);
 
   const scannerRef = useRef(null);
 
@@ -432,6 +432,32 @@ export default function AdminVerification() {
                 {match.event_attendance_marked ? "Present at Event Arena" : "Awaiting Event Call"}
               </span>
             </dd>
+            {Boolean(match.team_name || (match.team_members && match.team_members.length > 0)) && (
+              <>
+                <dt>Squad</dt>
+                <dd>
+                  <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap" }}>
+                    <strong style={{ color: "#fbbf24" }}>{match.team_name || "Squad Team"}</strong>
+                    <span>({1 + (match.team_members?.length || 0)} members)</span>
+                    <button
+                      type="button"
+                      onClick={() => setShowSquadModal(true)}
+                      className="btn btn-outline btn-sm"
+                      style={{
+                        padding: "0.2rem 0.5rem",
+                        fontSize: "0.72rem",
+                        borderColor: "rgba(245, 158, 11, 0.4)",
+                        color: "#fbbf24",
+                        background: "rgba(245, 158, 11, 0.08)",
+                        cursor: "pointer",
+                      }}
+                    >
+                      View Squad Details ↗
+                    </button>
+                  </div>
+                </dd>
+              </>
+            )}
           </dl>
 
           {vStatus === "PENDING" ? (
@@ -456,10 +482,29 @@ export default function AdminVerification() {
 
       )}
 
+      {showSquadModal && match && (
+        <SquadMembersDetailModal
+          isOpen={showSquadModal}
+          onClose={() => setShowSquadModal(false)}
+          registration={match}
+          onStatusUpdate={async (reg, field, val) => {
+            setBusy(true);
+            try {
+              const res = await updateAdminRegistration(reg.id, { [field]: val });
+              setMatch(res.data);
+            } catch {
+              setError("Failed to update registration status.");
+            } finally {
+              setBusy(false);
+            }
+          }}
+          isUpdating={busy}
+        />
+      )}
+
     </div>
 
   );
-
 }
 
 

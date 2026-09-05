@@ -32,8 +32,6 @@ const STAY_STATUS = [
 ];
 
 const STANDARD_HOSTEL_OPTIONS = [
-  { value: "Boys Hostel", label: "Boys Hostel", gender: "male" },
-  { value: "Girls Hostel", label: "Girls Hostel", gender: "female" },
   { value: "St. Thomas Mens Hostel", label: "St. Thomas Mens Hostel (Boys)", gender: "male" },
   { value: "St. Teresa Ladies Hostel", label: "St. Teresa Ladies Hostel (Girls)", gender: "female" },
   { value: "St. Alphonsa Ladies Hostel", label: "St. Alphonsa Ladies Hostel (Girls)", gender: "female" },
@@ -471,26 +469,27 @@ export default function AdminHospitality() {
                   }}
                 >
                   <option value="">— Select Hostel —</option>
-                  <optgroup label="Standard Hostels">
-                    <option value="Boys Hostel">Boys Hostel</option>
-                    <option value="Girls Hostel">Girls Hostel</option>
-                  </optgroup>
-                  <optgroup label="Campus Hostels">
-                    {hostels.length > 0
-                      ? hostels.map((h) => (
-                          <option key={h.id || h.name} value={h.name}>
-                            {h.name} {h.gender === "male" ? "(Boys)" : h.gender === "female" ? "(Girls)" : "(Co-ed)"}
+                  <optgroup label="Official Campus Hostels">
+                    {hostels.length > 0 ? (
+                      hostels.map((h) => {
+                        const displayName = h.name.includes("(") ? h.name : `${h.name} (${h.gender === "male" ? "Boys" : "Girls"})`;
+                        return (
+                          <option key={h.id || h.name} value={displayName}>
+                            {displayName}
                           </option>
-                        ))
-                      : STANDARD_HOSTEL_OPTIONS.slice(2).map((h) => (
-                          <option key={h.value} value={h.value}>
-                            {h.label}
-                          </option>
-                        ))}
+                        );
+                      })
+                    ) : (
+                      STANDARD_HOSTEL_OPTIONS.map((h) => (
+                        <option key={h.value} value={h.value}>
+                          {h.label}
+                        </option>
+                      ))
+                    )}
                   </optgroup>
                   {draft.accommodation_hostel &&
                     !STANDARD_HOSTEL_OPTIONS.some((o) => o.value === draft.accommodation_hostel) &&
-                    !hostels.some((h) => h.name === draft.accommodation_hostel) &&
+                    !hostels.some((h) => h.name === draft.accommodation_hostel || `${h.name} (${h.gender === "male" ? "Boys" : "Girls"})` === draft.accommodation_hostel) &&
                     !customHostelMode && (
                       <option value={draft.accommodation_hostel}>
                         {draft.accommodation_hostel} (Current)

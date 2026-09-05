@@ -60,6 +60,14 @@ class AuditLog(models.Model):
             kwargs["resource_type"] = kwargs.pop("module")
         super().__init__(*args, **kwargs)
 
+    @property
+    def module(self):
+        return self.resource_type
+
+    @module.setter
+    def module(self, value):
+        self.resource_type = value
+
     class Meta:
         ordering = ["-created_at"]
         verbose_name = "Audit log"

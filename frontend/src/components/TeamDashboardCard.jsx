@@ -22,7 +22,6 @@ import { registrationQrImageUrl, calculateBatchFees } from "../utils/registratio
 import {
   inviteTeamMember,
   removeTeamMember,
-  submitMemberPayment,
 } from "../services/api";
 
 export default function TeamDashboardCard({
@@ -55,11 +54,6 @@ export default function TeamDashboardCard({
     (currentUser && (currentUser.id === registration.user || currentUser.email === registration.email || currentUser.is_staff))
   );
 
-  // Member payment state
-  const [activePayMember, setActivePayMember] = useState(null);
-  const [payForm, setPayForm] = useState({ txn: "", proof: null });
-  const [submittingPay, setSubmittingPay] = useState(false);
-
   // Master team QR modal state
   const [showTeamQrModal, setShowTeamQrModal] = useState(false);
   const [selectedMemberQr, setSelectedMemberQr] = useState(null);
@@ -84,6 +78,8 @@ export default function TeamDashboardCard({
   const captainPaid = registration.payment_status === "paid" || registration.payment_status === "waived";
   const isTeamFull = totalJoinedCount >= minMembers;
   const isAllPaid = captainPaid;
+  const isLocked = Boolean(registration.is_locked || registration.is_team_locked || captainPaid);
+  const canModifyTeam = isCaptain && !isLocked && registration.approval_status !== "cancelled";
 
   // Generate shareable squad invite URL & text
   const inviteLink = `${window.location.origin}/student-dashboard`;
@@ -138,28 +134,6 @@ export default function TeamDashboardCard({
       if (onRefresh) onRefresh();
     } catch (err) {
       alert(err?.response?.data?.detail || "Could not remove member.");
-    }
-  }
-
-  async function handleMemberPaySubmit(e) {
-    e.preventDefault();
-    if (!payForm.txn.trim()) {
-      alert("Please enter the payment transaction / reference ID.");
-      return;
-    }
-    setSubmittingPay(true);
-    try {
-      await submitMemberPayment(registration.id, activePayMember.id, {
-        payment_transaction_id: payForm.txn,
-        payment_proof: payForm.proof,
-      });
-      setActivePayMember(null);
-      setPayForm({ txn: "", proof: null });
-      if (onRefresh) onRefresh();
-    } catch (err) {
-      alert(err?.response?.data?.detail || "Failed to submit member payment proof.");
-    } finally {
-      setSubmittingPay(false);
     }
   }
 
@@ -227,10 +201,20 @@ export default function TeamDashboardCard({
                   <span>Team Pass</span>
                 </button>
               </>
+            ) : registration.payment_status === "initiated" ? (
+              <span className="px-3 py-1.5 rounded-xl bg-blue-500/20 text-blue-300 border border-blue-500/40 text-[11px] font-black uppercase font-mono flex items-center gap-1.5">
+                <RiShieldCheckLine />
+                <span>Payment Initiated</span>
+              </span>
+            ) : !isTeamFull ? (
+              <span className="px-3 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-black uppercase font-mono flex items-center gap-1.5">
+                <RiAlertLine />
+                <span>Squad Forming ({totalJoinedCount}/{minMembers} Min)</span>
+              </span>
             ) : (
               <span className="px-3 py-1.5 rounded-xl bg-amber-500/20 text-amber-300 border border-amber-500/40 text-[11px] font-black uppercase font-mono flex items-center gap-1.5">
                 <RiAlertLine />
-                <span>Pass Locked (Verification Pending)</span>
+                <span>Ready for Payment</span>
               </span>
             )}
           </div>
@@ -346,17 +330,42 @@ export default function TeamDashboardCard({
 
         {/* Pay / Upload Proof — Captain only, unpaid */}
         {isCaptain && !captainPaid && Number(registration.payment_amount) > 0 && registration.approval_status !== "cancelled" && (
-          <button
-            type="button"
-            className="w-full sm:w-auto px-4 py-2.5 bg-metallic-gold/15 hover:bg-metallic-gold/30 text-metallic-gold border border-metallic-gold/40 font-bold text-xs uppercase tracking-wider rounded-xl transition-all font-excon-bold cursor-pointer text-center"
-            onClick={() => setShowCaptainPayPanel((v) => !v)}
-          >
-            {showCaptainPayPanel ? "Hide Payment Details" : "💳 Pay / Upload Proof"}
-          </button>
+          !isTeamFull ? (
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              <button
+                type="button"
+                disabled
+                className="w-full sm:w-auto px-4 py-2.5 bg-amber-500/10 text-amber-300 border border-amber-500/30 font-bold text-xs uppercase tracking-wider rounded-xl cursor-not-allowed text-center opacity-70 font-mono inline-flex items-center justify-center gap-1.5"
+                title={`Add at least ${minMembers - totalJoinedCount} more member(s) to unlock payment`}
+              >
+                <RiAlertLine />
+                <span>Payment Locked (Min {minMembers} Members Required)</span>
+              </button>
+              <span className="text-[11px] text-amber-400/90 font-mono">
+                Need {minMembers - totalJoinedCount} more member(s) to enable payment
+              </span>
+            </div>
+          ) : (
+            <button
+              type="button"
+              className="w-full sm:w-auto px-4 py-2.5 bg-metallic-gold/15 hover:bg-metallic-gold/30 text-metallic-gold border border-metallic-gold/40 font-bold text-xs uppercase tracking-wider rounded-xl transition-all font-excon-bold cursor-pointer text-center"
+              onClick={() => setShowCaptainPayPanel((v) => !v)}
+            >
+              {showCaptainPayPanel ? "Hide Payment Details" : "💳 Pay / Upload Proof"}
+            </button>
+          )
         )}
 
-        {/* Cancel Squad Registration — Captain only, before attendance */}
-        {isCaptain && !registration.attendance_marked && registration.approval_status !== "cancelled" && (
+        {/* Non-Captain Notice */}
+        {!isCaptain && !captainPaid && registration.approval_status !== "cancelled" && (
+          <div className="p-3 rounded-xl bg-white/[0.02] border border-white/10 text-xs text-white/70 font-mono flex items-center gap-2">
+            <RiShieldCheckLine className="text-arc-cyan shrink-0" />
+            <span>Payment is managed and completed exclusively by Team Captain ({registration.participant_name}).</span>
+          </div>
+        )}
+
+        {/* Cancel Squad Registration — Captain only, before attendance, unpaid/unlocked */}
+        {isCaptain && !registration.attendance_marked && !isLocked && registration.approval_status !== "cancelled" && (
           <button
             type="button"
             className="w-full sm:w-auto px-3.5 py-2.5 bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 font-bold text-xs uppercase tracking-wider rounded-xl transition-all font-excon-bold sm:ml-auto cursor-pointer text-center"
@@ -421,7 +430,7 @@ export default function TeamDashboardCard({
               <span>{copiedLink ? "Link Copied!" : "Copy Link"}</span>
             </button>
 
-            {totalSlotsCount < maxMembers && (
+            {canModifyTeam && totalSlotsCount < maxMembers && (
               <button
                 type="button"
                 onClick={() => setShowInviteModal(true)}
@@ -468,14 +477,16 @@ export default function TeamDashboardCard({
                       </div>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveMember(member.id)}
-                      className="text-white/30 hover:text-red-400 p-1.5 rounded-lg transition-colors cursor-pointer"
-                      title="Remove Member"
-                    >
-                      <RiDeleteBin7Line className="text-base" />
-                    </button>
+                    {canModifyTeam && (
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveMember(member.id)}
+                        className="text-white/30 hover:text-red-400 p-1.5 rounded-lg transition-colors cursor-pointer"
+                        title="Remove Member"
+                      >
+                        <RiDeleteBin7Line className="text-base" />
+                      </button>
+                    )}
                   </div>
 
                   {/* Member Details */}
@@ -549,18 +560,38 @@ export default function TeamDashboardCard({
           {emptySlots.map((slotNum) => (
             <div
               key={`empty-${slotNum}`}
-              onClick={() => setShowInviteModal(true)}
-              className="p-6 rounded-2xl border-2 border-dashed border-white/15 hover:border-metallic-gold/40 bg-white/[0.01] hover:bg-white/[0.03] transition-all flex flex-col items-center justify-center text-center gap-3 cursor-pointer group min-h-[180px]"
+              onClick={() => {
+                if (canModifyTeam) setShowInviteModal(true);
+              }}
+              className={`p-6 rounded-2xl border-2 border-dashed ${
+                canModifyTeam
+                  ? "border-white/15 hover:border-metallic-gold/40 bg-white/[0.01] hover:bg-white/[0.03] cursor-pointer group"
+                  : "border-white/10 bg-white/[0.005] opacity-50 cursor-not-allowed"
+              } transition-all flex flex-col items-center justify-center text-center gap-3 min-h-[180px]`}
             >
-              <div className="w-10 h-10 rounded-xl bg-white/5 group-hover:bg-metallic-gold/20 text-white/40 group-hover:text-metallic-gold flex items-center justify-center text-lg transition-colors">
+              <div
+                className={`w-10 h-10 rounded-xl ${
+                  canModifyTeam
+                    ? "bg-white/5 group-hover:bg-metallic-gold/20 text-white/40 group-hover:text-metallic-gold"
+                    : "bg-white/5 text-white/20"
+                } flex items-center justify-center text-lg transition-colors`}
+              >
                 <RiUserAddLine />
               </div>
               <div className="space-y-1">
-                <span className="text-xs font-black uppercase text-white/70 group-hover:text-white font-excon-bold">
+                <span
+                  className={`text-xs font-black uppercase ${
+                    canModifyTeam ? "text-white/70 group-hover:text-white" : "text-white/40"
+                  } font-excon-bold`}
+                >
                   Empty Slot #{members.length + 1 + slotNum}
                 </span>
                 <p className="text-[11px] text-white/40 font-mono">
-                  Click to invite participant to squad
+                  {isLocked
+                    ? "Squad roster is locked"
+                    : canModifyTeam
+                    ? "Click to invite participant to squad"
+                    : "Only Captain can invite members"}
                 </p>
               </div>
             </div>
@@ -705,83 +736,6 @@ export default function TeamDashboardCard({
                     className="px-6 py-2 rounded-xl bg-metallic-gold hover:bg-white text-black text-xs font-black uppercase tracking-wider font-excon-black shadow-lg cursor-pointer"
                   >
                     {inviting ? "Sending Invite…" : "Send Squad Invitation"}
-                  </button>
-                </div>
-              </form>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-
-      {/* ─── Member Payment Proof Modal ─── */}
-      <AnimatePresence>
-        {activePayMember && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="marvel-card max-w-md w-full p-6 rounded-3xl border border-metallic-gold/40 bg-[#0A0D1A] shadow-2xl space-y-5"
-            >
-              <div className="flex items-center justify-between border-b border-white/10 pb-3">
-                <div className="space-y-0.5">
-                  <h4 className="text-sm font-black uppercase text-metallic-gold font-excon-black">
-                    Submit Member Payment Proof
-                  </h4>
-                  <p className="text-[11px] text-white/60 font-mono">
-                    Member: {activePayMember.name} ({activePayMember.email})
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setActivePayMember(null)}
-                  className="text-white/40 hover:text-white"
-                >
-                  <RiCloseLine className="text-lg" />
-                </button>
-              </div>
-
-              <form onSubmit={handleMemberPaySubmit} className="space-y-4 text-xs font-space">
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-white/50 mb-1 font-mono">
-                    UPI Transaction / Reference ID *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={payForm.txn}
-                    onChange={(e) => setPayForm({ ...payForm, txn: e.target.value })}
-                    placeholder="e.g. UPI/123456789012"
-                    className="w-full px-3.5 py-2 bg-black/60 border border-white/15 rounded-xl text-white focus:outline-none focus:border-metallic-gold font-mono"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-[10px] uppercase font-bold text-white/50 mb-1 font-mono">
-                    Payment Screenshot (Optional)
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={(e) => setPayForm({ ...payForm, proof: e.target.files[0] })}
-                    className="w-full text-white/60 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-white/10 file:text-white hover:file:bg-white/20"
-                  />
-                </div>
-
-                <div className="pt-2 flex justify-end gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setActivePayMember(null)}
-                    className="px-4 py-2 rounded-xl bg-white/10 text-white text-xs font-bold"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    disabled={submittingPay}
-                    className="px-5 py-2 rounded-xl bg-metallic-gold text-black text-xs font-black uppercase font-excon-black cursor-pointer shadow-lg"
-                  >
-                    {submittingPay ? "Submitting…" : "Confirm Payment"}
                   </button>
                 </div>
               </form>

@@ -17,6 +17,7 @@ import {
   RiApps2Line,
   RiShieldFlashLine,
   RiToggleLine,
+  RiBookOpenLine,
 } from "react-icons/ri";
 import { committeeBottomNav } from "../../utils/committeeAccess";
 import { useAdminStaff } from "./AdminStaffContext";
@@ -37,6 +38,7 @@ const NAV_ITEM_ICONS = {
   "Schedule": RiCalendarEventLine,
   "News": RiMegaphoneLine,
   "Gallery": RiGalleryLine,
+  "Brochure": RiBookOpenLine,
   "Sponsors": RiStarSmileLine,
   "Guests": RiUserStarLine,
   "CMS": RiGlobalLine,

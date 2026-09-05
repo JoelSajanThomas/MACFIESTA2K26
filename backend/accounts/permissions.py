@@ -74,7 +74,7 @@ def user_modules(user):
         return []
     profile = getattr(user, "staff_profile", None)
     if profile is None:
-        return list(ALL_MODULES)
+        return []
     return profile.modules
 
 

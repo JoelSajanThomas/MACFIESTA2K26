@@ -1,8 +1,16 @@
-import { Link } from "react-router-dom";
-import { RiFileDownloadLine, RiShieldFlashLine, RiCompass3Line, RiExternalLinkLine } from "react-icons/ri";
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  RiFileDownloadLine,
+  RiShieldFlashLine,
+  RiCompass3Line,
+  RiExternalLinkLine,
+  RiUploadCloud2Line,
+  RiSettings3Line,
+} from "react-icons/ri";
 import { usePageSeo } from "../hooks/usePageSeo";
 import { useSiteSettings } from "../hooks/useSiteSettings";
-import { mediaUrl } from "../services/api";
+import { mediaUrl, isLoggedIn, getCurrentUser } from "../services/api";
 
 export default function Brochure() {
   usePageSeo({
@@ -10,14 +18,33 @@ export default function Brochure() {
     description: "Download the comprehensive national festival brochure featuring event details, cash prize breakdowns, rules, schedules, and MACFAST campus map.",
   });
 
+  const navigate = useNavigate();
   const settings = useSiteSettings() || {};
+  const [currentUser, setCurrentUser] = useState(null);
 
+  useEffect(() => {
+    if (isLoggedIn()) {
+      getCurrentUser()
+        .then((res) => setCurrentUser(res.data))
+        .catch(() => setCurrentUser(null));
+    }
+  }, []);
+
+  const isStaff = Boolean(currentUser?.is_staff || currentUser?.is_superuser);
+
+  const hasConfiguredBrochure = Boolean(settings.brochure_file || settings.brochure_url);
   const brochureTarget = settings.brochure_file
     ? mediaUrl(settings.brochure_file)
-    : settings.brochure_url || "/brochure.pdf";
+    : settings.brochure_url || (hasConfiguredBrochure ? "/brochure.pdf" : null);
 
   const handleDownload = () => {
     if (!brochureTarget) {
+      if (isStaff) {
+        if (window.confirm("No official brochure has been uploaded yet. Would you like to go to the Admin portal to upload one now?")) {
+          navigate("/admin/brochure");
+          return;
+        }
+      }
       alert("Brochure file is currently being updated by the organizing committee. Please check back shortly!");
       return;
     }
@@ -75,6 +102,18 @@ export default function Brochure() {
             <span>Download Official Brochure PDF</span>
             <RiExternalLinkLine className="text-xs opacity-60" />
           </button>
+
+          {isStaff && (
+            <div className="pt-2 border-t border-white/10 flex items-center justify-center gap-2">
+              <Link
+                to="/admin/brochure"
+                className="text-[11px] font-bold text-metallic-gold hover:text-white uppercase tracking-wider inline-flex items-center gap-1.5 transition-colors py-1 px-3 rounded-lg bg-metallic-gold/10 border border-metallic-gold/30 hover:bg-metallic-gold/20"
+              >
+                <RiUploadCloud2Line className="text-sm" />
+                <span>Admin: Upload / Change Brochure PDF</span>
+              </Link>
+            </div>
+          )}
         </div>
 
         <div className="pt-4">

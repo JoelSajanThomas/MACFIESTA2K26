@@ -145,7 +145,7 @@ export const COLLEGE_EVENTS_INCHARGE = [
   },
   {
     event: "Stark Industries: The Pitch (Shark Tank)",
-    name: "Hanna Rose Flash",
+    name: "Hannah Rose Flash",
     department: "S1 MBA",
     phone: "+91 90742 73970",
   },

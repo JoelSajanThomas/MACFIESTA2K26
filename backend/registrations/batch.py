@@ -53,6 +53,7 @@ def _create_one_registration(
     payment_batch_id: str,
     payment_reference: str,
     members_data: list | None = None,
+    squad_name: str | None = None,
 ) -> Registration:
     if not event.is_registration_open:
         raise serializers.ValidationError({"events": f"Registration is closed for {event.title}."})
@@ -91,16 +92,48 @@ def _create_one_registration(
     )
     initial_payment_status = "waived" if breakdown["total"] <= 0 else "pending"
 
-    if event.max_team_size and event.max_team_size > 1:
-        reg_type = "team"
-    elif event.max_team_size and event.max_team_size <= 1:
-        reg_type = "individual"
+    # Determine strictly whether the event is solo or squad
+    if event.max_team_size is not None:
+        is_solo = (event.max_team_size <= 1)
     else:
-        reg_type = "team" if base.get("registration_type") == "team" else "individual"
+        is_solo = (getattr(event, "type", "") in ("solo", "individual") or base.get("registration_type") == "individual")
 
-    is_team_event = (reg_type == "team")
-    default_team_name = f"{base['participant_name']}'s Team"
-    resolved_team_name = (base.get("team_name") or default_team_name).strip() if is_team_event else ""
+    # Clean valid members list
+    valid_members = []
+    if members_data:
+        for m in members_data:
+            if m and isinstance(m, dict) and (m.get("name") or "").strip():
+                valid_members.append(m)
+
+    if is_solo:
+        if valid_members:
+            raise serializers.ValidationError(
+                {"team_members": f"'{event.title}' is a solo/individual event and cannot have squad members."}
+            )
+        reg_type = "individual"
+        resolved_team_name = ""
+    else:
+        reg_type = "team"
+        resolved_team_name = (squad_name or base.get("team_name") or "").strip()
+        if not resolved_team_name:
+            if (event.min_team_size or 1) > 1:
+                raise serializers.ValidationError(
+                    {"team_name": f"Team name is required for squad mission '{event.title}'."}
+                )
+            resolved_team_name = f"{base.get('participant_name', 'Student')}'s Team"
+
+        total_members = 1 + len(valid_members)
+        min_size = event.min_team_size or 1
+        max_size = event.max_team_size or 999
+
+        if total_members < min_size:
+            raise serializers.ValidationError(
+                {"team_members": f"'{event.title}' requires at least {min_size} members (including captain). Current: {total_members}."}
+            )
+        if total_members > max_size:
+            raise serializers.ValidationError(
+                {"team_members": f"'{event.title}' allows at most {max_size} members (including captain). Current: {total_members}."}
+            )
 
     raw_gender = str(base.get("gender") or "").strip().lower()
     if raw_gender in ("female", "f"):
@@ -117,6 +150,8 @@ def _create_one_registration(
         "team_name": resolved_team_name,
         "participant_name": base["participant_name"],
         "college_name": base["college_name"],
+        "department": base.get("department") or "",
+        "register_number": base.get("register_number") or "",
         "email": base["email"],
         "phone": base["phone"],
         "gender": gender,
@@ -150,26 +185,50 @@ def _create_one_registration(
     except Exception:
         pass
 
-    if registration.registration_type == "team" and members_data:
-        for member in members_data:
-            if not member:
-                continue
-            name = (member.get("name") or "").strip()
-            if not name:
-                continue
+    # For squad events only: create captain and team member rows
+    if registration.registration_type == "team":
+        TeamMember.objects.create(
+            registration=registration,
+            user=user,
+            role="captain",
+            name=registration.participant_name,
+            email=registration.email,
+            phone=registration.phone,
+            college_name=registration.college_name,
+            department=registration.department,
+            register_number=registration.register_number,
+            gender=registration.gender,
+            invitation_status="accepted",
+            payment_status=registration.payment_status,
+            payment_amount=registration.payment_amount,
+        )
+        for member in valid_members:
             TeamMember.objects.create(
                 registration=registration,
-                name=name,
+                role="member",
+                name=member["name"].strip(),
                 phone=(member.get("phone") or "").strip(),
                 email=(member.get("email") or "").strip(),
-                college_name=(member.get("college_name") or "").strip(),
+                college_name=(member.get("college_name") or registration.college_name).strip(),
+                department=(member.get("department") or "").strip(),
+                register_number=(member.get("register_number") or "").strip(),
+                gender=(member.get("gender") or "unspecified").strip(),
+                invitation_status="accepted",
+                payment_status=registration.payment_status,
             )
 
     return registration
 
 
 @transaction.atomic
-def create_registration_batch(*, user, event_ids: list[int], profile: dict, members_by_event: dict | None = None):
+def create_registration_batch(
+    *,
+    user,
+    event_ids: list[int],
+    profile: dict,
+    members_by_event: dict | None = None,
+    squads_by_event: dict | None = None,
+):
     if not event_ids:
         raise serializers.ValidationError({"events": "Select at least one event."})
     if len(event_ids) > MAX_EVENTS_PER_BATCH:
@@ -209,10 +268,26 @@ def create_registration_batch(*, user, event_ids: list[int], profile: dict, memb
     created = []
     for index, event in enumerate(events):
         members = None
-        if members_by_event and str(event.pk) in members_by_event:
-            members = members_by_event[str(event.pk)]
-        elif members_by_event and event.pk in members_by_event:
-            members = members_by_event[event.pk]
+        squad_name = None
+        squad_info = None
+
+        if squads_by_event:
+            squad_info = (
+                squads_by_event.get(str(event.pk))
+                or squads_by_event.get(event.pk)
+                or (event.slug and squads_by_event.get(event.slug))
+            )
+            if isinstance(squad_info, dict):
+                squad_name = squad_info.get("team_name")
+                members = squad_info.get("members") or squad_info.get("team_members")
+
+        if members is None and members_by_event:
+            members = (
+                members_by_event.get(str(event.pk))
+                or members_by_event.get(event.pk)
+                or (event.slug and members_by_event.get(event.slug))
+            )
+
         reg = _create_one_registration(
             user=user,
             event=event,
@@ -221,6 +296,7 @@ def create_registration_batch(*, user, event_ids: list[int], profile: dict, memb
             payment_batch_id=batch_id,
             payment_reference=reference,
             members_data=members,
+            squad_name=squad_name,
         )
         created.append(reg)
 

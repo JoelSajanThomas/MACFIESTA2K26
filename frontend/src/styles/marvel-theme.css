@@ -180,16 +180,20 @@
 .app:not(:has(.admin-shell)) .mf1-btn--outline,
 .app:not(:has(.admin-shell)) .btn-outline,
 .app:not(:has(.admin-shell)) .btn.btn-outline {
-  border-color: rgba(0, 212, 255, 0.65) !important;
-  color: #7be7ff !important;
-  background: rgba(8, 18, 36, 0.45) !important;
+  border-color: rgba(0, 212, 255, 0.75) !important;
+  color: #ffffff !important;
+  background: rgba(6, 12, 24, 0.76) !important;
+  backdrop-filter: blur(28px) !important;
+  -webkit-backdrop-filter: blur(28px) !important;
 }
 
 .app:not(:has(.admin-shell)) .mf1-btn--outline:hover,
 .app:not(:has(.admin-shell)) .btn-outline:hover {
-  background: rgba(0, 212, 255, 0.14) !important;
+  background: rgba(0, 212, 255, 0.25) !important;
   border-color: #00d4ff !important;
   color: #fff !important;
+  backdrop-filter: blur(28px) !important;
+  -webkit-backdrop-filter: blur(28px) !important;
 }
 
 .app:not(:has(.admin-shell)) .mf1-btn--urgency,

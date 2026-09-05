@@ -60,15 +60,24 @@ class AccommodationTests(TestCase):
             "persons_count": 1,
             "check_in_date": "2026-03-20",
             "check_out_date": "2026-03-22",
+            "include_breakfast": True,
+            "include_lunch": True,
+            "include_dinner": False,
             "status": "confirmed",  # Student trying to bypass status
             "allocated_room": "VIP 1",
         }
         res = self.client.post("/api/accommodation/bookings/", payload)
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        self.assertTrue(res.data["include_breakfast"])
+        self.assertTrue(res.data["include_lunch"])
+        self.assertFalse(res.data["include_dinner"])
         booking = AccommodationBooking.objects.get(pk=res.data["id"])
         # Must default to pending and not allow student to set confirmed/room
         self.assertEqual(booking.status, "pending")
         self.assertEqual(booking.allocated_room, "")
+        self.assertTrue(booking.include_breakfast)
+        self.assertTrue(booking.include_lunch)
+        self.assertFalse(booking.include_dinner)
 
     def test_staff_hospitality_stats_and_update(self):
         booking = AccommodationBooking.objects.create(

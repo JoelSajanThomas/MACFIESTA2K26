@@ -14,8 +14,8 @@ import {
   RiShieldFlashLine,
   RiArrowRightLine,
   RiLockLine,
-  RiQrCodeLine,
-  RiCloseLine,
+  RiRestaurantLine,
+  RiSparklingLine,
 } from "react-icons/ri";
 import { usePageSeo } from "../hooks/usePageSeo";
 import { getHostels } from "../services/api";
@@ -31,12 +31,12 @@ const defaultHostelsData = [
     distance: "2 min walk to Fest Arena",
     roomTypes: ["4-Sharing Dormitory", "Twin Sharing Rooms"],
     tariff: "₹350 / night (stay without food)",
-    amenities: ["Free Wi-Fi", "24/7 Security & CCTV", "Hot Water", "Filter Drinking Water", "Power Backup", "Mess Breakfast Included"],
+    amenities: ["Free Wi-Fi", "24/7 Security & CCTV", "Hot Water", "Filter Drinking Water", "Power Backup", "Mess Dining Available (B: ₹50, L: ₹70, D: ₹50)"],
     wardenName: "Prof. Alexander Varghese",
     wardenPhone: "+91 94470 12345",
     availability: "Available",
     badgeColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-    description: "Spacious on-campus mens hostel equipped with study tables, high-speed Wi-Fi, and round-the-clock fest security."
+    description: "Spacious on-campus mens hostel. ₹350/day stay without food, with optional campus mess dining."
   },
 
   // FEMALE ACCOMMODATION
@@ -49,12 +49,12 @@ const defaultHostelsData = [
     distance: "2 min walk to Fest Arena",
     roomTypes: ["Twin Sharing", "Triple Sharing Rooms"],
     tariff: "₹350 / night (stay without food)",
-    amenities: ["Female Warden & 24/7 Security Guard", "CCTV Surveillance", "Free Wi-Fi", "Hot Water", "First Aid Desk", "Mess Breakfast Included"],
+    amenities: ["Female Warden & 24/7 Security Guard", "CCTV Surveillance", "Free Wi-Fi", "Hot Water", "First Aid Desk", "Mess Dining Available (B: ₹50, L: ₹70, D: ₹50)"],
     wardenName: "Sr. Grace Mary",
     wardenPhone: "+91 94463 67890",
     availability: "Available",
     badgeColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-    description: "Exclusive secure ladies hostel inside MACFAST campus with female wardens, biometric entry, and clean dining facilities."
+    description: "Exclusive secure ladies hostel inside MACFAST campus with female wardens, biometric entry, and mess dining."
   },
   {
     id: "st-alphonsa",
@@ -65,7 +65,7 @@ const defaultHostelsData = [
     distance: "3 min walk to Fest Arena",
     roomTypes: ["4-Sharing Spacious Rooms", "Dormitory Hall"],
     tariff: "₹350 / night (stay without food)",
-    amenities: ["Female Warden On-Duty", "Hot Water", "Free Wi-Fi", "Common Lounge", "Mess Meals", "Emergency Support"],
+    amenities: ["Female Warden On-Duty", "Hot Water", "Free Wi-Fi", "Common Lounge", "Mess Dining Available (B: ₹50, L: ₹70, D: ₹50)", "Emergency Support"],
     wardenName: "Ms. Anitha John",
     wardenPhone: "+91 98472 11223",
     availability: "Available",
@@ -83,7 +83,6 @@ export default function Accommodation() {
   const [hostelsList, setHostelsList] = useState(defaultHostelsData);
   const [selectedGender, setSelectedGender] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [showQrModal, setShowQrModal] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -159,6 +158,160 @@ export default function Accommodation() {
           </p>
         </div>
 
+        {/* Official MacFiesta 2026 Tariff & Dining Schedule Section */}
+        <div className="glass-aurora p-6 sm:p-8 rounded-3xl border border-metallic-gold/50 bg-gradient-to-br from-metallic-gold/10 via-black/80 to-[#0A0D1A] shadow-[0_0_40px_rgba(212,175,55,0.2)] space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-metallic-gold/20 text-metallic-gold text-[10px] font-black uppercase tracking-wider border border-metallic-gold/30">
+                <RiSparklingLine className="text-metallic-gold animate-pulse" />
+                <span>OFFICIALLY APPROVED TARIFF SCHEDULE · MACFIESTA 2026</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-black uppercase tracking-tight text-white font-excon-black mt-2">
+                Standard Lodging &amp; Mess Dining Rates
+              </h2>
+              <p className="text-xs text-white/70 font-mono mt-0.5">
+                Official ratified rates approved on 02/09/2026 for festival delegates, teams, and faculty.
+              </p>
+            </div>
+            <div className="shrink-0 flex items-center gap-2 text-[11px] font-mono text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1.5 rounded-xl">
+              <RiCheckLine className="text-emerald-400 text-sm" />
+              <span>Ratified Schedule (02/09/2026)</span>
+            </div>
+          </div>
+
+          {/* Grid of the 4 official rates */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Stay Without Food */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.04] border border-arc-cyan/30 hover:border-arc-cyan/60 transition-all flex flex-col justify-between space-y-3 shadow-[0_0_20px_rgba(0,212,255,0.1)]">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="p-2 rounded-xl bg-arc-cyan/20 text-arc-cyan border border-arc-cyan/40 text-lg">
+                    <RiHotelBedLine />
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-arc-cyan/10 text-arc-cyan border border-arc-cyan/30">
+                    Hostel Stay
+                  </span>
+                </div>
+                <h3 className="text-sm font-black uppercase text-white font-excon-black">
+                  Stay Without Food (1 Day)
+                </h3>
+                <p className="text-[11px] text-white/60 font-mono leading-relaxed">
+                  On-campus verified hostel residency per person per night with security &amp; basic amenities.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-white/10 flex items-baseline justify-between">
+                <span className="text-[10px] uppercase text-white/50 font-mono">Per Person</span>
+                <span className="text-2xl font-black text-arc-cyan font-excon-black">
+                  ₹350
+                </span>
+              </div>
+            </div>
+
+            {/* Breakfast */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.04] border border-metallic-gold/30 hover:border-metallic-gold/60 transition-all flex flex-col justify-between space-y-3 shadow-[0_0_20px_rgba(255,215,0,0.1)]">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="p-2 rounded-xl bg-metallic-gold/20 text-metallic-gold border border-metallic-gold/40 text-lg">
+                    <RiRestaurantLine />
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-metallic-gold/10 text-metallic-gold border border-metallic-gold/30">
+                    Morning Mess
+                  </span>
+                </div>
+                <h3 className="text-sm font-black uppercase text-white font-excon-black">
+                  Breakfast
+                </h3>
+                <p className="text-[11px] text-white/60 font-mono leading-relaxed">
+                  Hot morning South Indian breakfast spread served at campus dining halls before events.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-white/10 flex items-baseline justify-between">
+                <span className="text-[10px] uppercase text-white/50 font-mono">Per Person</span>
+                <span className="text-2xl font-black text-metallic-gold font-excon-black">
+                  ₹50
+                </span>
+              </div>
+            </div>
+
+            {/* Lunch */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.04] border border-marvel-red/30 hover:border-marvel-red/60 transition-all flex flex-col justify-between space-y-3 shadow-[0_0_20px_rgba(237,29,36,0.1)]">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="p-2 rounded-xl bg-marvel-red/20 text-marvel-red border border-marvel-red/40 text-lg">
+                    <RiRestaurantLine />
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-marvel-red/10 text-marvel-red border border-marvel-red/30">
+                    Afternoon Mess
+                  </span>
+                </div>
+                <h3 className="text-sm font-black uppercase text-white font-excon-black">
+                  Lunch
+                </h3>
+                <p className="text-[11px] text-white/60 font-mono leading-relaxed">
+                  Nutritious, multi-dish festival buffet lunch served in designated delegate dining areas.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-white/10 flex items-baseline justify-between">
+                <span className="text-[10px] uppercase text-white/50 font-mono">Per Person</span>
+                <span className="text-2xl font-black text-marvel-red font-excon-black">
+                  ₹70
+                </span>
+              </div>
+            </div>
+
+            {/* Dinner */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-white/[0.04] border border-purple-400/30 hover:border-purple-400/60 transition-all flex flex-col justify-between space-y-3 shadow-[0_0_20px_rgba(192,132,252,0.1)]">
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="p-2 rounded-xl bg-purple-500/20 text-purple-400 border border-purple-500/40 text-lg">
+                    <RiRestaurantLine />
+                  </span>
+                  <span className="px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-purple-500/10 text-purple-400 border border-purple-500/30">
+                    Night Mess
+                  </span>
+                </div>
+                <h3 className="text-sm font-black uppercase text-white font-excon-black">
+                  Dinner
+                </h3>
+                <p className="text-[11px] text-white/60 font-mono leading-relaxed">
+                  Complete wholesome dinner served after evening stage competitions &amp; cultural night.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-white/10 flex items-baseline justify-between">
+                <span className="text-[10px] uppercase text-white/50 font-mono">Per Person</span>
+                <span className="text-2xl font-black text-purple-400 font-excon-black">
+                  ₹50
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Full Day Plan Highlight Bar */}
+          <div className="p-4 rounded-2xl bg-metallic-gold/10 border border-metallic-gold/30 flex flex-col md:flex-row items-center justify-between gap-4 font-mono text-xs">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 rounded-xl bg-metallic-gold/20 text-metallic-gold font-black text-lg">
+                ★
+              </div>
+              <div>
+                <span className="font-bold text-white block">
+                  All-Inclusive Delegate Full Day Plan (Stay + All 3 Meals):
+                </span>
+                <span className="text-white/70 text-[11px]">
+                  ₹350 (Stay) + ₹50 (Breakfast) + ₹70 (Lunch) + ₹50 (Dinner) = ₹170 Food Package
+                </span>
+              </div>
+            </div>
+            <div className="text-right shrink-0 flex items-center gap-3">
+              <div>
+                <span className="text-[10px] uppercase text-white/50 block">Complete Daily Total</span>
+                <span className="text-2xl font-black text-metallic-gold font-excon-black">
+                  ₹520 <span className="text-xs font-mono text-white/60 font-normal">/ day</span>
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         {/* Mandatory Policy Banner — Reservation Available Only At Checkout */}
         <div className="glass-aurora p-5 sm:p-7 rounded-3xl border border-metallic-gold/40 bg-gradient-to-r from-metallic-gold/15 via-black/70 to-arc-cyan/15 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-[0_0_35px_rgba(212,175,55,0.2)]">
           <div className="flex items-start gap-4">
@@ -179,18 +332,10 @@ export default function Accommodation() {
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto shrink-0">
-            <button
-              type="button"
-              onClick={() => setShowQrModal(true)}
-              className="px-5 py-3.5 bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 font-excon-bold cursor-pointer"
-            >
-              <RiQrCodeLine className="text-base text-arc-cyan" />
-              <span>Hostel Payment QR</span>
-            </button>
+          <div className="w-full md:w-auto shrink-0 flex justify-end">
             <Link
               to="/checkout?accommodation=true"
-              className="px-6 py-3.5 bg-metallic-gold hover:bg-white text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(255,215,0,0.4)] font-excon-black group"
+              className="w-full sm:w-auto px-6 py-3.5 bg-metallic-gold hover:bg-white text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_0_25px_rgba(255,215,0,0.4)] font-excon-black group cursor-pointer"
             >
               <RiCalendarCheckLine className="text-base" />
               <span>Book At Checkout</span>
@@ -356,9 +501,17 @@ export default function Accommodation() {
         <div className="glass-aurora p-6 sm:p-8 rounded-3xl border border-white/10 space-y-4">
           <h4 className="text-base font-black uppercase text-white font-excon-black flex items-center gap-2">
             <RiInformationLine className="text-arc-cyan text-lg" />
-            <span>Important Stay Guidelines &amp; Policies</span>
+            <span>Official Stay &amp; Dining Guidelines (Ratified 02/09/2026)</span>
           </h4>
           <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs sm:text-sm text-white/70 font-mono">
+            <li className="flex items-start gap-2">
+              <span className="text-metallic-gold">★</span>
+              <span><strong>Stay Tariff:</strong> Standard rate is ₹350 per day (stay without food) per delegate.</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-metallic-gold">★</span>
+              <span><strong>Dining Options:</strong> Breakfast ₹50, Lunch ₹70, Dinner ₹50 (All meals: ₹170/day).</span>
+            </li>
             <li className="flex items-start gap-2">
               <span className="text-metallic-gold">★</span>
               <span>Check-in opens at <strong>7:00 AM on 24 September 2026</strong>.</span>
@@ -373,70 +526,12 @@ export default function Accommodation() {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-metallic-gold">★</span>
-              <span>Nominal stay charges are finalized directly during event checkout.</span>
+              <span>Accommodation and meal plans are reserved together seamlessly during Checkout.</span>
             </li>
           </ul>
         </div>
 
       </div>
-
-      {/* Hostel Payment QR Modal */}
-      {showQrModal && (
-        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4">
-          <div className="bg-[#0A0D1A] border-2 border-arc-cyan/40 w-full max-w-sm rounded-3xl p-6 relative space-y-5 shadow-2xl text-center font-excon">
-            <button
-              type="button"
-              onClick={() => setShowQrModal(false)}
-              className="absolute top-4 right-4 p-1.5 rounded-full bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors"
-            >
-              <RiCloseLine size={20} />
-            </button>
-
-            <div className="space-y-1">
-              <span className="text-[10px] font-mono text-arc-cyan uppercase tracking-widest font-bold">
-                S.H.I.E.L.D. QUARTERS PAYMENT
-              </span>
-              <h3 className="text-xl font-black text-white uppercase font-excon-black">
-                Hostel Payment QR
-              </h3>
-              <p className="text-xs text-white/70">
-                Official UPI QR for delegate hostel &amp; accommodation stay.
-              </p>
-            </div>
-
-            <div className="p-3 bg-white rounded-2xl shadow-[0_0_25px_rgba(0,212,255,0.25)] border-2 border-arc-cyan/40 inline-block">
-              <img
-                src="/hostel-payment-qr.jpg"
-                alt="Hostel & Accommodation Payment QR"
-                className="w-56 h-56 object-contain block mx-auto"
-              />
-            </div>
-
-            <div className="p-3 rounded-2xl bg-black/50 border border-white/10 text-xs text-left font-space space-y-1">
-              <div className="flex justify-between items-start gap-2">
-                <span className="text-white/50 shrink-0">Beneficiary:</span>
-                <span className="text-white font-bold text-right">ST ALPHONSA HOSTEL</span>
-              </div>
-              <div className="flex justify-between items-center gap-2">
-                <span className="text-white/50">UPI ID:</span>
-                <span className="text-arc-cyan font-mono font-bold">stalphonsahostel@iob</span>
-              </div>
-            </div>
-
-            <p className="text-[11px] text-white/60 font-space leading-relaxed">
-              Scan with Google Pay, PhonePe, Paytm, or any BHIM UPI app. Keep your transaction reference / screenshot for hostel gate check-in.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => setShowQrModal(false)}
-              className="w-full py-3 bg-arc-cyan hover:bg-white text-black font-black text-xs uppercase tracking-wider rounded-xl font-excon-black transition-all cursor-pointer"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

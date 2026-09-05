@@ -124,13 +124,32 @@ export function ParticipantPass() {
 
   async function generateCanvas() {
     if (!ticketRef.current) return null;
-    return await html2canvas(ticketRef.current, {
-      scale: 2.5,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: null,
-      logging: false,
+
+    // Temporarily hide any bot or non-ticket floating widgets if any exist in DOM
+    const floatingElements = document.querySelectorAll(
+      ".jarvis-assistant, [data-jarvis-bot], [data-html2canvas-ignore], .print-hide"
+    );
+    floatingElements.forEach((el) => {
+      el.style.display = "none";
     });
+
+    try {
+      return await html2canvas(ticketRef.current, {
+        scale: 2.5,
+        useCORS: true,
+        allowTaint: true,
+        backgroundColor: null,
+        logging: false,
+        ignoreElements: (el) =>
+          el.hasAttribute?.("data-html2canvas-ignore") ||
+          el.classList?.contains("jarvis-assistant") ||
+          el.classList?.contains("print-hide"),
+      });
+    } finally {
+      floatingElements.forEach((el) => {
+        el.style.display = "";
+      });
+    }
   }
 
   async function downloadTicketImage() {
@@ -203,21 +222,54 @@ export function ParticipantPass() {
       <div className="fixed top-1/3 -left-32 w-[550px] h-[550px] rounded-full bg-[#d4af37]/14 blur-[160px] pointer-events-none" />
       <div className="fixed bottom-10 -right-32 w-[550px] h-[550px] rounded-full bg-[#e63946]/14 blur-[160px] pointer-events-none" />
 
-      {/* Print Specific CSS to Center Official Pass Ticket on Print */}
+      {/* Print Specific CSS to Center ONLY the Official Pass Ticket on Print */}
       <style>{`
         @media print {
+          @page {
+            size: A4 portrait;
+            margin: 0;
+          }
           body, html {
             background: #ffffff !important;
             color: #000000 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            overflow: visible !important;
           }
+          /* Hide all surrounding app headers, navbars, footers, bots, and controls */
+          header,
+          footer,
+          nav,
+          .navbar,
+          .footer,
+          .mobile-bottom-bar,
+          .skip-link,
+          .cursor-glow,
+          .particle-atmosphere,
+          .jarvis-assistant,
+          [data-jarvis-bot],
+          [data-html2canvas-ignore],
           .print-hide {
             display: none !important;
+            visibility: hidden !important;
+          }
+          /* Print Isolation: Hide everything except the ticket container */
+          body * {
+            visibility: hidden;
+          }
+          #official-pass-ticket,
+          #official-pass-ticket * {
+            visibility: visible !important;
           }
           #official-pass-ticket {
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
             width: 175mm !important;
             height: 246mm !important;
             max-width: 100% !important;
-            margin: 0 auto !important;
+            margin: 0 !important;
             box-shadow: none !important;
             border: none !important;
             -webkit-print-color-adjust: exact !important;
@@ -488,6 +540,55 @@ export function CertificatePage() {
         fallbackSrc="/MARVEL/Video Project 4.mp4"
         opacity="opacity-40"
       />
+      <style>{`
+        @media print {
+          @page {
+            size: A4 landscape;
+            margin: 0;
+          }
+          body, html {
+            background: #ffffff !important;
+            color: #000000 !important;
+            margin: 0 !important;
+            padding: 0 !important;
+          }
+          header,
+          footer,
+          nav,
+          .navbar,
+          .footer,
+          .mobile-bottom-bar,
+          .skip-link,
+          .cursor-glow,
+          .particle-atmosphere,
+          .jarvis-assistant,
+          [data-jarvis-bot],
+          [data-html2canvas-ignore],
+          .print-hide {
+            display: none !important;
+            visibility: hidden !important;
+          }
+          body * {
+            visibility: hidden;
+          }
+          #official-certificate-frame,
+          #official-certificate-frame * {
+            visibility: visible !important;
+          }
+          #official-certificate-frame {
+            position: fixed !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            width: 260mm !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+        }
+      `}</style>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 space-y-8">
         <div className="text-center space-y-3 print-hide">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-metallic-gold/40 bg-metallic-gold/10 text-metallic-gold text-xs font-bold tracking-[0.2em] uppercase shadow-[0_0_15px_rgba(212,175,55,0.25)] font-space">
@@ -501,6 +602,7 @@ export function CertificatePage() {
         </div>
 
         <motion.div
+          id="official-certificate-frame"
           initial={{ opacity: 0, scale: 0.97 }}
           animate={{ opacity: 1, scale: 1 }}
           className="marvel-card p-8 sm:p-12 rounded-3xl border-2 border-metallic-gold/50 bg-[#0A0D1A]/95 text-center space-y-6 shadow-2xl backdrop-blur-2xl"

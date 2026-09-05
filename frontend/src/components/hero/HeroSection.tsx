@@ -181,10 +181,18 @@ export function HeroSection() {
               initial={{ opacity: 0, x: -30 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.8, ease: customEase }}
-              className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1 rounded-full border border-marvel-red/40 bg-marvel-red/10 text-marvel-red text-[10px] sm:text-xs font-bold tracking-wider sm:tracking-[0.2em] uppercase shadow-[0_0_18px_rgba(237,29,36,0.35)] font-space"
+              className="inline-flex items-center gap-1.5 sm:gap-2 px-3.5 sm:px-4.5 py-1.5 rounded-full border border-marvel-red/50 text-[10px] sm:text-xs font-bold tracking-wider sm:tracking-[0.2em] uppercase font-space transition-all duration-300 select-none hover:border-marvel-red/80 hover:scale-105"
+              style={{
+                backdropFilter: "blur(8px)",
+                WebkitBackdropFilter: "blur(8px)",
+                background: "linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.02) 100%)",
+                boxShadow: "inset 0 1px 1px 0 rgba(255, 255, 255, 0.35), 0 4px 16px rgba(0, 0, 0, 0.2), 0 0 12px rgba(237, 29, 36, 0.25)",
+              }}
             >
-              <RiShieldFlashLine className="animate-pulse text-xs sm:text-sm" />
-              <span>AVENGERS HEADQUARTERS • {settings.edition}</span>
+              <RiShieldFlashLine className="text-[#ED1D24] animate-pulse text-xs sm:text-sm drop-shadow-[0_0_8px_#ED1D24] shrink-0" />
+              <span className="text-[#ED1D24] font-black tracking-wider sm:tracking-[0.2em] drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+                AVENGERS HEADQUARTERS <span className="text-white/60 mx-0.5">•</span> <span className="text-[#ED1D24]">{settings.edition}</span>
+              </span>
             </motion.div>
 
             {/* Main Title Block */}
@@ -195,7 +203,7 @@ export function HeroSection() {
                 transition={{ duration: 0.7, ease: customEase }}
               >
                 <span
-                  className="block text-arc-cyan font-bold uppercase font-space tracking-[0.22em] text-[10px] sm:text-xs md:text-sm"
+                  className="block text-arc-cyan font-bold uppercase font-space tracking-[0.22em] text-[10px] sm:text-xs md:text-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
                 >
                   WELCOME TO
                 </span>
@@ -244,10 +252,10 @@ export function HeroSection() {
               variants={heroSubtextVariants}
               initial="hidden"
               animate="visible"
-              className="text-white/80 max-w-lg mx-auto lg:mx-0 font-space text-xs sm:text-sm md:text-base leading-relaxed font-normal pt-0.5 sm:pt-1"
+              className="text-white/95 max-w-lg mx-auto lg:mx-0 font-space text-xs sm:text-sm md:text-base leading-relaxed font-medium pt-0.5 sm:pt-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]"
             >
               &ldquo;Every Hero Has A Mission.&rdquo; — Earth&apos;s premier national collegiate festival at MACFAST. Assemble across{" "}
-              <span className="text-arc-cyan font-bold">23 high-level missions</span>.
+              <span className="text-arc-cyan font-bold drop-shadow-[0_0_8px_rgba(0,212,255,0.6)]">23 high-level missions</span>.
             </motion.p>
 
             {/* CTA buttons */}
@@ -287,10 +295,20 @@ export function HeroSection() {
                 <button
                   type="button"
                   onClick={handleNavigate("/events")}
-                  className="btn-outline border-arc-cyan text-white hover:bg-arc-cyan/20 font-space flex items-center justify-center gap-1 sm:gap-2 px-2.5 sm:px-5 py-2.5 sm:py-3 rounded-full shadow-[0_0_20px_rgba(0,212,255,0.25)] hover:shadow-[0_0_35px_rgba(0,212,255,0.6)] transition-all duration-300 w-full text-center cursor-pointer relative z-30 pointer-events-auto select-none hover:scale-[1.04] active:scale-[0.96]"
+                  className="font-space flex items-center justify-center gap-1.5 sm:gap-2.5 px-2.5 sm:px-5 py-2.5 sm:py-3 rounded-full border-2 border-arc-cyan text-[#FFD700] hover:text-[#FFE55C] shadow-[0_0_20px_rgba(0,212,255,0.35)] hover:shadow-[0_0_30px_rgba(0,212,255,0.6)] transition-all duration-300 w-full text-center cursor-pointer relative z-30 pointer-events-auto select-none hover:scale-[1.04] active:scale-[0.96] overflow-hidden group"
+                  style={{
+                    backdropFilter: "blur(10px)",
+                    WebkitBackdropFilter: "blur(10px)",
+                    background: "linear-gradient(135deg, rgba(255, 255, 255, 0.12) 0%, rgba(0, 212, 255, 0.05) 50%, rgba(255, 255, 255, 0.02) 100%)",
+                    boxShadow: "inset 0 1px 1px 0 rgba(255, 255, 255, 0.3), 0 4px 20px rgba(0, 0, 0, 0.25), 0 0 20px rgba(0, 212, 255, 0.35)",
+                  }}
                 >
-                  <RiCompass3Line className="text-arc-cyan text-xs sm:text-base shrink-0 pointer-events-none" />
-                  <span className="font-bold tracking-[0.05em] sm:tracking-[0.14em] uppercase text-[11px] sm:text-xs md:text-sm whitespace-nowrap pointer-events-none">View Events</span>
+                  <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-arc-cyan/20 border border-arc-cyan flex items-center justify-center shrink-0 group-hover:rotate-45 transition-transform duration-300 pointer-events-none shadow-[0_0_8px_rgba(0,212,255,0.4)]">
+                    <RiCompass3Line className="text-arc-cyan text-xs sm:text-sm drop-shadow-[0_0_6px_#00D4FF]" />
+                  </div>
+                  <span className="font-black tracking-[0.06em] sm:tracking-[0.14em] uppercase text-[11px] sm:text-xs md:text-sm whitespace-nowrap pointer-events-none text-[#FFD700] drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
+                    VIEW EVENTS
+                  </span>
                 </button>
               </div>
             </motion.div>
@@ -302,10 +320,16 @@ export function HeroSection() {
               initial={{ opacity: 0, scale: 0.92, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="relative w-full max-w-[340px] sm:max-w-[365px] rounded-2xl p-3.5 sm:p-4.5 space-y-2.5 sm:space-y-3 flex flex-col items-center justify-center mx-auto lg:mx-0 overflow-hidden bg-black/20 backdrop-blur-xl border border-white/20 shadow-[0_12px_40px_rgba(0,0,0,0.5),0_0_25px_rgba(0,212,255,0.12),0_0_15px_rgba(237,29,36,0.1)] border-glow-flow"
+              className="relative w-full max-w-[340px] sm:max-w-[365px] rounded-2xl p-3.5 sm:p-4.5 space-y-2.5 sm:space-y-3 flex flex-col items-center justify-center mx-auto lg:mx-0 overflow-hidden border border-white/20 shadow-[0_12px_36px_rgba(0,0,0,0.3),0_0_20px_rgba(0,212,255,0.15)] border-glow-flow"
+              style={{
+                backdropFilter: "blur(12px)",
+                WebkitBackdropFilter: "blur(12px)",
+                background: "linear-gradient(135deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%)",
+                boxShadow: "inset 0 1px 1px 0 rgba(255, 255, 255, 0.2), 0 12px 36px rgba(0, 0, 0, 0.25), 0 0 20px rgba(0, 212, 255, 0.15)",
+              }}
             >
               {/* Top Dynamic Marvel vs DC Beam */}
-              <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-marvel-red/80 via-arc-cyan to-marvel-red/80 pointer-events-none z-20" />
+              <div className="absolute top-0 inset-x-0 h-[2px] bg-gradient-to-r from-marvel-red via-[#00D4FF] to-marvel-red pointer-events-none z-20" />
 
               {/* Ambient Energy Glows (Marvel Red top-left, DC/Arc Cyan bottom-right) */}
               <div className="absolute -top-14 -left-14 w-36 h-36 rounded-full bg-marvel-red/15 blur-[50px] pointer-events-none" />
@@ -320,23 +344,21 @@ export function HeroSection() {
               {/* Header: Marvel vs DC Clash Badge & Protocol Title */}
               <div className="w-full text-center space-y-1 relative z-10">
                 <div className="flex items-center justify-center gap-1.5 font-orbitron text-[8px] sm:text-[8.5px] font-black uppercase tracking-[0.2em]">
-                  <span className="px-2 py-0.5 rounded-full bg-marvel-red/20 text-marvel-red border border-marvel-red/50 shadow-[0_0_8px_rgba(237,29,36,0.35)]">
+                  <span className="px-2 py-0.5 rounded-full bg-marvel-red/20 text-[#FF3B42] border border-marvel-red/50 shadow-xs">
                     MARVEL
                   </span>
-                  <span className="text-white/30 text-[7px] font-bold">VS</span>
-                  <span className="px-2 py-0.5 rounded-full bg-arc-cyan/20 text-arc-cyan border border-arc-cyan/50 shadow-[0_0_8px_rgba(0,212,255,0.35)]">
+                  <span className="text-white/40 text-[7px] font-black">VS</span>
+                  <span className="px-2 py-0.5 rounded-full bg-arc-cyan/20 text-[#00D4FF] border border-arc-cyan/50 shadow-xs">
                     DC
                   </span>
                 </div>
 
-                <h3 className="text-[10.5px] sm:text-xs font-bold text-white tracking-[0.22em] uppercase flex items-center justify-center gap-1.5 font-orbitron">
+                <h3 className="text-[10.5px] sm:text-xs font-black text-white tracking-[0.22em] uppercase flex items-center justify-center gap-1.5 font-orbitron drop-shadow-[0_1px_3px_rgba(0,0,0,0.9)]">
                   <RiFlashlightLine className="text-arc-cyan shrink-0 drop-shadow-[0_0_6px_#00D4FF]" />
-                  <span className="bg-gradient-to-r from-white via-arc-cyan to-white bg-clip-text text-transparent drop-shadow-[0_0_8px_rgba(0,212,255,0.5)]">
-                    MULTIVERSE COUNTDOWN
-                  </span>
+                  <span>MULTIVERSE COUNTDOWN</span>
                 </h3>
 
-                <p className="text-[10px] sm:text-[11px] font-semibold text-metallic-gold/90 font-space tracking-wider drop-shadow-[0_0_6px_rgba(255,215,0,0.3)]">
+                <p className="text-[10.5px] sm:text-xs font-bold text-[#FFD700] font-space tracking-widest drop-shadow-[0_1px_2px_rgba(0,0,0,0.9)]">
                   {settings.motto}
                 </p>
               </div>
@@ -357,7 +379,7 @@ export function HeroSection() {
       {/* ─── S.H.I.E.L.D. Live Announcement Ticker ─── */}
       <Link
         to="/announcements"
-        className="w-full glass py-2.5 border-y border-arc-cyan/30 overflow-hidden z-20 bg-black/80 backdrop-blur-md flex items-center relative shadow-[0_0_25px_rgba(0,212,255,0.15)] cursor-pointer select-none group block no-underline"
+        className="w-full glass py-2.5 border-y border-arc-cyan/30 overflow-hidden z-20 bg-black/35 backdrop-blur-md flex items-center relative shadow-[0_0_25px_rgba(0,212,255,0.15)] cursor-pointer select-none group block no-underline"
       >
         {/* Left Live Badge */}
         <div

@@ -103,7 +103,7 @@ export default function EventDetails() {
           possibleProblems: local?.possibleProblems || [],
           committeeApproach: local?.committeeApproach || "",
           judgingRubric: local?.judgingRubric || "",
-          teamSizeText: local?.teamSizeText || (d.min_team_size ? `${d.min_team_size} - ${d.max_team_size || d.min_team_size} members` : "Individual / Team"),
+          teamSizeText: local?.teamSizeText || ((d.min_team_size && (d.max_team_size || d.min_team_size) > 1) ? `${d.min_team_size} - ${d.max_team_size || d.min_team_size} members` : "Solo (1 Participant)"),
           min_team_size: d.min_team_size || local?.min_team_size || 1,
           max_team_size: d.max_team_size || local?.max_team_size || 1,
           externalRegistrationUrl: local?.externalRegistrationUrl || (local?.slug === "vibe-coding-hackathon" || d?.slug === "vibe-coding-hackathon" ? "https://hackathon.macfast.org/" : undefined),
@@ -208,9 +208,13 @@ export default function EventDetails() {
               <span className="px-3.5 py-1.5 rounded-full bg-black/70 backdrop-blur-md text-arc-cyan font-bold text-xs uppercase tracking-wider border border-arc-cyan/40 font-mono">
                 {event.department || event.category}
               </span>
-              {isTeamEvent && (
+              {isTeamEvent ? (
                 <span className="px-3.5 py-1.5 rounded-full bg-metallic-gold/90 text-black font-black text-xs uppercase tracking-wider border border-metallic-gold font-mono shadow-md">
                   ★ Squad Mission ({event.teamSizeText})
+                </span>
+              ) : (
+                <span className="px-3.5 py-1.5 rounded-full bg-metallic-gold/90 text-black font-black text-xs uppercase tracking-wider border border-metallic-gold font-mono shadow-md">
+                  ★ Solo Event (1 Participant)
                 </span>
               )}
             </div>

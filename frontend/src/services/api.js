@@ -1,6 +1,5 @@
 import axios from "axios";
 import { logout, notifyAuthChange } from "../utils/auth";
-import { hashPassword } from "../utils/crypto";
 
 /**
  * Resolve API base for desktop, LAN phone browsers, and Capacitor.
@@ -37,6 +36,14 @@ const SERVER_BASE = API_BASE.startsWith("http")
 
 const api = axios.create({
   baseURL: API_BASE,
+});
+
+api.interceptors.request.use((config) => {
+  const token = getAccessToken();
+  if (token && config.headers && !config.headers.Authorization) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 /** Short-lived in-memory cache for public GETs (navigation / remount). */
@@ -125,19 +132,11 @@ export function getStaffDirectory() {
 }
 
 export async function createStaffAccount(data) {
-  const payload = { ...data };
-  if (payload.temporary_password) {
-    payload.temporary_password = await hashPassword(payload.temporary_password);
-  }
-  return api.post("/admin/staff/", payload, { headers: authHeaders() });
+  return api.post("/admin/staff/", data, { headers: authHeaders() });
 }
 
 export async function updateStaffAccount(id, data) {
-  const payload = { ...data };
-  if (payload.temporary_password) {
-    payload.temporary_password = await hashPassword(payload.temporary_password);
-  }
-  return api.patch(`/admin/staff/${id}/`, payload, { headers: authHeaders() });
+  return api.patch(`/admin/staff/${id}/`, data, { headers: authHeaders() });
 }
 
 export function getParticipantList(params = {}) {
@@ -145,17 +144,11 @@ export function getParticipantList(params = {}) {
 }
 
 export async function createParticipant(data) {
-  const payload = { ...data };
-  if (payload.password) payload.password = await hashPassword(payload.password);
-  if (payload.password_confirm) payload.password_confirm = await hashPassword(payload.password_confirm);
-  return api.post("/admin/participants/", payload, { headers: authHeaders() });
+  return api.post("/admin/participants/", data, { headers: authHeaders() });
 }
 
 export async function updateParticipant(id, data) {
-  const payload = { ...data };
-  if (payload.password) payload.password = await hashPassword(payload.password);
-  if (payload.password_confirm) payload.password_confirm = await hashPassword(payload.password_confirm);
-  return api.patch(`/admin/participants/${id}/`, payload, { headers: authHeaders() });
+  return api.patch(`/admin/participants/${id}/`, data, { headers: authHeaders() });
 }
 
 export function exportParticipantsCSV() {
@@ -248,6 +241,18 @@ export function createTeamRegistration(data) {
   return api.post("/registrations/team/create/", data, { headers: authHeaders() });
 }
 
+export function addTeamMember(registrationId, data) {
+  return api.post(`/registrations/${registrationId}/team/add-member/`, data, { headers: authHeaders() });
+}
+
+export function initiateTeamPayment(registrationId) {
+  return api.post(`/registrations/${registrationId}/team/initiate-payment/`, {}, { headers: authHeaders() });
+}
+
+export function confirmTeamPaymentDirect(registrationId, data = {}) {
+  return api.post(`/registrations/${registrationId}/submit-payment/`, { auto_confirm: true, ...data }, { headers: authHeaders() });
+}
+
 export function inviteTeamMember(registrationId, data) {
   return api.post(`/registrations/${registrationId}/team/invite/`, data, { headers: authHeaders() });
 }
@@ -299,18 +304,14 @@ export function promoteWaitlist(eventId) {
 }
 
 export async function login(credentials) {
-  const payload = { ...credentials };
-  if (payload.password) {
-    payload.password = await hashPassword(payload.password);
-  }
-  return axios.post(`${API_BASE}/auth/login/`, payload);
+  return axios.post(`${API_BASE}/auth/login/`, {
+    username: (credentials.username || "").trim(),
+    password: credentials.password || "",
+  });
 }
 
 export async function registerAccount(data) {
-  const payload = { ...data };
-  if (payload.password) payload.password = await hashPassword(payload.password);
-  if (payload.password_confirm) payload.password_confirm = await hashPassword(payload.password_confirm);
-  return axios.post(`${API_BASE}/auth/register/`, payload);
+  return axios.post(`${API_BASE}/auth/register/`, data);
 }
 
 export function requestPasswordReset(email) {
@@ -318,18 +319,11 @@ export function requestPasswordReset(email) {
 }
 
 export async function confirmPasswordReset(data) {
-  const payload = { ...data };
-  if (payload.password) payload.password = await hashPassword(payload.password);
-  if (payload.password_confirm) payload.password_confirm = await hashPassword(payload.password_confirm);
-  return axios.post(`${API_BASE}/auth/password-reset/confirm/`, payload);
+  return axios.post(`${API_BASE}/auth/password-reset/confirm/`, data);
 }
 
 export async function changePassword(data) {
-  const payload = { ...data };
-  if (payload.current_password) payload.current_password = await hashPassword(payload.current_password);
-  if (payload.password) payload.password = await hashPassword(payload.password);
-  if (payload.password_confirm) payload.password_confirm = await hashPassword(payload.password_confirm);
-  return api.post("/auth/change-password/", payload, { headers: authHeaders() });
+  return api.post("/auth/change-password/", data, { headers: authHeaders() });
 }
 
 /** Persist JWT pair from login or signup responses. */
@@ -354,13 +348,7 @@ export function updateEvent(id, data) {
 export async function deleteEvent(id, password = "") {
   const config = { headers: authHeaders() };
   if (password) {
-    let hashed = password;
-    try {
-      hashed = await hashPassword(password);
-    } catch {
-      // fallback to raw
-    }
-    config.data = { password: hashed, raw_password: password };
+    config.data = { password };
     config.headers["X-Admin-Password"] = password;
   }
   return api.delete(`/events/${id}/`, config);
@@ -440,7 +428,10 @@ export function getHostels() {
 }
 
 export function createAccommodationBooking(data) {
-  return api.post("/accommodation/bookings/", data);
+  if (data instanceof FormData) {
+    return api.post("/accommodation/bookings/", data, adminConfig(data));
+  }
+  return api.post("/accommodation/bookings/", data, { headers: authHeaders() });
 }
 
 export function getMyAccommodationBookings() {
@@ -733,10 +724,9 @@ export function downloadSystemBackup() {
 
 
 export async function purgeAllRegisteredData(password) {
-  const hashed = await hashPassword(password);
   return api.post(
     "/admin/purge-registered-data/",
-    { password: hashed, raw_password: password },
+    { password },
     { headers: authHeaders() }
   );
 }

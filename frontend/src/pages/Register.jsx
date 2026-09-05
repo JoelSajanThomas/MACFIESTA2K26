@@ -177,6 +177,10 @@ export default function Register() {
     setLoading(true);
     setErrorMsg("");
 
+    const pwd = form.password;
+    const pwdConfirm = form.password_confirm;
+    setForm((prev) => ({ ...prev, password: "", password_confirm: "" }));
+
     try {
       const payload = {
         full_name: name,
@@ -184,8 +188,8 @@ export default function Register() {
         phone: form.phone.trim(),
         gender: form.gender || "male",
         college_name: college,
-        password: form.password,
-        password_confirm: form.password_confirm,
+        password: pwd,
+        password_confirm: pwdConfirm,
       };
 
       const res = await registerAccount(payload);
@@ -420,10 +424,14 @@ export default function Register() {
                     name="password"
                     required
                     minLength={8}
+                    autoComplete="new-password"
+                    spellCheck="false"
+                    onCopy={(e) => e.preventDefault()}
+                    onCut={(e) => e.preventDefault()}
                     value={form.password}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-arc-cyan focus:outline-none text-white text-xs font-mono"
+                    className="w-full pl-10 pr-10 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-arc-cyan focus:outline-none text-white text-xs font-mono select-none"
                   />
                   <button
                     type="button"
@@ -450,10 +458,14 @@ export default function Register() {
                     name="password_confirm"
                     required
                     minLength={8}
+                    autoComplete="new-password"
+                    spellCheck="false"
+                    onCopy={(e) => e.preventDefault()}
+                    onCut={(e) => e.preventDefault()}
                     value={form.password_confirm}
                     onChange={handleChange}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-arc-cyan focus:outline-none text-white text-xs font-mono"
+                    className="w-full pl-10 pr-10 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-arc-cyan focus:outline-none text-white text-xs font-mono select-none"
                   />
                 </div>
               </div>

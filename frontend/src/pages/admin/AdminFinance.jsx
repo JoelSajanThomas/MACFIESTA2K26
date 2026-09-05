@@ -5,6 +5,7 @@ import LoadingState from "../../components/ui/LoadingState";
 import ErrorState from "../../components/ui/ErrorState";
 import EmptyState from "../../components/ui/EmptyState";
 import StatusChip from "../../components/theme/StatusChip";
+import SquadMembersDetailModal from "../../components/admin/SquadMembersDetailModal";
 import {
   getAdminRegistrations,
   updateAdminRegistration,
@@ -28,6 +29,7 @@ export default function AdminFinance() {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("pending");
   const [active, setActive] = useState(null);
+  const [showSquadModal, setShowSquadModal] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
   const [rejectReason, setRejectReason] = useState("");
   const [busy, setBusy] = useState(false);
@@ -367,9 +369,19 @@ export default function AdminFinance() {
               {/* Team Members List Breakdown */}
               {active.team_members && active.team_members.length > 0 && (
                 <div style={{ marginTop: "1.25rem", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "0.75rem" }}>
-                  <h4 style={{ fontSize: "0.9rem", color: "#d4af37", marginBottom: "0.5rem" }}>
-                    Team Members Verification ({active.team_members.length})
-                  </h4>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+                    <h4 style={{ fontSize: "0.9rem", color: "#d4af37", margin: 0 }}>
+                      Team Members Verification ({active.team_members.length})
+                    </h4>
+                    <button
+                      type="button"
+                      onClick={() => setShowSquadModal(true)}
+                      className="btn btn-outline btn-sm"
+                      style={{ padding: "0.2rem 0.5rem", fontSize: "0.72rem", color: "#fbbf24", borderColor: "rgba(245, 158, 11, 0.4)", cursor: "pointer" }}
+                    >
+                      View Full Roster ↗
+                    </button>
+                  </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
                     {active.team_members.map((m) => (
                       <div
@@ -386,8 +398,16 @@ export default function AdminFinance() {
                           <strong>{m.name}</strong>
                           <StatusChip status={m.payment_status} />
                         </div>
-                        <p style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.75rem", margin: "0.2rem 0" }}>
-                          {m.email} · Txn: {m.payment_transaction_id || "None"}
+                        <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", margin: "0.2rem 0" }}>
+                          {[m.phone, m.email].filter(Boolean).join(" · ")}
+                        </p>
+                        {(m.college_name || m.department || m.register_number) && (
+                          <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.72rem", margin: "0.15rem 0" }}>
+                            {[m.college_name, m.department, m.register_number ? `Roll: ${m.register_number}` : null].filter(Boolean).join(" · ")}
+                          </p>
+                        )}
+                        <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.72rem", margin: "0.15rem 0" }}>
+                          Txn: {m.payment_transaction_id || "None"}
                         </p>
                         {m.payment_proof_url && (
                           <a href={m.payment_proof_url} target="_blank" rel="noreferrer" style={{ color: "#00d2ff", fontSize: "0.75rem" }}>
@@ -583,6 +603,27 @@ export default function AdminFinance() {
             </form>
           </div>
         </div>
+      )}
+
+      {showSquadModal && active && (
+        <SquadMembersDetailModal
+          isOpen={showSquadModal}
+          onClose={() => setShowSquadModal(false)}
+          registration={active}
+          onStatusUpdate={async (reg, field, val) => {
+            setBusy(true);
+            try {
+              const res = await updateAdminRegistration(reg.id, { [field]: val });
+              setRows((prev) => prev.map((r) => (r.id === reg.id ? { ...r, ...res.data } : r)));
+              setActive({ ...active, ...res.data });
+            } catch {
+              setError("Failed to update registration status.");
+            } finally {
+              setBusy(false);
+            }
+          }}
+          isUpdating={busy}
+        />
       )}
     </div>
   );

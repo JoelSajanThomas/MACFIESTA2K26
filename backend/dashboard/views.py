@@ -78,7 +78,7 @@ def dashboard_stats(request):
         .order_by("payment_status")
     )
     payment_summary = {row["payment_status"]: row["count"] for row in payment_rows}
-    for key in ("pending", "paid", "failed", "refunded", "waived"):
+    for key in ("pending", "initiated", "paid", "failed", "cancelled", "refunded", "waived"):
         payment_summary.setdefault(key, 0)
 
     attended = regs.filter(attendance_marked=True).count()
@@ -155,6 +155,7 @@ def current_user(request):
     if not display:
         display = full_name or user.username
     return Response({
+        "id": user.id,
         "username": user.username,
         "email": user.email,
         "first_name": user.first_name or "",
@@ -188,7 +189,7 @@ def admin_audit_logs(request):
     qs = AuditLog.objects.select_related("user").order_by("-created_at")
     module = request.GET.get("module")
     if module:
-        qs = qs.filter(module=module)
+        qs = qs.filter(Q(resource_type__iexact=module) | Q(resource_type__icontains=module))
     action = request.GET.get("action")
     if action:
         qs = qs.filter(action=action)
@@ -202,7 +203,8 @@ def admin_audit_logs(request):
             "id": log.id,
             "username": log.user.username if log.user else "System",
             "action": log.action,
-            "module": log.module,
+            "module": log.resource_type or "",
+            "resource_type": log.resource_type or "",
             "details": log.details,
             "ip_address": log.ip_address,
             "created_at": log.created_at.isoformat(),

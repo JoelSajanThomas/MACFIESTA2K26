@@ -4,9 +4,21 @@ import LoadingState from "../../components/ui/LoadingState";
 import ErrorState from "../../components/ui/ErrorState";
 import { getAdminRegistrations, updateAdminRegistration, promoteWaitlist } from "../../services/api";
 import { exportCsv, exportExcel } from "../../utils/adminUtils";
+import SquadMembersDetailModal from "../../components/admin/SquadMembersDetailModal";
+import { RiTeamLine, RiEyeLine } from "react-icons/ri";
 
 const PAYMENT_OPTIONS = ["pending", "paid", "failed", "refunded", "waived"];
 const APPROVAL_OPTIONS = ["pending", "approved", "rejected", "cancelled"];
+
+function isSquadEvent(r) {
+  if (!r) return false;
+  return (
+    r.registration_type === "team" ||
+    Boolean(r.team_name) ||
+    (Array.isArray(r.team_members) && r.team_members.length > 0) ||
+    (r.max_team_size && Number(r.max_team_size) > 1)
+  );
+}
 
 export default function AdminRegistrationsList() {
   const [regs, setRegs] = useState([]);
@@ -17,6 +29,7 @@ export default function AdminRegistrationsList() {
   const [eventFilter, setEventFilter] = useState("all");
   const [audience, setAudience] = useState("all");
   const [updatingId, setUpdatingId] = useState(null);
+  const [selectedSquadReg, setSelectedSquadReg] = useState(null);
 
   function load() {
     setLoading(true);
@@ -98,6 +111,9 @@ export default function AdminRegistrationsList() {
     try {
       const res = await updateAdminRegistration(reg.id, { [field]: value });
       setRegs((prev) => prev.map((r) => (r.id === reg.id ? res.data : r)));
+      if (selectedSquadReg && selectedSquadReg.id === reg.id) {
+        setSelectedSquadReg(res.data);
+      }
     } catch {
       setError("Could not update registration.");
     } finally {
@@ -174,12 +190,29 @@ export default function AdminRegistrationsList() {
                   <td data-label="Event">{r.event_title}</td>
                   <td data-label="Participant">
                     <strong>{r.participant_name}</strong>
-                    {r.registration_type === "team" ? (
-                      <div className="muted-line">
-                        Captain{r.team_name ? ` · ${r.team_name}` : ""}
-                        {(r.team_members || []).length > 0
-                          ? ` · teammates: ${(r.team_members || []).map((m) => m.name).join(", ")}`
-                          : ""}
+                    {isSquadEvent(r) ? (
+                      <div style={{ marginTop: "0.35rem" }}>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedSquadReg(r)}
+                          className="btn btn-outline btn-sm"
+                          style={{
+                            padding: "0.22rem 0.55rem",
+                            fontSize: "0.72rem",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "0.35rem",
+                            borderRadius: "8px",
+                            borderColor: "rgba(245, 158, 11, 0.4)",
+                            color: "#fbbf24",
+                            background: "rgba(245, 158, 11, 0.08)",
+                            cursor: "pointer",
+                          }}
+                          title="View complete squad roster and member credentials"
+                        >
+                          <RiTeamLine style={{ width: "0.9rem", height: "0.9rem" }} />
+                          <span>{r.team_name || "Squad"} ({1 + (r.team_members || []).length} members)</span>
+                        </button>
                       </div>
                     ) : null}
                   </td>
@@ -198,15 +231,40 @@ export default function AdminRegistrationsList() {
                     </select>
                   </td>
                   <td data-label="Approval">
-                    <select
-                      className="admin-select admin-inline-select"
-                      value={r.approval_status}
-                      disabled={updatingId === r.id}
-                      onChange={(e) => handleFieldUpdate(r, "approval_status", e.target.value)}
-                      aria-label={`Approval status for ${r.participant_name}`}
-                    >
-                      {APPROVAL_OPTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
-                    </select>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "nowrap" }}>
+                      <select
+                        className="admin-select admin-inline-select"
+                        value={r.approval_status}
+                        disabled={updatingId === r.id}
+                        onChange={(e) => handleFieldUpdate(r, "approval_status", e.target.value)}
+                        aria-label={`Approval status for ${r.participant_name}`}
+                      >
+                        {APPROVAL_OPTIONS.map((p) => <option key={p} value={p}>{p}</option>)}
+                      </select>
+                      {isSquadEvent(r) && (
+                        <button
+                          type="button"
+                          className="btn btn-outline btn-sm"
+                          style={{
+                            padding: "0.28rem 0.55rem",
+                            fontSize: "0.72rem",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "0.25rem",
+                            whiteSpace: "nowrap",
+                            cursor: "pointer",
+                            borderColor: "rgba(168, 85, 247, 0.4)",
+                            color: "#c084fc",
+                            background: "rgba(168, 85, 247, 0.08)",
+                          }}
+                          onClick={() => setSelectedSquadReg(r)}
+                          title="Review squad members before approval"
+                        >
+                          <RiEyeLine style={{ width: "0.85rem", height: "0.85rem" }} />
+                          <span>Members</span>
+                        </button>
+                      )}
+                    </div>
                   </td>
                   <td data-label="Gate Desk">
                     <label className="admin-attendance-toggle">
@@ -257,6 +315,16 @@ export default function AdminRegistrationsList() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {selectedSquadReg && (
+        <SquadMembersDetailModal
+          isOpen={Boolean(selectedSquadReg)}
+          onClose={() => setSelectedSquadReg(null)}
+          registration={selectedSquadReg}
+          onStatusUpdate={handleFieldUpdate}
+          isUpdating={updatingId === selectedSquadReg.id}
+        />
       )}
     </div>
   );

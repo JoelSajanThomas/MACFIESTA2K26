@@ -91,8 +91,13 @@ class RegistrationSerializer(serializers.ModelSerializer):
     entry_qr_status = serializers.SerializerMethodField()
     payment_proof_uploaded = serializers.SerializerMethodField()
     is_captain = serializers.SerializerMethodField()
+    can_pay = serializers.SerializerMethodField()
     is_team_full = serializers.BooleanField(read_only=True)
     is_team_paid = serializers.BooleanField(read_only=True)
+    is_locked = serializers.BooleanField(read_only=True)
+    is_team_locked = serializers.BooleanField(read_only=True)
+    meets_minimum_team_size = serializers.BooleanField(read_only=True)
+    can_proceed_to_payment = serializers.BooleanField(read_only=True)
     total_team_members_count = serializers.IntegerField(read_only=True)
     gender = serializers.CharField(required=False, allow_blank=True, default="male")
     event_fee = serializers.SerializerMethodField()
@@ -160,10 +165,14 @@ class RegistrationSerializer(serializers.ModelSerializer):
             "refund_notes",
             "verified_at",
             "cancelled_at",
-            "user",
             "is_captain",
+            "can_pay",
             "is_team_full",
             "is_team_paid",
+            "is_locked",
+            "is_team_locked",
+            "meets_minimum_team_size",
+            "can_proceed_to_payment",
             "total_team_members_count",
         ]
         read_only_fields = [
@@ -196,8 +205,14 @@ class RegistrationSerializer(serializers.ModelSerializer):
             "refund_notes",
             "verified_at",
             "cancelled_at",
+            "is_captain",
+            "can_pay",
             "is_team_full",
             "is_team_paid",
+            "is_locked",
+            "is_team_locked",
+            "meets_minimum_team_size",
+            "can_proceed_to_payment",
             "total_team_members_count",
             "event_fee",
             "accommodation_fee",
@@ -271,6 +286,14 @@ class RegistrationSerializer(serializers.ModelSerializer):
         if not request or not request.user or not request.user.is_authenticated:
             return False
         return obj.user_id == request.user.id or request.user.is_staff
+
+    def get_can_pay(self, obj):
+        request = self.context.get("request")
+        if not request or not request.user or not request.user.is_authenticated:
+            return False
+        is_cap = (obj.user_id == request.user.id or request.user.is_staff)
+        is_unpaid = obj.payment_status not in ("paid", "waived")
+        return is_cap and is_unpaid and obj.can_proceed_to_payment
 
     def validate_email(self, value):
         return value.strip().lower()
@@ -359,6 +382,8 @@ class AdminRegistrationSerializer(serializers.ModelSerializer):
     )
     payment_proof_url = serializers.SerializerMethodField()
     entry_qr_status = serializers.SerializerMethodField()
+    min_team_size = serializers.IntegerField(source="event.min_team_size", read_only=True)
+    max_team_size = serializers.IntegerField(source="event.max_team_size", read_only=True)
     team_members = TeamMemberSerializer(many=True, required=False)
 
     class Meta:
@@ -420,6 +445,8 @@ class AdminRegistrationSerializer(serializers.ModelSerializer):
             "payment_verified_at",
             "event_audience",
             "event_date",
+            "min_team_size",
+            "max_team_size",
         ]
 
     def get_entry_qr_status(self, obj):

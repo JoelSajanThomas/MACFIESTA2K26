@@ -44,10 +44,13 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    const enteredPassword = form.password;
+    // Wipe password from state memory immediately after reading
+    setForm((prev) => ({ ...prev, password: "" }));
     try {
       const res = await login({
         username: form.username.trim(),
-        password: form.password,
+        password: enteredPassword,
       });
       storeAuthTokens(res.data);
       notifyAuthChange();
@@ -187,10 +190,14 @@ export default function Login() {
                   type={showPassword ? "text" : "password"}
                   name="password"
                   required
+                  autoComplete="current-password"
+                  spellCheck="false"
+                  onCopy={(e) => e.preventDefault()}
+                  onCut={(e) => e.preventDefault()}
                   value={form.password}
                   onChange={handleChange}
                   placeholder="••••••••"
-                  className="w-full pl-10 pr-10 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-arc-cyan focus:outline-none text-white text-xs font-mono"
+                  className="w-full pl-10 pr-10 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-arc-cyan focus:outline-none text-white text-xs font-mono select-none"
                 />
                 <button
                   type="button"

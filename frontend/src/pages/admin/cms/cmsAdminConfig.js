@@ -232,6 +232,7 @@ export const CMS_RESOURCES = {
 };
 
 export const CMS_DASHBOARD_CARDS = [
+  { title: "Brochure Dossier & PDF", desc: "Upload and update the official festival PDF brochure directive", href: "/admin/brochure" },
   { title: "Site Settings, Hero & Branding", desc: "Fest name, dates, hero copy, brochure, contact, images", href: "/admin/content/site-settings" },
   { title: "Homepage Sections", desc: "Show/hide sections and edit titles & ordering", href: "/admin/content/homepage-sections" },
   { title: "Festival Rules & Directives", desc: "Manage general, school, college, and judging rules", href: "/admin/content/rules" },

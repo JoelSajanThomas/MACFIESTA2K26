@@ -33,7 +33,7 @@ const FAQS_FALLBACK = [
   { q: "Who is eligible to participate?", a: "All bona fide students with valid college or school ID cards are eligible to register across respective event categories." },
   { q: "Can I register on-spot?", a: "Spot registrations will only be available if event slots remain unfilled. We strongly advise pre-registering online." },
   { q: "Is registration fee refundable?", a: "No, once registration passes or individual event slots are booked, fees are non-refundable." },
-  { q: "Will accommodation be provided?", a: "Accommodation can be selected and configured on the festival portal. Nominal hostel tariff applies." },
+  { q: "Will accommodation be provided?", a: "Campus hostel accommodation is available at ₹350/day (stay without food), with optional mess meals (Breakfast ₹50, Lunch ₹70, Dinner ₹50)." },
 ];
 
 export default function Contact() {

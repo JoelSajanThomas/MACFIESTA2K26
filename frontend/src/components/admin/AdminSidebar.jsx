@@ -19,6 +19,7 @@ import {
   RiToggleLine,
   RiCloseLine,
   RiUserSearchLine,
+  RiBookOpenLine,
 } from "react-icons/ri";
 import { logout } from "../../utils/auth";
 import { dashboardRoleLabel, groupedAdminNav, staffLogoutPath } from "../../utils/committeeAccess";
@@ -36,6 +37,7 @@ const NAV_ICONS = {
   "/admin/schedule": RiCalendarEventLine,
   "/admin/announcements": RiMegaphoneLine,
   "/admin/gallery": RiGalleryLine,
+  "/admin/brochure": RiBookOpenLine,
   "/admin/content/sponsors": RiStarSmileLine,
   "/admin/content/guests": RiUserStarLine,
   "/admin/content": RiGlobalLine,

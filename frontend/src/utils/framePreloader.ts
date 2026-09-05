@@ -102,6 +102,20 @@ export function loadSingleFrame(seq = "frames", idx: number, highPriority = fals
   });
 }
 
+/**
+ * Dynamically prioritize frames around current scrub/scroll position
+ */
+export function prioritizeFramesAround(seq = "frames", centerIdx: number, radius = 12): void {
+  const min = Math.max(1, centerIdx - radius);
+  const max = Math.min(TOTAL_FRAMES, centerIdx + radius);
+  for (let i = min; i <= max; i++) {
+    const cached = globalFrameCache[seq]?.[i];
+    if (!cached || !cached.complete) {
+      loadSingleFrame(seq, i, true);
+    }
+  }
+}
+
 // Concurrency queue processor
 async function processQueue(seq: string, queue: number[], concurrency: number) {
   let index = 0;
@@ -118,7 +132,7 @@ async function processQueue(seq: string, queue: number[], concurrency: number) {
 
 /**
  * Start aggressive background preloading immediately.
- * This runs while user is on LoadingScreen or browsing.
+ * Uses high concurrency (18 workers) so all 156 frames load rapidly into memory.
  */
 export function startBackgroundPreload(seq = "frames"): Promise<void> {
   if (preloadingPromises[seq]) {
@@ -129,22 +143,22 @@ export function startBackgroundPreload(seq = "frames"): Promise<void> {
     // 1. Load Frame 1 with maximum priority
     await loadSingleFrame(seq, 1, true);
 
-    // 2. Priority Batch: Hero frames (1 to 30) with high concurrency
+    // 2. Priority Batch: Hero frames (1 to 30)
     const heroFrames: number[] = [];
     for (let i = 2; i <= Math.min(30, TOTAL_FRAMES); i++) {
       heroFrames.push(i);
     }
-    await processQueue(seq, heroFrames, 12);
+    await processQueue(seq, heroFrames, 16);
 
-    // 3. Keyframes stride 5 (evenly covers full scroll length)
+    // 3. Keyframes stride 3 for seamless fast scrub preview
     const keyframes: number[] = [];
-    for (let i = 35; i <= TOTAL_FRAMES; i += 5) {
+    for (let i = 31; i <= TOTAL_FRAMES; i += 3) {
       keyframes.push(i);
     }
     if (keyframes[keyframes.length - 1] !== TOTAL_FRAMES) {
       keyframes.push(TOTAL_FRAMES);
     }
-    await processQueue(seq, keyframes, 8);
+    await processQueue(seq, keyframes, 16);
 
     // 4. Fill all remaining frames
     const remaining: number[] = [];
@@ -154,7 +168,7 @@ export function startBackgroundPreload(seq = "frames"): Promise<void> {
         remaining.push(i);
       }
     }
-    await processQueue(seq, remaining, 6);
+    await processQueue(seq, remaining, 18);
   })();
 
   return preloadingPromises[seq]!;
@@ -165,6 +179,6 @@ if (typeof window !== "undefined") {
   if ("requestIdleCallback" in window) {
     (window as any).requestIdleCallback(() => startBackgroundPreload("frames"));
   } else {
-    setTimeout(() => startBackgroundPreload("frames"), 100);
+    setTimeout(() => startBackgroundPreload("frames"), 50);
   }
 }
