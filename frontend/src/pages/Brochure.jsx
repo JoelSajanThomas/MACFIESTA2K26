@@ -6,7 +6,6 @@ import {
   RiCompass3Line,
   RiExternalLinkLine,
   RiUploadCloud2Line,
-  RiSettings3Line,
 } from "react-icons/ri";
 import { usePageSeo } from "../hooks/usePageSeo";
 import { useSiteSettings } from "../hooks/useSiteSettings";

@@ -4,7 +4,7 @@ export const TOTAL_FRAMES = 110;
 export function getFramePath(seq = "frames", index: number): string {
   const safeIndex = Math.max(1, Math.min(TOTAL_FRAMES, Math.round(index) || 1));
   const padded = String(safeIndex).padStart(3, "0");
-  return `/MARVEL/front_frames/frame_${padded}.png`;
+  return `/MARVEL/frames/frame_${padded}.webp`;
 }
 
 // In-memory global cache across component mounts/unmounts

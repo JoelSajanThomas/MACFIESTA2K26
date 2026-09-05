@@ -26,7 +26,6 @@
 
     /* Path aliases */
     "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["src/*"],
       "next/link": ["src/shims/next-link.tsx"],

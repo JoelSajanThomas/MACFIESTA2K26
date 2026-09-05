@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import {
   RiBookOpenLine,
@@ -35,16 +35,7 @@ export default function AdminBrochure() {
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef(null);
 
-  useEffect(() => {
-    loadSettings();
-    return () => {
-      if (localPreviewUrl) {
-        URL.revokeObjectURL(localPreviewUrl);
-      }
-    };
-  }, []);
-
-  async function loadSettings() {
+  const loadSettings = useCallback(async () => {
     setLoading(true);
     setErrorMsg("");
     try {
@@ -55,12 +46,24 @@ export default function AdminBrochure() {
       setCurrentFile(s.brochure_file || null);
       setCurrentUrl(s.brochure_url || "");
       setInputUrl(s.brochure_url || "");
-    } catch (err) {
+    } catch {
       setErrorMsg("Failed to load brochure settings. Please refresh.");
     } finally {
       setLoading(false);
     }
-  }
+  }, []);
+
+  useEffect(() => {
+    loadSettings();
+  }, [loadSettings]);
+
+  useEffect(() => {
+    return () => {
+      if (localPreviewUrl) {
+        URL.revokeObjectURL(localPreviewUrl);
+      }
+    };
+  }, [localPreviewUrl]);
 
   const activeBrochureTarget = localPreviewUrl
     ? localPreviewUrl
@@ -171,7 +174,7 @@ export default function AdminBrochure() {
       }
       invalidateSiteSettingsCache();
       setStatusMsg("Brochure removed. The public page now indicates an update is in progress.");
-    } catch (err) {
+    } catch {
       setErrorMsg("Failed to remove brochure. Please try again.");
     } finally {
       setSaving(false);
