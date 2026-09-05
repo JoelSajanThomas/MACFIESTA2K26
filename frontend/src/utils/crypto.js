@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Client-side SHA-256 cryptographic password hashing.
  * Ensures passwords leaving the browser in HTTP request payloads are
  * cryptographically hashed and never visible in plaintext in DevTools Inspect.
@@ -89,23 +89,7 @@ function sha256Fallback(ascii) {
 }
 
 export async function hashPassword(plain) {
-  if (!plain || typeof plain !== "string") return plain;
-  // If already a 64-character SHA-256 hex string, do not double-hash
-  if (/^[a-f0-9]{64}$/i.test(plain)) {
-    return plain.toLowerCase();
-  }
-
-  try {
-    if (typeof window !== "undefined" && window.crypto && window.crypto.subtle) {
-      const encoder = new TextEncoder();
-      const data = encoder.encode(plain);
-      const hashBuffer = await window.crypto.subtle.digest("SHA-256", data);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
-    }
-  } catch {
-    // Fall back to pure JS implementation
-  }
-
-  return sha256Fallback(plain);
+  // Passwords must never be hashed on the client.
+  // Django's server-side PBKDF2 hasher manages standard credential hashing and salting.
+  return plain;
 }

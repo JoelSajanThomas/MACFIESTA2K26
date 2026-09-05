@@ -48,8 +48,10 @@ export default function ChangePassword() {
     e.preventDefault();
     setLoading(true);
     setError("");
+    const payload = { ...form };
+    setForm({ current_password: "", password: "", password_confirm: "" });
     try {
-      await changePassword(form);
+      await changePassword(payload);
       const userRes = await getCurrentUser();
       const user = userRes.data;
       if (user.is_staff || user.is_superuser) {

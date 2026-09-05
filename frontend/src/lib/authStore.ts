@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { api } from "./api";
 import { getFestivalSettings } from "./festivalStore";
 import { User, Registration } from "@/types";
-import { hashPassword } from "../utils/crypto";
 
 
 interface AuthState {
@@ -73,8 +72,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   login: async (email, password) => {
     set({ isLoading: true, error: null });
     try {
-      const hashedPassword = await hashPassword(password);
-      const response = await api.post("/auth/login", { email, password: hashedPassword });
+      const response = await api.post("/auth/login", { email, password });
       const { token, user } = response.data;
 
       if (typeof window !== "undefined") {
@@ -99,8 +97,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   adminLogin: async (email, password, otp) => {
     set({ isLoading: true, error: null });
     try {
-      const hashedPassword = await hashPassword(password);
-      const response = await api.post("/admin/login", { email, password: hashedPassword, otp });
+      const response = await api.post("/admin/login", { email, password, otp });
       const { token, user } = response.data;
 
       if (typeof window !== "undefined") {
@@ -126,12 +123,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const payload: Record<string, unknown> = { ...fields };
-      if (typeof payload.password === "string") {
-        payload.password = await hashPassword(payload.password);
-      }
-      if (typeof payload.password_confirm === "string") {
-        payload.password_confirm = await hashPassword(payload.password_confirm);
-      }
       const response = await api.post("/auth/register", payload);
       const { token, user } = response.data;
 
