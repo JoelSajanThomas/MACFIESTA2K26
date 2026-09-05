@@ -30,7 +30,7 @@ import {
 import { getCurrentUser, isLoggedIn } from "../services/api";
 import { AUTH_CHANGE_EVENT, logout, isUnauthorized } from "../utils/auth";
 import { BRAND } from "../utils/brand";
-import { getCartItems } from "../utils/eventCart";
+import { getCartItems, clearCart } from "../utils/eventCart";
 
 const mainNavItems = [
   { href: "/", label: "MISSION CONTROL" },
@@ -112,6 +112,7 @@ export default function Navbar() {
   useEffect(() => {
     function loadUser() {
       if (!isLoggedIn()) {
+        clearCart();
         setUser(null);
         return;
       }

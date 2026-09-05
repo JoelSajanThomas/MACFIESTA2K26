@@ -17,6 +17,7 @@ import {
 } from "react-icons/ri";
 import { isLoggedIn, getCurrentUser } from "../services/api";
 import { AUTH_CHANGE_EVENT, isUnauthorized, logout } from "../utils/auth";
+import { clearCart } from "../utils/eventCart";
 
 const LEFT_TABS = [
   { label: "Home", href: "/", icon: RiHome5Line, activeIcon: RiHome5Fill },
@@ -43,6 +44,7 @@ export default function MobileBottomBar() {
   useEffect(() => {
     function loadUser() {
       if (!isLoggedIn()) {
+        clearCart();
         setUser((prev) => {
           if (prev) {
             setShowLogoutToast(true);
