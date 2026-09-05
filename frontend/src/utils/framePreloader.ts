@@ -17,15 +17,28 @@ const preloadingPromises: Record<string, Promise<void> | null> = {
 };
 
 const listeners: Set<() => void> = new Set();
+let listenerNotificationPending = false;
 
 function notifyListeners() {
-  listeners.forEach((cb) => {
-    try {
-      cb();
-    } catch {
-      // ignore
-    }
-  });
+  if (listenerNotificationPending) return;
+  listenerNotificationPending = true;
+
+  const flush = () => {
+    listenerNotificationPending = false;
+    listeners.forEach((cb) => {
+      try {
+        cb();
+      } catch {
+        // ignore
+      }
+    });
+  };
+
+  if (typeof requestAnimationFrame === "function") {
+    requestAnimationFrame(flush);
+  } else {
+    setTimeout(flush, 0);
+  }
 }
 
 export function subscribeToPreload(callback: () => void): () => void {
@@ -148,7 +161,7 @@ export function startBackgroundPreload(seq = "frames"): Promise<void> {
     for (let i = 2; i <= Math.min(30, TOTAL_FRAMES); i++) {
       heroFrames.push(i);
     }
-    await processQueue(seq, heroFrames, 16);
+    await processQueue(seq, heroFrames, 8);
 
     // 3. Keyframes stride 3 for seamless fast scrub preview
     const keyframes: number[] = [];
@@ -158,7 +171,7 @@ export function startBackgroundPreload(seq = "frames"): Promise<void> {
     if (keyframes[keyframes.length - 1] !== TOTAL_FRAMES) {
       keyframes.push(TOTAL_FRAMES);
     }
-    await processQueue(seq, keyframes, 16);
+    await processQueue(seq, keyframes, 6);
 
     // 4. Fill all remaining frames
     const remaining: number[] = [];
@@ -168,7 +181,7 @@ export function startBackgroundPreload(seq = "frames"): Promise<void> {
         remaining.push(i);
       }
     }
-    await processQueue(seq, remaining, 18);
+    await processQueue(seq, remaining, 6);
   })();
 
   return preloadingPromises[seq]!;
