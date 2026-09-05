@@ -1,10 +1,10 @@
 // Global High-Speed Frame Cache & Preload Manager
-export const TOTAL_FRAMES = 110;
+export const TOTAL_FRAMES = 286;
 
 export function getFramePath(seq = "frames", index: number): string {
   const safeIndex = Math.max(1, Math.min(TOTAL_FRAMES, Math.round(index) || 1));
-  const padded = String(safeIndex).padStart(3, "0");
-  return `/MARVEL/front_frames/frame_${padded}.png`;
+  const padded = String(safeIndex - 1).padStart(5, "0");
+  return `/MARVEL/compressed_frames/frame_${padded}.webp`;
 }
 
 // In-memory global cache across component mounts/unmounts
@@ -132,7 +132,7 @@ async function processQueue(seq: string, queue: number[], concurrency: number) {
 
 /**
  * Start aggressive background preloading immediately.
- * Uses high concurrency (18 workers) so all 156 frames load rapidly into memory.
+ * Uses high concurrency (18 workers) so all frames load rapidly into memory.
  */
 export function startBackgroundPreload(seq = "frames"): Promise<void> {
   if (preloadingPromises[seq]) {
