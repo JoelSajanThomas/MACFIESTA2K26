@@ -6,7 +6,6 @@ export const SEED_INSTITUTIONS = [
   // =========================================================================
   // --- PATHANAMTHITTA DISTRICT & CENTRAL TRAVANCORE COLLEGES ---
   // =========================================================================
-  "Mar Athanasios College for Advanced Studies Tiruvalla (MACFAST)",
   "Titus II Teachers College, Tiruvalla",
   "Mar Thoma College, Tiruvalla",
   "Believers Church Medical College Hospital, Thiruvalla",
@@ -445,12 +444,18 @@ export const SEED_INSTITUTIONS = [
 export const OTHERS_VALUE = "__others__";
 export const OTHERS_LABEL = "Others (not in list)";
 
+export const EXCLUDED_INSTITUTIONS = new Set([
+  "macfast",
+  "macfast tiruvalla",
+  "macfast, tiruvalla",
+]);
+
 export function mergeInstitutions(extra = []) {
   const set = new Map();
   [...SEED_INSTITUTIONS, ...extra].forEach((raw) => {
     const name = String(raw || "").trim().replace(/\s+/g, " ");
     if (name.length < 2) return;
-    if (name.toLowerCase() === "macfast") return;
+    if (EXCLUDED_INSTITUTIONS.has(name.toLowerCase())) return;
     const key = name.toLowerCase();
     if (!set.has(key)) set.set(key, name);
   });

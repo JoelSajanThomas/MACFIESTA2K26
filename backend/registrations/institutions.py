@@ -6,7 +6,6 @@ import re
 
 SEED_INSTITUTIONS = [
     # Pathanamthitta & Central Travancore Colleges
-    "Mar Athanasios College for Advanced Studies Tiruvalla (MACFAST)",
     "Titus II Teachers College, Tiruvalla",
     "Mar Thoma College, Tiruvalla",
     "Believers Church Medical College Hospital, Thiruvalla",
@@ -225,6 +224,13 @@ SEED_INSTITUTIONS = [
 _WHITESPACE = re.compile(r"\s+")
 
 
+EXCLUDED_INSTITUTIONS = {
+    "macfast",
+    "macfast tiruvalla",
+    "macfast, tiruvalla",
+}
+
+
 def normalize_institution_name(value: str) -> str:
     name = _WHITESPACE.sub(" ", (value or "").strip())
     return name[:200]
@@ -235,6 +241,9 @@ def ensure_institution(name: str) -> str | None:
     cleaned = normalize_institution_name(name)
     if len(cleaned) < 2:
         return None
+
+    if cleaned.casefold() in EXCLUDED_INSTITUTIONS:
+        return cleaned
 
     seed_keys = {s.casefold() for s in SEED_INSTITUTIONS}
     if cleaned.casefold() in seed_keys:
@@ -260,10 +269,10 @@ def list_institutions() -> list[str]:
         .values_list("college_name", flat=True)
         .distinct()
     )
-    # Drop empty / whitespace-only and standalone duplicate shorthand
+    # Drop empty / whitespace-only and standalone duplicate shorthand / excluded host names
     cleaned = {
         normalize_institution_name(n)
         for n in names
-        if normalize_institution_name(n) and normalize_institution_name(n).lower() != "macfast"
+        if normalize_institution_name(n) and normalize_institution_name(n).lower() not in EXCLUDED_INSTITUTIONS
     }
     return sorted(cleaned, key=str.casefold)
