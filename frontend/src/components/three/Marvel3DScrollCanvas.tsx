@@ -40,8 +40,10 @@ export function Marvel3DScrollCanvas({
   const updateCanvasDimensions = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    // Ultra-sharp 4K / Retina buffer sizing
-    const dpr = Math.min(Math.max(window.devicePixelRatio || 1, 2), 3);
+    // Use the true device pixel ratio for pixel-perfect sharpness.
+    // No forced minimum — over-sizing the buffer on 1× screens causes
+    // the browser to downscale and blur the image when painting.
+    const dpr = Math.min(window.devicePixelRatio || 1, 3);
     const rect = canvas.getBoundingClientRect();
     const w = rect.width > 0 ? rect.width : window.innerWidth * 1.15;
     const h = rect.height > 0 ? rect.height : window.innerHeight * 1.15;
@@ -105,7 +107,7 @@ export function Marvel3DScrollCanvas({
         updateCanvasDimensions();
       }
 
-      const ctx = canvas.getContext("2d", { alpha: false });
+      const ctx = canvas.getContext("2d", { alpha: false, willReadFrequently: false });
       if (!ctx) return;
 
       const safeFrame = Math.max(1, Math.min(TOTAL_FRAMES, frameFloat));
@@ -274,7 +276,12 @@ export function Marvel3DScrollCanvas({
             ref={canvasRef}
             className="w-full h-full block object-cover"
             style={{
-              imageRendering: "-webkit-optimize-contrast",
+              // Standard cross-browser high-quality rendering.
+              // "high-quality" tells the compositor to use bilinear/bicubic
+              // filtering when the canvas CSS size differs from its buffer size.
+              imageRendering: "auto",
+              // Fallback for older WebKit / Blink
+              WebkitFontSmoothing: "antialiased",
             }}
           />
         </div>
