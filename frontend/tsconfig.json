@@ -16,7 +16,8 @@
     "jsx": "react-jsx",
 
     /* Linting & JS interop */
-    "strict": false,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
@@ -25,6 +26,7 @@
 
     /* Path aliases */
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "paths": {
       "@/*": ["src/*"],
       "next/link": ["src/shims/next-link.tsx"],

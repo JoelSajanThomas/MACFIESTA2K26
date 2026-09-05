@@ -1,10 +1,10 @@
 // Global High-Speed Frame Cache & Preload Manager
-export const TOTAL_FRAMES = 156;
+export const TOTAL_FRAMES = 110;
 
 export function getFramePath(seq = "frames", index: number): string {
   const safeIndex = Math.max(1, Math.min(TOTAL_FRAMES, Math.round(index) || 1));
   const padded = String(safeIndex).padStart(3, "0");
-  return `/MARVEL/frames/ezgif-frame-${padded}.jpg`;
+  return `/MARVEL/front_frames/frame_${padded}.png`;
 }
 
 // In-memory global cache across component mounts/unmounts
