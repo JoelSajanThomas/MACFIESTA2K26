@@ -74,11 +74,6 @@ export default function AdminBrochure() {
       setErrorMsg("Please select a valid PDF file (.pdf).");
       return;
     }
-    // Limit to 40 MB
-    if (file.size > 40 * 1024 * 1024) {
-      setErrorMsg("File is too large. Please select a PDF smaller than 40 MB.");
-      return;
-    }
 
     if (localPreviewUrl) {
       URL.revokeObjectURL(localPreviewUrl);
@@ -361,7 +356,7 @@ export default function AdminBrochure() {
                       Click to choose a PDF or drag and drop here
                     </p>
                     <p className="text-[11px] text-white/50">
-                      Standard PDF documents up to 40 MB
+                      Standard PDF documents (No size limit)
                     </p>
                   </div>
                 )}

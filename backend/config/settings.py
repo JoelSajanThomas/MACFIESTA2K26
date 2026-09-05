@@ -221,6 +221,10 @@ SESSION_COOKIE_HTTPONLY = True
 CSRF_COOKIE_HTTPONLY = True
 SESSION_COOKIE_SAMESITE = "Lax"
 
+# ─── File Upload Limits (Configurable / High Capacity) ────────────────────────
+DATA_UPLOAD_MAX_MEMORY_SIZE = int(os.environ.get("DATA_UPLOAD_MAX_MEMORY_SIZE", 250 * 1024 * 1024))  # 250 MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = int(os.environ.get("FILE_UPLOAD_MAX_MEMORY_SIZE", 100 * 1024 * 1024))  # 100 MB before disk spill
+
 # Only force HTTPS / HSTS behind reverse-proxy in actual production (DEBUG=False).
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
