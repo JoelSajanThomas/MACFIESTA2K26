@@ -59,7 +59,7 @@
         },
         {
           "key": "EMAIL_HOST_USER",
-          "sync": false
+          "value": "macfiesta@macfast.org"
         },
         {
           "key": "EMAIL_HOST_PASSWORD",
@@ -67,7 +67,7 @@
         },
         {
           "key": "DEFAULT_FROM_EMAIL",
-          "sync": false
+          "value": "macfiesta@macfast.org"
         }
       ]
     }
