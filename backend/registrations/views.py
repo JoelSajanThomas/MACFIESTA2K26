@@ -147,7 +147,12 @@ class RegistrationViewSet(
         ).update(user=user, accepted_at=timezone.now())
         # Registrations where user is the Captain OR an accepted Team Member
         qs = Registration.objects.filter(
-            Q(user=user) | Q(team_members__user=user, team_members__invitation_status="accepted")
+            Q(user=user)
+            | Q(team_members__user=user, team_members__invitation_status="accepted")
+            | Q(
+                team_members__email__iexact=(user.email or "").strip(),
+                team_members__invitation_status="accepted",
+            )
         ).distinct().select_related("event")
         if self.request.query_params.get("include_cancelled") != "1":
             qs = qs.filter(cancelled_at__isnull=True)
