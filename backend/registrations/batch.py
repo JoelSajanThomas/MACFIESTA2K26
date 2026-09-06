@@ -5,6 +5,7 @@ from __future__ import annotations
 import secrets
 from decimal import Decimal
 
+from django.contrib.auth.models import User
 from django.db import transaction
 from django.utils import timezone
 from rest_framework import serializers
@@ -203,17 +204,21 @@ def _create_one_registration(
             payment_amount=registration.payment_amount,
         )
         for member in valid_members:
+            member_email = (member.get("email") or "").strip().lower()
+            member_user = User.objects.filter(email__iexact=member_email).first() if member_email else None
             TeamMember.objects.create(
                 registration=registration,
+                user=member_user,
                 role="member",
                 name=member["name"].strip(),
                 phone=(member.get("phone") or "").strip(),
-                email=(member.get("email") or "").strip(),
+                email=member_email,
                 college_name=(member.get("college_name") or registration.college_name).strip(),
                 department=(member.get("department") or "").strip(),
                 register_number=(member.get("register_number") or "").strip(),
                 gender=(member.get("gender") or "unspecified").strip(),
                 invitation_status="accepted",
+                accepted_at=timezone.now(),
                 payment_status=registration.payment_status,
             )
 

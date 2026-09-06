@@ -610,11 +610,11 @@ export default function Events() {
 
       </div>
       {cartEvents.length > 0 && (
-        <div className="fixed bottom-4 left-4 right-4 z-40 max-w-5xl mx-auto p-3 sm:p-4 rounded-2xl bg-[#0A0D1A]/95 border border-metallic-gold/50 shadow-2xl backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-3">
+        <div className="events-cart-bar fixed left-4 right-4 z-[95] max-w-5xl mx-auto p-3 sm:p-4 rounded-2xl bg-[#0A0D1A]/95 border border-metallic-gold/50 shadow-2xl backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-3">
           <span className="text-xs sm:text-sm text-metallic-gold font-black font-mono text-center">⚡ {cartEvents.length} Missions in Checkout · Total: ₹{cartTotal.toLocaleString("en-IN")}</span>
-          <div className="flex items-center gap-2">
-            <Link to="/checkout" className="px-4 py-2 rounded-xl bg-metallic-gold text-black text-[10px] font-black uppercase font-mono">Proceed to Checkout →</Link>
-            <button type="button" onClick={clearCart} className="px-3 py-2 rounded-xl bg-white/10 text-white/70 text-[10px] font-black uppercase font-mono">Clear</button>
+          <div className="flex items-center justify-center gap-2 w-full sm:w-auto">
+            <Link to="/checkout" className="min-h-11 inline-flex items-center justify-center px-4 py-2 rounded-xl bg-metallic-gold text-black text-[10px] font-black uppercase font-mono">Proceed to Checkout →</Link>
+            <button type="button" onClick={clearCart} className="min-h-11 px-3 py-2 rounded-xl bg-white/10 text-white/70 text-[10px] font-black uppercase font-mono">Clear</button>
           </div>
         </div>
       )}

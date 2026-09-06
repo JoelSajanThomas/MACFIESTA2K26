@@ -109,6 +109,7 @@ body:has(.admin-shell),
   overflow-y: auto !important;
   overscroll-behavior: contain;
   background: rgba(7, 10, 22, 0.95) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
   backdrop-filter: blur(20px) !important;
   border-right: 1px solid rgba(255, 255, 255, 0.08) !important;
   display: flex !important;
@@ -271,6 +272,7 @@ body:has(.admin-shell),
 .admin-shell .admin-shell-top {
   flex: 0 0 auto !important;
   background: rgba(10, 14, 28, 0.85) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
   backdrop-filter: blur(16px) !important;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08) !important;
   padding: 0.75rem 1.5rem !important;
@@ -282,6 +284,8 @@ body:has(.admin-shell),
 }
 
 .admin-shell .admin-shell-role {
+  min-width: 0 !important;
+  flex: 1 1 auto !important;
   font-size: 13px !important;
   font-weight: 700 !important;
   color: #FFFFFF !important;
@@ -323,7 +327,6 @@ body:has(.admin-shell),
   overflow-x: hidden !important;
   overflow-y: auto !important;
   overscroll-behavior: contain;
-  -webkit-overflow-scrolling: touch;
   padding: 1.5rem !important;
 }
 
@@ -372,6 +375,7 @@ body:has(.admin-shell),
 
 .admin-shell .admin-kpi-card {
   background: rgba(10, 14, 28, 0.8) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
   backdrop-filter: blur(16px) !important;
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   border-top: 2px solid #00D4FF !important;
@@ -438,6 +442,7 @@ body:has(.admin-shell),
   min-height: 52px !important;
   padding: 0.85rem 1.25rem !important;
   background: rgba(10, 14, 28, 0.85) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
   backdrop-filter: blur(12px) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: var(--ops-radius) !important;
@@ -481,11 +486,19 @@ body:has(.admin-shell),
 .admin-shell .admin-table-wrap,
 .admin-shell .admin-form-card {
   background: rgba(10, 14, 28, 0.85) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
   backdrop-filter: blur(20px) !important;
   border: 1px solid rgba(255, 255, 255, 0.09) !important;
   border-radius: var(--ops-radius) !important;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
   overflow: hidden !important;
+}
+
+.admin-shell .admin-table-wrap {
+  overflow-x: auto !important;
+  overflow-y: visible !important;
+  max-width: 100% !important;
+  overscroll-behavior-x: contain;
 }
 
 .admin-shell .dash-table,
@@ -683,12 +696,51 @@ body:has(.admin-shell),
     position: fixed !important;
     inset: 0 !important;
     background: rgba(0, 0, 0, 0.75) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
     backdrop-filter: blur(8px) !important;
     z-index: 39 !important;
   }
 
   .admin-shell .admin-shell-body {
-    padding-bottom: 96px !important;
+    padding: 1rem !important;
+    padding-bottom: calc(7rem + var(--safe-bottom, 0px)) !important;
+  }
+
+  .admin-shell .admin-shell-top {
+    padding: calc(0.65rem + var(--safe-top, 0px)) 0.85rem 0.65rem !important;
+    gap: 0.5rem !important;
+    min-height: 60px !important;
+  }
+
+  .admin-shell .admin-menu-toggle {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    justify-content: center !important;
+    padding: 0.35rem !important;
+  }
+
+  .admin-shell .admin-menu-toggle span {
+    display: none !important;
+  }
+
+  .admin-shell .admin-shell-role {
+    font-size: 11px !important;
+    line-height: 1.25 !important;
+  }
+
+  .admin-shell .admin-shell-clock {
+    display: none !important;
+  }
+
+  .admin-shell .admin-shell-top-link {
+    min-width: 44px !important;
+    min-height: 44px !important;
+    padding: 0.4rem !important;
+    white-space: nowrap !important;
+  }
+
+  .admin-shell .admin-shell-top-link span {
+    display: none !important;
   }
 }
 
@@ -701,7 +753,7 @@ body:has(.admin-shell),
   .admin-bottom-nav-container {
     display: block !important;
     position: fixed !important;
-    bottom: 14px !important;
+    bottom: calc(10px + var(--safe-bottom, 0px)) !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     z-index: 50 !important;
@@ -717,8 +769,8 @@ body:has(.admin-shell),
     justify-content: space-around !important;
     padding: 6px 8px !important;
     background: rgba(8, 12, 24, 0.88) !important;
-    backdrop-filter: blur(20px) saturate(180%) !important;
     -webkit-backdrop-filter: blur(20px) !important;
+    backdrop-filter: blur(20px) saturate(180%) !important;
     border: 1px solid rgba(0, 212, 255, 0.25) !important;
     border-radius: 9999px !important;
     box-shadow: 0 10px 35px rgba(0, 0, 0, 0.8), 0 0 25px rgba(0, 212, 255, 0.15) !important;
@@ -730,7 +782,8 @@ body:has(.admin-shell),
     align-items: center !important;
     justify-content: center !important;
     gap: 3px !important;
-    padding: 4px 10px !important;
+    min-height: 44px !important;
+    padding: 4px 8px !important;
     border-radius: 9999px !important;
     text-decoration: none !important;
     color: rgba(255, 255, 255, 0.55) !important;
@@ -793,6 +846,7 @@ body:has(.admin-shell),
    ========================================================================== */
 .admin-volunteer-section {
   background: rgba(10, 14, 28, 0.85) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
   backdrop-filter: blur(20px) !important;
   border: 1px solid rgba(255, 255, 255, 0.1) !important;
   border-radius: 12px !important;
@@ -884,9 +938,9 @@ body:has(.admin-shell),
 /* ── Admin Finance / Ops Page Layout ─────────────────── */
 
 .admin-shell .admin-ops-page {
-  padding: 1.5rem;
-  overflow-y: auto;
-  height: 100%;
+  padding: 0;
+  overflow: visible;
+  height: auto;
 }
 
 .admin-shell .admin-finance-page {
@@ -1019,5 +1073,20 @@ body:has(.admin-shell),
   }
   .admin-shell .admin-hide-mobile-table {
     display: none !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .admin-shell .admin-shell-body {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+
+  .admin-bottom-nav-container {
+    width: calc(100% - 16px) !important;
+  }
+
+  .admin-bottom-nav__label {
+    font-size: 9px !important;
   }
 }

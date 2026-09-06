@@ -224,6 +224,39 @@ class RegistrationCheckoutMatrixTests(TestCase):
         self.assertTrue(reg.team_members.filter(role="captain", user=self.user).exists())
         self.assertEqual(reg.team_members.filter(role="member").count(), 2)
 
+    def test_02b_existing_teammate_is_linked_and_can_view_registration(self):
+        teammate = User.objects.create_user(
+            username="rhodey",
+            email="rhodey@starkindustries.com",
+            password="WarMachinePassword123!",
+        )
+        payload = {
+            "events": [self.squad_event_1.id],
+            "participant_name": "Tony Stark",
+            "college_name": "MIT",
+            "phone": "9876543210",
+            "email": "tony@starkindustries.com",
+            "squads_by_event": {
+                str(self.squad_event_1.id): {
+                    "team_name": "Iron Legion",
+                    "members": [{"name": "James Rhodes", "email": "RHODEY@STARKINDUSTRIES.COM"}],
+                }
+            },
+        }
+        created = self.client.post("/api/registrations/batch/", data=payload, format="json")
+        self.assertEqual(created.status_code, status.HTTP_201_CREATED, created.data)
+
+        member = TeamMember.objects.get(registration__payment_batch_id=created.data["payment_batch_id"], role="member")
+        self.assertEqual(member.user_id, teammate.id)
+        self.assertEqual(member.invitation_status, "accepted")
+        self.assertIsNotNone(member.accepted_at)
+
+        self.client.force_authenticate(user=teammate)
+        visible = self.client.get("/api/registrations/")
+        self.assertEqual(visible.status_code, status.HTTP_200_OK, visible.data)
+        self.assertEqual(len(visible.data), 1)
+        self.assertEqual(visible.data[0]["team_name"], "Iron Legion")
+
     def test_03_multiple_solo_events_selected(self):
         """Scenario 3: Multiple solo events in 1 batch -> each stored as individual with 0 members."""
         payload = {

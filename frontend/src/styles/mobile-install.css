@@ -47,6 +47,47 @@ body.capacitor-android.status-bar-fallback {
 }
 
 @media (max-width: 768px) {
+  .app:not(.app--admin) .main-content {
+    padding-bottom: calc(6.5rem + var(--safe-bottom));
+  }
+
+  .app:not(.app--admin) .btn,
+  .app:not(.app--admin) .nav-link,
+  .app:not(.app--admin) .nav-logout-btn,
+  .app:not(.app--admin) button[type="submit"] {
+    min-height: 44px;
+  }
+
+  .app:not(.app--admin) input,
+  .app:not(.app--admin) select,
+  .app:not(.app--admin) textarea {
+    max-width: 100%;
+    font-size: 16px;
+  }
+
+  .events-cart-bar {
+    bottom: calc(5.75rem + var(--safe-bottom));
+  }
+
+  .events-cart-bar > span {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .gallery-viewer-controls {
+    bottom: calc(1rem + var(--safe-bottom));
+    gap: 0.75rem;
+  }
+
+  .gallery-viewer-controls > div:first-child {
+    min-width: 0;
+  }
+
+  .gallery-viewer-controls h3 {
+    min-width: 0;
+    max-width: 34vw;
+  }
+
   body.nav-menu-open {
     overflow: hidden;
     touch-action: none;
@@ -140,6 +181,8 @@ body.capacitor-android.status-bar-fallback {
   .dash-table-wrap {
     -webkit-overflow-scrolling: touch;
     max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
   }
 
   .admin-launch-reminder-links a {
