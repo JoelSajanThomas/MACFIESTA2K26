@@ -121,7 +121,6 @@ body.capacitor-android.status-bar-fallback {
   }
 
   .navbar-menu {
-    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
   }
 
@@ -179,7 +178,6 @@ body.capacitor-android.status-bar-fallback {
   }
 
   .dash-table-wrap {
-    -webkit-overflow-scrolling: touch;
     max-width: 100%;
     overflow-x: auto;
     overscroll-behavior-x: contain;
@@ -322,7 +320,6 @@ body.capacitor-android.status-bar-fallback {
 }
 .no-scrollbar {
   -ms-overflow-style: none;
-  scrollbar-width: none;
 }
 @media (max-width: 1024px) {
   * {
