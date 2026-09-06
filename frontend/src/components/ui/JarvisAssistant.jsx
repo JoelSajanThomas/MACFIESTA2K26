@@ -116,7 +116,7 @@ export default function JarvisAssistant() {
         dragMomentum={false}
         data-jarvis-bot="true"
         data-html2canvas-ignore="true"
-        className="fixed bottom-20 right-4 sm:bottom-6 sm:right-6 z-[9994] pointer-events-auto print-hide jarvis-assistant"
+        className="fixed bottom-24 right-4 sm:bottom-6 sm:right-6 z-[9994] pointer-events-auto print-hide jarvis-assistant"
       >
         <button
           type="button"
@@ -185,11 +185,11 @@ export default function JarvisAssistant() {
             transition={{ duration: 0.25, ease: "easeOut" }}
             style={{
               position: "fixed",
-              bottom: "90px",
+              bottom: "clamp(90px, 20vh, 110px)",
               right: "16px",
               zIndex: 9995,
               width: "min(92vw, 400px)",
-              maxHeight: "580px",
+              maxHeight: "min(580px, calc(100dvh - 180px))",
               height: "72vh",
               background: "rgba(10, 14, 26, 0.94)",
               backdropFilter: "blur(20px)",

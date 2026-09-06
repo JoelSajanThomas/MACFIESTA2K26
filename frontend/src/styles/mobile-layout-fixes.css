@@ -1,0 +1,113 @@
+/**
+ * MacFiesta Pro — Mobile Layout Fixes
+ * Ensures the mobile bottom bar (public dock ~80px) and
+ * admin bottom nav (~68px) never obscure interactive elements.
+ * Load AFTER all other stylesheets.
+ */
+
+/* -- CSS Custom Properties ------------------------------- */
+:root {
+  --mobile-dock-h: 72px;
+  --admin-nav-h: 68px;
+}
+
+/* PUBLIC PAGES — MobileBottomBar clearance */
+@media (max-width: 1279px) {
+  .app:not(.app--admin) .modal-overlay,
+  .app:not(.app--admin) [role="dialog"] {
+    padding-bottom: calc(var(--mobile-dock-h) + var(--safe-bottom, 0px) + 0.5rem);
+  }
+
+  .app:not(.app--admin) .sticky-action-bar,
+  .app:not(.app--admin) .checkout-sticky-footer,
+  .app:not(.app--admin) .fixed-action-row {
+    bottom: calc(var(--mobile-dock-h) + var(--safe-bottom, 0px) + 0.75rem) !important;
+  }
+
+  .app:not(.app--admin) .payment-proof-panel,
+  .app:not(.app--admin) .slide-up-panel {
+    padding-bottom: calc(var(--mobile-dock-h) + var(--safe-bottom, 0px) + 1rem);
+  }
+
+  .app:not(.app--admin) .toast-container,
+  .app:not(.app--admin) [data-sonner-toaster],
+  .app:not(.app--admin) .Toastify__toast-container--bottom-center,
+  .app:not(.app--admin) .Toastify__toast-container--bottom-right,
+  .app:not(.app--admin) .Toastify__toast-container--bottom-left {
+    bottom: calc(var(--mobile-dock-h) + var(--safe-bottom, 0px) + 0.5rem) !important;
+    margin-bottom: 0 !important;
+  }
+
+  .app:not(.app--admin) .scroll-to-top-btn {
+    bottom: calc(var(--mobile-dock-h) + var(--safe-bottom, 0px) + 1.25rem) !important;
+  }
+
+  .app:not(.app--admin) .checkout-page,
+  .app:not(.app--admin) .checkout-layout {
+    padding-bottom: calc(var(--mobile-dock-h) + var(--safe-bottom, 0px) + 1rem);
+  }
+
+  .app:not(.app--admin) .student-dashboard-content,
+  .app:not(.app--admin) .dash-content-wrap {
+    padding-bottom: calc(var(--mobile-dock-h) + var(--safe-bottom, 0px) + 1rem);
+  }
+}
+
+/* ADMIN PAGES — AdminBottomNav clearance */
+@media (max-width: 900px) {
+  .admin-shell [role="dialog"],
+  .admin-shell .modal-overlay {
+    padding-bottom: calc(var(--admin-nav-h) + env(safe-area-inset-bottom, 0px) + 0.5rem) !important;
+  }
+
+  .admin-shell .confirm-dialog,
+  .admin-shell .admin-modal {
+    max-height: calc(100dvh - var(--admin-nav-h) - env(safe-area-inset-bottom, 0px) - 4rem) !important;
+    overflow-y: auto !important;
+  }
+
+  .admin-shell .admin-ops-actions,
+  .admin-shell .admin-ops-card-actions {
+    padding-bottom: 0.5rem;
+  }
+
+  .admin-shell .admin-toast,
+  .admin-shell .admin-flash {
+    bottom: calc(var(--admin-nav-h) + env(safe-area-inset-bottom, 0px) + 0.75rem) !important;
+  }
+
+  .admin-shell .admin-sidebar.is-open {
+    z-index: 60 !important;
+    padding-bottom: calc(var(--admin-nav-h) + env(safe-area-inset-bottom, 0px) + 0.5rem) !important;
+  }
+
+  .admin-shell .verify-panel,
+  .admin-shell .detail-panel {
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* AUDIO HUD — Playlist drawer on mobile */
+@media (max-width: 639px) {
+  .stark-panel {
+    max-height: calc(100svh - var(--mobile-dock-h) - var(--nav-offset, 64px) - 2rem) !important;
+    overflow-y: auto !important;
+  }
+}
+
+/* GLOBAL TOUCH TARGETS */
+@media (max-width: 1279px) {
+  .app:not(.app--admin) button,
+  .app:not(.app--admin) [role="button"],
+  .app:not(.app--admin) a.btn,
+  .app:not(.app--admin) .chip {
+    min-height: 44px;
+  }
+
+  .admin-shell button:not(.admin-bottom-nav__item),
+  .admin-shell [role="button"],
+  .admin-shell a.btn,
+  .admin-shell .btn {
+    min-height: 40px;
+  }
+}

@@ -22,6 +22,7 @@ import "./styles/mobile-install.css";
 import "./styles/admin-simple-ui.css";
 import "./styles/production-polish.css";
 import "./styles/checkout-events.css";
+import "./styles/mobile-layout-fixes.css";
 
 const Home = lazy(() => import("./pages/Home"));
 const Events = lazy(() => import("./pages/Events"));

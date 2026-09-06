@@ -48,7 +48,8 @@ body.capacitor-android.status-bar-fallback {
 
 @media (max-width: 768px) {
   .app:not(.app--admin) .main-content {
-    padding-bottom: calc(6.5rem + var(--safe-bottom));
+    /* Mobile bottom dock is ~80px + safe area; add generous buffer so nothing is hidden */
+    padding-bottom: calc(7.5rem + var(--safe-bottom));
   }
 
   .app:not(.app--admin) .btn,
@@ -66,7 +67,8 @@ body.capacitor-android.status-bar-fallback {
   }
 
   .events-cart-bar {
-    bottom: calc(5.75rem + var(--safe-bottom));
+    /* Float above the mobile bottom dock */
+    bottom: calc(6.5rem + var(--safe-bottom));
   }
 
   .events-cart-bar > span {
