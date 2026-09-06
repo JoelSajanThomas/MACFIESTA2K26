@@ -52,6 +52,7 @@ class AudioEngine {
   private isUnlocked: boolean = false;
   private hasInitialized: boolean = false;
   private libraryLoadStarted: boolean = false;
+  private playPromise: Promise<boolean> | null = null;
 
   private constructor() {
     this.slotA = new Audio();
@@ -107,9 +108,7 @@ class AudioEngine {
 
     window.addEventListener("click", unlockAudio, { passive: true });
     window.addEventListener("keydown", unlockAudio, { passive: true });
-    window.addEventListener("touchstart", unlockAudio, { passive: true });
     window.addEventListener("pointerdown", unlockAudio, { passive: true });
-    window.addEventListener("wheel", unlockAudio, { passive: true });
 
     // Global stop event (e.g. navigation away from home)
     const handleGlobalStop = () => {
@@ -223,6 +222,17 @@ class AudioEngine {
    * Starts or resumes playback
    */
   public async play(): Promise<boolean> {
+    if (this.playPromise) return this.playPromise;
+
+    this.playPromise = this.playInternal();
+    try {
+      return await this.playPromise;
+    } finally {
+      this.playPromise = null;
+    }
+  }
+
+  private async playInternal(): Promise<boolean> {
     if (typeof window !== "undefined") {
       const isHome = window.location.pathname === "/" || window.location.pathname === "";
       if (!isHome) return false;
@@ -253,6 +263,29 @@ class AudioEngine {
       this.preloadNext();
       return true;
     } catch (err) {
+      // Some mobile WebViews cannot decode the first legacy .m4a.mpeg file.
+      // Retry once with the bundled MP3 instead of leaving the HUD inert.
+      const mediaError = active.error;
+      const unsupported = mediaError?.code === MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED;
+      const fallbackIndex = this.playlist.findIndex((track) => track.url.endsWith(".mp3"));
+      if (unsupported && fallbackIndex >= 0 && fallbackIndex !== this.currentIndex) {
+        const fallbackTrack = this.playlist[fallbackIndex];
+        this.currentIndex = fallbackIndex;
+        active.src = fallbackTrack.url;
+        active.currentTime = this.highlightMode && fallbackTrack.highlight
+          ? fallbackTrack.highlight.startTime
+          : 0;
+        try {
+          await active.play();
+          this.isUnlocked = true;
+          this.isPlaying = true;
+          this.emitState();
+          this.preloadNext();
+          return true;
+        } catch {
+          // Fall through to the normal retry state below.
+        }
+      }
       console.debug("[AudioEngine] Playback requires another user gesture:", err);
       this.isPlaying = false;
       this.isUnlocked = false;
@@ -282,10 +315,11 @@ class AudioEngine {
   }
 
   public togglePlay() {
+    if (this.playPromise) return;
     if (this.isPlaying) {
       this.pause(true);
     } else {
-      this.play();
+      void this.play();
     }
   }
 
