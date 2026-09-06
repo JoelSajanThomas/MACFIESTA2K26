@@ -79,10 +79,8 @@ export function AvengersAudioHud() {
           </span>
 
           <span className="font-bold text-white tracking-[0.16em] uppercase text-[8.5px] sm:text-[9.5px] truncate">
-            AVENGERS HUD
+            HUD
           </span>
-
-          <span className="text-white/40">•</span>
 
           <span className="font-mono font-bold text-arc-cyan text-[8.5px] sm:text-[9.5px] shrink-0">
             {activeTrackNumber}/{totalTrackCount}

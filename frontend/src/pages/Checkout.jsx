@@ -869,6 +869,15 @@ export default function Checkout() {
     } catch (err) {
       const d = err?.response?.data;
       const msg = d?.detail || d?.payment_transaction_id || d?.payment_proof || "Failed to submit payment.";
+      if (
+        String(msg).toLowerCase().includes("already been completed") ||
+        String(msg).toLowerCase().includes("already completed")
+      ) {
+        setSuccessMsg("Payment verified! Unlocking tournament passes...");
+        clearCart();
+        setStep(6);
+        return;
+      }
       setError(String(msg));
     } finally {
       setSubmitting(false);
@@ -889,19 +898,28 @@ export default function Checkout() {
     try {
       const res = await submitRegistrationPaymentBatch({
         payment_batch_id: batchId,
-        payment_transaction_id: paymentForm.txn.trim() || `UPI-BATCH-${Date.now().toString().slice(-6)}`,
+        payment_transaction_id: paymentForm.txn.trim() || `FREE-BATCH-${Date.now().toString().slice(-6)}`,
         auto_confirm: true,
         status: "paid",
       });
       const updated = res.data.registrations || registrations;
       setRegistrations(updated);
       if (updated.length > 0) setRegistration(updated[0]);
-      setSuccessMsg("Registrations verified and confirmed!");
+      setSuccessMsg("Free registration confirmed! Tournament passes activated.");
       clearCart();
       setStep(6);
     } catch (err) {
       const d = err?.response?.data;
       const msg = d?.detail || "Failed to confirm payment.";
+      if (
+        String(msg).toLowerCase().includes("already been completed") ||
+        String(msg).toLowerCase().includes("already completed")
+      ) {
+        setSuccessMsg("Registration confirmed! Tournament passes activated.");
+        clearCart();
+        setStep(6);
+        return;
+      }
       setError(String(msg));
     } finally {
       setSubmitting(false);

@@ -7,7 +7,7 @@
 
 /* -- CSS Custom Properties ------------------------------- */
 :root {
-  --mobile-dock-h: 72px;
+  --mobile-dock-h: 0px;
   --admin-nav-h: 68px;
 }
 

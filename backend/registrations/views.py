@@ -179,7 +179,19 @@ class RegistrationViewSet(
             return Response({"detail": "Only the Team Captain can submit payment for the team."}, status=status.HTTP_403_FORBIDDEN)
 
         if registration.payment_status in ("paid", "waived"):
-            return Response({"detail": "Payment has already been completed for this team."}, status=status.HTTP_400_BAD_REQUEST)
+            changed = False
+            if registration.approval_status != "approved":
+                registration.approval_status = "approved"
+                changed = True
+            if not registration.is_locked:
+                registration.is_locked = True
+                changed = True
+            if changed:
+                registration.save(update_fields=["approval_status", "is_locked"])
+            return Response(
+                RegistrationSerializer(registration, context={"request": request}).data,
+                status=status.HTTP_200_OK,
+            )
 
         min_size = registration.event.min_team_size or 1
         if registration.total_team_members_count < min_size:
@@ -314,11 +326,36 @@ class RegistrationViewSet(
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # If already paid
+        # If already paid or waived (e.g. free events / idempotent confirmation)
         if all(r.payment_status in ("paid", "waived") for r in registrations):
+            for reg in registrations:
+                changed = False
+                if reg.approval_status != "approved":
+                    reg.approval_status = "approved"
+                    changed = True
+                if not reg.is_locked:
+                    reg.is_locked = True
+                    changed = True
+                if changed:
+                    reg.save(update_fields=["approval_status", "is_locked"])
+                reg.team_members.all().update(payment_status=reg.payment_status)
+            updated_regs = (
+                Registration.objects.filter(
+                    user=request.user,
+                    payment_batch_id=batch_id,
+                    cancelled_at__isnull=True,
+                )
+                .select_related("event")
+                .prefetch_related("team_members")
+            )
+            data = RegistrationSerializer(updated_regs, many=True, context={"request": request}).data
             return Response(
-                {"detail": "Payment has already been completed for this batch."},
-                status=status.HTTP_400_BAD_REQUEST,
+                {
+                    "payment_batch_id": batch_id,
+                    "registrations": data,
+                    "detail": "Payment has already been completed for this batch.",
+                },
+                status=status.HTTP_200_OK,
             )
 
         simulated_status = request.data.get("status")
@@ -571,7 +608,7 @@ class RegistrationViewSet(
             return Response({"detail": "Only the Team Captain has permission to initiate payment."}, status=status.HTTP_403_FORBIDDEN)
 
         if registration.payment_status in ("paid", "waived"):
-            return Response({"detail": "Payment has already been completed for this team."}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(RegistrationSerializer(registration, context={"request": request}).data, status=status.HTTP_200_OK)
 
         min_size = registration.event.min_team_size or 1
         max_size = registration.event.max_team_size or 999

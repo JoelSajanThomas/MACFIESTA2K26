@@ -4,7 +4,6 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import ScrollToTop from "./components/ScrollToTop";
 import ScrollDirector from "./components/ScrollDirector";
-import MobileBottomBar from "./components/MobileBottomBar";
 import AdminGate from "./components/admin/AdminGate";
 import AdminLayout from "./components/admin/AdminLayout";
 import LoadingState from "./components/ui/LoadingState";
@@ -245,7 +244,6 @@ function AppShell() {
             <Navbar />
             {main}
             <Footer />
-            <MobileBottomBar />
             <ScrollToTop />
           </PageGate>
         </MaintenanceGuard>
