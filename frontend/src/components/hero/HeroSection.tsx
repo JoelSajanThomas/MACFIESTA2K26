@@ -203,7 +203,11 @@ export function HeroSection() {
                 transition={{ duration: 0.7, ease: customEase }}
               >
                 <span
-                  className="block text-arc-cyan font-bold uppercase font-space tracking-[0.22em] text-[10px] sm:text-xs md:text-sm drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]"
+                  className="block font-black uppercase font-space tracking-[0.26em] text-[11px] sm:text-xs md:text-sm"
+                  style={{
+                    color: "#00F5FF",
+                    textShadow: "0 0 12px rgba(0, 245, 255, 0.45)",
+                  }}
                 >
                   WELCOME TO
                 </span>
