@@ -137,6 +137,14 @@ class RegistrationViewSet(
 
     def get_queryset(self):
         user = self.request.user
+        # Checkout accepts teammates immediately. Claim any accepted rows created
+        # before the teammate account existed so the registration appears here.
+        TeamMember.objects.filter(
+            user__isnull=True,
+            role="member",
+            invitation_status="accepted",
+            email__iexact=(user.email or "").strip(),
+        ).update(user=user, accepted_at=timezone.now())
         # Registrations where user is the Captain OR an accepted Team Member
         qs = Registration.objects.filter(
             Q(user=user) | Q(team_members__user=user, team_members__invitation_status="accepted")

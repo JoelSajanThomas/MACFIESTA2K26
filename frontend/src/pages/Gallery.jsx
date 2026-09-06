@@ -342,7 +342,7 @@ export default function Gallery() {
             </div>
 
             {/* FLOATING MARVEL HUD BOTTOM CONTROL BAR */}
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[10000] max-w-3xl w-[92vw] px-6 py-3 rounded-2xl bg-black/80 border border-arc-cyan/30 backdrop-blur-xl flex items-center justify-between shadow-[0_10px_40px_rgba(0,0,0,0.8)] font-excon text-xs">
+            <div className="gallery-viewer-controls fixed left-1/2 -translate-x-1/2 z-[10000] max-w-3xl w-[92vw] px-4 sm:px-6 py-3 rounded-2xl bg-black/80 border border-arc-cyan/30 backdrop-blur-xl flex items-center justify-between shadow-[0_10px_40px_rgba(0,0,0,0.8)] font-excon text-xs">
               <div className="flex items-center gap-3 truncate pr-4">
                 <span
                   className={`px-3 py-0.5 rounded-full text-[10px] font-black uppercase shrink-0 font-excon-bold ${
@@ -365,7 +365,7 @@ export default function Gallery() {
 
                 <button
                   onClick={toggleNativeFullscreen}
-                  className="p-2 rounded-xl bg-white/10 hover:bg-arc-cyan hover:text-black text-white transition-colors cursor-pointer border border-white/10"
+                  className="min-w-11 min-h-11 p-2 rounded-xl bg-white/10 hover:bg-arc-cyan hover:text-black text-white transition-colors cursor-pointer border border-white/10"
                   title="Toggle Display Fullscreen Mode"
                 >
                   {isNativeFullscreen ? <RiFullscreenExitLine size={18} /> : <RiFullscreenLine size={18} />}

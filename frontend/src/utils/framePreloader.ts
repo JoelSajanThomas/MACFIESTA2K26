@@ -155,22 +155,30 @@ export function startBackgroundPreload(seq = "frames1"): Promise<void> {
   }
 
   preloadingPromises[seq] = (async () => {
-    // 1. Load first 3 frames with maximum priority so the canvas is visible immediately
-    await Promise.all([1, 2, 3].map((i) => loadSingleFrame(seq, i, true)));
+    // Load only the first frame on the critical path. The canvas can render
+    // immediately while the rest of the sequence waits for browser idle time.
+    await loadSingleFrame(seq, 1, true);
 
-    // 2. Aggressively pre-load the first 30 frames at high concurrency
     const heroFrames: number[] = [];
-    for (let i = 4; i <= Math.min(30, TOTAL_FRAMES); i++) {
+    for (let i = 2; i <= Math.min(30, TOTAL_FRAMES); i++) {
       heroFrames.push(i);
     }
-    await processQueue(seq, heroFrames, 16);
 
-    // 3. Load remaining frames in the background
     const remainingFrames: number[] = [];
     for (let i = 31; i <= TOTAL_FRAMES; i++) {
       remainingFrames.push(i);
     }
-    processQueue(seq, remainingFrames, 12);
+
+    const runDeferred = () => {
+      processQueue(seq, heroFrames, 4).then(() => processQueue(seq, remainingFrames, 2));
+    };
+
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      (window as Window & typeof globalThis & { requestIdleCallback: (cb: () => void, options?: { timeout: number }) => number })
+        .requestIdleCallback(runDeferred, { timeout: 2500 });
+    } else {
+      setTimeout(runDeferred, 1200);
+    }
   })();
 
   return preloadingPromises[seq]!;

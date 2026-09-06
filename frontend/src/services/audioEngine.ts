@@ -93,24 +93,15 @@ class AudioEngine {
     // Mobile & autoplay user interaction unlockers
     const unlockAudio = () => {
       if (this.isUnlocked) return;
-      this.isUnlocked = true;
-
-      window.removeEventListener("click", unlockAudio);
-      window.removeEventListener("keydown", unlockAudio);
-      window.removeEventListener("touchstart", unlockAudio);
-      window.removeEventListener("pointerdown", unlockAudio);
-      window.removeEventListener("wheel", unlockAudio);
-
-      // Warm up audio elements
-      try {
-        const p1 = this.slotA.play();
-        if (p1) p1.then(() => this.slotA.pause()).catch(() => {});
-      } catch {}
 
       // If we are on homepage and not explicitly muted, auto-start playback
       const isHome = window.location.pathname === "/" || window.location.pathname === "";
       if (isHome && !this.userMuted && !this.isPlaying) {
-        this.play();
+        this.play().then((started) => {
+          if (started) this.isUnlocked = true;
+        });
+      } else {
+        this.isUnlocked = true;
       }
     };
 
@@ -231,16 +222,16 @@ class AudioEngine {
   /**
    * Starts or resumes playback
    */
-  public play() {
+  public async play(): Promise<boolean> {
     if (typeof window !== "undefined") {
       const isHome = window.location.pathname === "/" || window.location.pathname === "";
-      if (!isHome) return;
+      if (!isHome) return false;
     }
 
     this.userMuted = false;
     this.loadLibraryOnDemand();
     const currentTrack = this.playlist[this.currentIndex];
-    if (!currentTrack) return;
+    if (!currentTrack) return false;
 
     const active = this.getActiveSlot();
 
@@ -254,18 +245,20 @@ class AudioEngine {
     const targetVolume = this.getEffectiveVolume();
     active.volume = targetVolume;
 
-    active
-      .play()
-      .then(() => {
-        this.isPlaying = true;
-        this.emitState();
-        this.preloadNext();
-      })
-      .catch((err) => {
-        console.debug("[AudioEngine] Autoplay prevented by browser:", err);
-        this.isPlaying = false;
-        this.emitState();
-      });
+    try {
+      await active.play();
+      this.isUnlocked = true;
+      this.isPlaying = true;
+      this.emitState();
+      this.preloadNext();
+      return true;
+    } catch (err) {
+      console.debug("[AudioEngine] Playback requires another user gesture:", err);
+      this.isPlaying = false;
+      this.isUnlocked = false;
+      this.emitState();
+      return false;
+    }
   }
 
   /**

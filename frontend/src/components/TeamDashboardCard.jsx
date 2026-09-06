@@ -160,6 +160,12 @@ export default function TeamDashboardCard({
           <p className="text-xs text-white/60 font-space">
             Mission: <strong className="text-metallic-gold">{registration.event_title || registration.eventData?.title}</strong>
           </p>
+          {!isCaptain && (
+            <p className="inline-flex items-center gap-2 rounded-xl border border-emerald-400/30 bg-emerald-400/10 px-3 py-2 text-xs font-bold text-emerald-300 font-space">
+              <RiCheckLine className="shrink-0" />
+              You are registered for this team event. No approval is required.
+            </p>
+          )}
         </div>
 
         {/* Progress & Lock Status Badge */}
