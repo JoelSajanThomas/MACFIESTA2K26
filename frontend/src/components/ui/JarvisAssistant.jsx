@@ -116,7 +116,7 @@ export default function JarvisAssistant() {
         dragMomentum={false}
         data-jarvis-bot="true"
         data-html2canvas-ignore="true"
-        className="fixed bottom-24 right-4 sm:bottom-6 sm:right-6 z-[9994] pointer-events-auto print-hide jarvis-assistant"
+        className="hidden sm:block fixed sm:bottom-6 sm:right-6 z-[9994] pointer-events-auto print-hide jarvis-assistant"
       >
         <button
           type="button"

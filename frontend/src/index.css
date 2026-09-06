@@ -2011,18 +2011,24 @@ body {
    ============================================ */
 
 .scroll-indicator {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  opacity: 0.6;
-  animation: float-gentle 3s ease-in-out infinite;
-  cursor: pointer;
-  transition: opacity 0.3s;
+  display: none;
 }
 
-.scroll-indicator:hover {
-  opacity: 1;
+@media (min-width: 1024px) {
+  .scroll-indicator {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.6;
+    animation: float-gentle 3s ease-in-out infinite;
+    cursor: pointer;
+    transition: opacity 0.3s;
+  }
+
+  .scroll-indicator:hover {
+    opacity: 1;
+  }
 }
 
 .scroll-indicator-line {

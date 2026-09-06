@@ -62,35 +62,33 @@ export function AvengersAudioHud() {
     : currentTrack?.theme || "AVENGERS";
 
   return (
-    <div className="w-full pt-2 sm:pt-2.5 border-t border-white/10 relative select-none font-space">
+    <div className="avengers-audio-hud w-full pt-1 pb-0 border-t border-white/10 relative select-none font-space">
       {/* ─── Top Telemetry & Controls Bar ─── */}
-      <div className="flex items-center justify-between gap-1 pb-1 mb-1 border-b border-white/10 text-[8.5px] sm:text-[9px]">
+      <div className="flex items-center justify-between gap-1 pb-0.5 mb-1 border-b border-white/10 text-[8.5px]">
         {/* Left: Status Indicator & Hero Telemetry */}
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="relative flex h-2 w-2 shrink-0">
+          <span className="relative flex h-1.5 w-1.5 shrink-0">
             {isPlaying && (
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-arc-cyan opacity-75" />
             )}
             <span
-              className={`relative inline-flex rounded-full h-2 w-2 transition-colors duration-300 ${
+              className={`relative inline-flex rounded-full h-1.5 w-1.5 transition-colors duration-300 ${
                 isPlaying ? "bg-arc-cyan shadow-[0_0_6px_#00D4FF]" : "bg-white/50"
               }`}
             />
           </span>
 
-          <span className="font-bold text-white tracking-[0.16em] uppercase text-[8.5px] sm:text-[9.5px] truncate">
-            AVENGERS HUD
+          <span className="font-bold text-white tracking-[0.14em] uppercase text-[8.5px] font-space shrink-0">
+            HUD
           </span>
 
-          <span className="text-white/40">•</span>
-
-          <span className="font-mono font-bold text-arc-cyan text-[8.5px] sm:text-[9.5px] shrink-0">
+          <span className="font-mono font-bold text-arc-cyan text-[8.5px] shrink-0">
             {activeTrackNumber}/{totalTrackCount}
           </span>
 
           {currentTrack && (
             <span
-              className="text-[7.5px] px-2 py-0.5 rounded font-bold uppercase tracking-wider shrink-0 border border-marvel-red/60 bg-marvel-red/25 text-[#FF454D]"
+              className="text-[7px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0 border border-marvel-red/70 bg-marvel-red/20 text-[#FF454D]"
             >
               {heroBadgeName}
             </span>
@@ -101,14 +99,15 @@ export function AvengersAudioHud() {
         <div className="flex items-center gap-1 shrink-0">
           <button
             type="button"
+            data-hud-btn
             onClick={(e) => {
               e.stopPropagation();
               toggleHighlightMode();
             }}
-            className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider border transition-all cursor-pointer flex items-center gap-0.5 ${
+            className={`hud-btn h-5 px-2 rounded text-[8px] font-bold uppercase tracking-wider border transition-all cursor-pointer flex items-center gap-1 ${
               highlightMode
-                ? "bg-marvel-red/35 border-marvel-red text-[#FF3B42] shadow-[0_0_8px_rgba(237,29,36,0.3)]"
-                : "bg-black/50 border-white/20 text-white hover:text-arc-cyan hover:border-arc-cyan/60"
+                ? "bg-marvel-red/25 border-marvel-red/80 text-[#FF454D] shadow-[0_0_8px_rgba(237,29,36,0.3)]"
+                : "bg-black/50 border-white/20 text-white/80 hover:text-arc-cyan hover:border-arc-cyan/60"
             }`}
             title={
               highlightMode
@@ -117,25 +116,26 @@ export function AvengersAudioHud() {
             }
             aria-label="Toggle Highlight Mix Mode"
           >
-            <RiFlashlightFill className="text-[9px]" />
-            <span>{highlightMode ? "MIX" : "FULL"}</span>
+            <RiFlashlightFill className="text-[10px] text-[#FF454D]" />
+            <span>MIX</span>
           </button>
 
           <button
             type="button"
+            data-hud-btn
             onClick={(e) => {
               e.stopPropagation();
               setIsPlaylistOpen((prev) => !prev);
             }}
-            className={`px-2 py-0.5 rounded text-[8px] font-bold uppercase tracking-wider border transition-all cursor-pointer flex items-center gap-1 ${
+            className={`hud-btn h-5 px-2 rounded text-[8px] font-bold uppercase tracking-wider border transition-all cursor-pointer flex items-center gap-1 ${
               isPlaylistOpen
-                ? "bg-arc-cyan/35 border-arc-cyan text-arc-cyan shadow-[0_0_8px_rgba(0,212,255,0.4)]"
-                : "bg-black/50 border-white/20 text-white hover:text-arc-cyan hover:border-arc-cyan/60"
+                ? "bg-arc-cyan/25 border-arc-cyan text-arc-cyan shadow-[0_0_8px_rgba(0,212,255,0.4)]"
+                : "bg-black/60 border-white/20 text-white/90 hover:text-arc-cyan hover:border-arc-cyan/60"
             }`}
             title="Browse all songs"
             aria-label="Toggle Playlist"
           >
-            <RiPlayListFill className="text-[9px]" />
+            <RiPlayListFill className="text-[10px]" />
             <span>LIST</span>
           </button>
         </div>
@@ -143,57 +143,60 @@ export function AvengersAudioHud() {
 
       {/* ─── Main Deck: Transport, Track Info & Visualizer ─── */}
       <div className="flex items-center justify-between gap-2">
-        {/* Left: Transport Buttons (Prev, Play, Next) */}
+        {/* Left: Transport Buttons (Vertical Capsule Pills) */}
         <div className="flex items-center gap-1 shrink-0">
           <button
             type="button"
+            data-hud-btn
             onClick={(e) => {
               e.stopPropagation();
               prev();
             }}
-            className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-black/40 border border-white/15 text-white/90 hover:text-arc-cyan hover:border-arc-cyan hover:bg-black/70 active:scale-90 transition-all cursor-pointer focus:outline-none"
+            className="hud-btn w-[20px] h-[26px] sm:w-[22px] sm:h-[28px] rounded-full flex items-center justify-center bg-black/50 border border-white/15 text-white/80 hover:text-arc-cyan hover:border-arc-cyan/50 hover:bg-black/80 active:scale-95 transition-all cursor-pointer focus:outline-none"
             title="Previous Track"
             aria-label="Previous Track"
           >
-            <RiSkipBackFill className="text-xs sm:text-sm" />
+            <RiSkipBackFill className="text-[11px]" />
           </button>
 
           <button
             type="button"
+            data-hud-btn
             onClick={(e) => {
               e.stopPropagation();
               togglePlay();
             }}
-            className={`w-7 h-7 sm:w-8 sm:h-8 rounded-full border transition-all duration-300 shadow-md flex items-center justify-center shrink-0 cursor-pointer focus:outline-none ${
+            className={`hud-btn w-[24px] h-[32px] sm:w-[26px] sm:h-[34px] rounded-full flex items-center justify-center shrink-0 cursor-pointer focus:outline-none transition-all duration-200 active:scale-95 ${
               isPlaying
-                ? "bg-marvel-red border-marvel-red text-white shadow-[0_0_16px_#ED1D24] hover:scale-105 active:scale-95"
-                : "bg-black/60 border-2 border-arc-cyan text-arc-cyan shadow-[0_0_12px_rgba(0,212,255,0.5)] hover:border-[#33e1ff] hover:scale-105 active:scale-95"
+                ? "bg-[#ED1D24] text-white shadow-[0_0_12px_rgba(237,29,36,0.7)] hover:brightness-110"
+                : "bg-black/80 border border-arc-cyan text-arc-cyan shadow-[0_0_10px_rgba(0,212,255,0.4)] hover:border-[#33e1ff]"
             }`}
             title={isPlaying ? "Pause Music" : "Play Music"}
             aria-label={isPlaying ? "Pause theme music" : "Play theme music"}
           >
             {isPlaying ? (
-              <RiPauseFill className="text-sm sm:text-base text-white" />
+              <RiPauseFill className="text-[13px] text-white" />
             ) : (
-              <RiPlayFill className="text-sm sm:text-base text-arc-cyan ml-0.5" />
+              <RiPlayFill className="text-[13px] text-white ml-0.5" />
             )}
           </button>
 
           <button
             type="button"
+            data-hud-btn
             onClick={(e) => {
               e.stopPropagation();
               next();
             }}
-            className="w-6 h-6 sm:w-7 sm:h-7 rounded-full flex items-center justify-center bg-black/40 border border-white/15 text-white/90 hover:text-arc-cyan hover:border-arc-cyan hover:bg-black/70 active:scale-90 transition-all cursor-pointer focus:outline-none"
+            className="hud-btn w-[20px] h-[26px] sm:w-[22px] sm:h-[28px] rounded-full flex items-center justify-center bg-black/50 border border-white/15 text-white/80 hover:text-arc-cyan hover:border-arc-cyan/50 hover:bg-black/80 active:scale-95 transition-all cursor-pointer focus:outline-none"
             title="Next Track"
             aria-label="Next Track"
           >
-            <RiSkipForwardFill className="text-xs sm:text-sm" />
+            <RiSkipForwardFill className="text-[11px]" />
           </button>
         </div>
 
-        {/* Center: Track Title, Artist & Progress (Spacious & Clean) */}
+        {/* Center: Track Title, Artist, Subtitle, Visualizer & Progress Bar */}
         <div
           onClick={() => setIsPlaylistOpen((prev) => !prev)}
           className="flex-1 min-w-0 cursor-pointer text-left group/deck px-1"
@@ -201,11 +204,11 @@ export function AvengersAudioHud() {
         >
           {/* Song Title & Artist */}
           <div className="overflow-hidden w-full">
-            <p className="text-[11.5px] sm:text-xs font-bold font-excon-bold truncate text-white group-hover/deck:text-arc-cyan transition-colors">
+            <p className="text-[11px] sm:text-xs font-bold font-excon-bold truncate text-white group-hover/deck:text-arc-cyan transition-colors leading-tight">
               {isPlaying ? (
                 isTransitioning ? (
                   <span className="text-[#FFD700] flex items-center gap-1 animate-pulse">
-                    <RiEqualizerFill className="text-[11px] shrink-0" />
+                    <RiEqualizerFill className="text-[10px] shrink-0" />
                     <span>CROSSFADING BEATS...</span>
                   </span>
                 ) : (
@@ -222,34 +225,36 @@ export function AvengersAudioHud() {
             </p>
           </div>
 
-          {/* Subtitle & Timestamp */}
-          <div className="flex items-center justify-between text-[8.5px] font-space text-white/70 font-medium mt-0.5">
-            <span className="truncate tracking-wide">
-              {isPlaying
-                ? highlightMode && currentTrack?.highlight?.description
-                  ? currentTrack.highlight.description
-                  : currentTrack?.artist || "Marvel Soundtrack"
-                : "READY TO LAUNCH"}
-            </span>
-            {isPlaying && (
-              <span className="text-[8.5px] font-mono font-bold text-arc-cyan shrink-0 ml-1">
-                {formatTime(currentTime)}
+          {/* Subtitle, Timestamp, and Inline Visualizer */}
+          <div className="flex items-center justify-between text-[8px] sm:text-[8.5px] font-space text-white/70 font-medium mt-0.5">
+            <div className="flex items-center gap-1 min-w-0 flex-1 truncate">
+              <span className="truncate tracking-wide text-white/60">
+                {isPlaying
+                  ? highlightMode && currentTrack?.highlight?.description
+                    ? currentTrack.highlight.description
+                    : currentTrack?.artist || "Marvel Soundtrack"
+                  : "READY TO LAUNCH"}
               </span>
-            )}
+              {isPlaying && (
+                <span className="font-mono font-bold text-arc-cyan shrink-0">
+                  {formatTime(currentTime)}
+                </span>
+              )}
+            </div>
+
+            {/* Compact Music Visualizer Inline */}
+            <div className="shrink-0 flex items-center ml-1.5">
+              <MusicVisualizer isPlaying={isPlaying} bars={5} className="h-2.5 sm:h-3" />
+            </div>
           </div>
 
-          {/* Glowing HUD Progress Bar */}
-          <div className="w-full h-[3px] bg-black/60 border border-white/10 rounded-full mt-1 overflow-hidden shadow-inner">
+          {/* Glowing Full-Width HUD Progress Bar */}
+          <div className="w-full h-[2px] bg-black/60 border border-white/10 rounded-full mt-0.5 overflow-hidden shadow-inner">
             <div
               className="h-full bg-gradient-to-r from-arc-cyan via-[#FFD700] to-marvel-red transition-all duration-300 shadow-[0_0_8px_#00D4FF]"
               style={{ width: `${Math.round(progress * 100)}%` }}
             />
           </div>
-        </div>
-
-        {/* Right: Music Visualizer Equalizer */}
-        <div className="shrink-0 flex items-center pl-1">
-          <MusicVisualizer isPlaying={isPlaying} bars={8} className="h-5 sm:h-6" />
         </div>
       </div>
 

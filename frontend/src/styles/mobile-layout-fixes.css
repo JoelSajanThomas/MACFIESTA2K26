@@ -7,7 +7,7 @@
 
 /* -- CSS Custom Properties ------------------------------- */
 :root {
-  --mobile-dock-h: 72px;
+  --mobile-dock-h: 0px;
   --admin-nav-h: 68px;
 }
 
@@ -95,10 +95,18 @@
   }
 }
 
+/* AUDIO HUD BUTTONS EXCLUSION - Keep compact HUD geometry */
+.avengers-audio-hud button,
+[data-hud-btn],
+.hud-btn {
+  min-height: unset !important;
+  height: auto;
+}
+
 /* GLOBAL TOUCH TARGETS */
 @media (max-width: 1279px) {
-  .app:not(.app--admin) button,
-  .app:not(.app--admin) [role="button"],
+  .app:not(.app--admin) button:not([data-hud-btn]):not(.hud-btn),
+  .app:not(.app--admin) [role="button"]:not([data-hud-btn]):not(.hud-btn),
   .app:not(.app--admin) a.btn,
   .app:not(.app--admin) .chip {
     min-height: 44px;
@@ -111,3 +119,4 @@
     min-height: 40px;
   }
 }
+
