@@ -1,5 +1,5 @@
 /**
- * MacFiesta Pro — Mobile Layout Fixes
+ * MacFiesta Pro - Mobile Layout Fixes
  * Ensures the mobile bottom bar (public dock ~80px) and
  * admin bottom nav (~68px) never obscure interactive elements.
  * Load AFTER all other stylesheets.
@@ -11,7 +11,7 @@
   --admin-nav-h: 68px;
 }
 
-/* PUBLIC PAGES — MobileBottomBar clearance */
+/* PUBLIC PAGES - MobileBottomBar clearance */
 @media (max-width: 1279px) {
   .app:not(.app--admin) .modal-overlay,
   .app:not(.app--admin) [role="dialog"] {
@@ -53,7 +53,7 @@
   }
 }
 
-/* ADMIN PAGES — AdminBottomNav clearance */
+/* ADMIN PAGES - AdminBottomNav clearance */
 @media (max-width: 900px) {
   .admin-shell [role="dialog"],
   .admin-shell .modal-overlay {
@@ -87,7 +87,7 @@
   }
 }
 
-/* AUDIO HUD — Playlist drawer on mobile */
+/* AUDIO HUD - Playlist drawer on mobile */
 @media (max-width: 639px) {
   .stark-panel {
     max-height: calc(100svh - var(--mobile-dock-h) - var(--nav-offset, 64px) - 2rem) !important;
