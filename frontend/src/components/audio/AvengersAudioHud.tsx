@@ -62,33 +62,33 @@ export function AvengersAudioHud() {
     : currentTrack?.theme || "AVENGERS";
 
   return (
-    <div className="w-full pt-1.5 pb-0.5 border-t border-white/10 relative select-none font-space">
+    <div className="avengers-audio-hud w-full pt-1 pb-0 border-t border-white/10 relative select-none font-space">
       {/* ─── Top Telemetry & Controls Bar ─── */}
-      <div className="flex items-center justify-between gap-1 pb-1 mb-1.5 border-b border-white/10 text-[8.5px] sm:text-[9px]">
+      <div className="flex items-center justify-between gap-1 pb-0.5 mb-1 border-b border-white/10 text-[8.5px]">
         {/* Left: Status Indicator & Hero Telemetry */}
         <div className="flex items-center gap-1.5 min-w-0">
-          <span className="relative flex h-2 w-2 shrink-0">
+          <span className="relative flex h-1.5 w-1.5 shrink-0">
             {isPlaying && (
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-arc-cyan opacity-75" />
             )}
             <span
-              className={`relative inline-flex rounded-full h-2 w-2 transition-colors duration-300 ${
+              className={`relative inline-flex rounded-full h-1.5 w-1.5 transition-colors duration-300 ${
                 isPlaying ? "bg-arc-cyan shadow-[0_0_6px_#00D4FF]" : "bg-white/50"
               }`}
             />
           </span>
 
-          <span className="font-bold text-white tracking-[0.14em] uppercase text-[9px] font-space shrink-0">
+          <span className="font-bold text-white tracking-[0.14em] uppercase text-[8.5px] font-space shrink-0">
             HUD
           </span>
 
-          <span className="font-mono font-bold text-arc-cyan text-[9px] shrink-0">
+          <span className="font-mono font-bold text-arc-cyan text-[8.5px] shrink-0">
             {activeTrackNumber}/{totalTrackCount}
           </span>
 
           {currentTrack && (
             <span
-              className="text-[7.5px] px-2 py-0.5 rounded font-bold uppercase tracking-wider shrink-0 border border-marvel-red/70 bg-marvel-red/20 text-[#FF454D]"
+              className="text-[7px] px-1.5 py-0.5 rounded font-bold uppercase tracking-wider shrink-0 border border-marvel-red/70 bg-marvel-red/20 text-[#FF454D]"
             >
               {heroBadgeName}
             </span>
@@ -96,14 +96,15 @@ export function AvengersAudioHud() {
         </div>
 
         {/* Right: Mode & Playlist Triggers */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        <div className="flex items-center gap-1 shrink-0">
           <button
             type="button"
+            data-hud-btn
             onClick={(e) => {
               e.stopPropagation();
               toggleHighlightMode();
             }}
-            className={`px-2.5 py-1 rounded-md text-[8.5px] font-bold uppercase tracking-wider border transition-all cursor-pointer flex items-center gap-1 ${
+            className={`hud-btn h-5 px-2 rounded text-[8px] font-bold uppercase tracking-wider border transition-all cursor-pointer flex items-center gap-1 ${
               highlightMode
                 ? "bg-marvel-red/25 border-marvel-red/80 text-[#FF454D] shadow-[0_0_8px_rgba(237,29,36,0.3)]"
                 : "bg-black/50 border-white/20 text-white/80 hover:text-arc-cyan hover:border-arc-cyan/60"
@@ -115,17 +116,18 @@ export function AvengersAudioHud() {
             }
             aria-label="Toggle Highlight Mix Mode"
           >
-            <RiFlashlightFill className="text-[9px] text-[#FF454D]" />
+            <RiFlashlightFill className="text-[10px] text-[#FF454D]" />
             <span>MIX</span>
           </button>
 
           <button
             type="button"
+            data-hud-btn
             onClick={(e) => {
               e.stopPropagation();
               setIsPlaylistOpen((prev) => !prev);
             }}
-            className={`px-2.5 py-1 rounded-md text-[8.5px] font-bold uppercase tracking-wider border transition-all cursor-pointer flex items-center gap-1 ${
+            className={`hud-btn h-5 px-2 rounded text-[8px] font-bold uppercase tracking-wider border transition-all cursor-pointer flex items-center gap-1 ${
               isPlaylistOpen
                 ? "bg-arc-cyan/25 border-arc-cyan text-arc-cyan shadow-[0_0_8px_rgba(0,212,255,0.4)]"
                 : "bg-black/60 border-white/20 text-white/90 hover:text-arc-cyan hover:border-arc-cyan/60"
@@ -133,7 +135,7 @@ export function AvengersAudioHud() {
             title="Browse all songs"
             aria-label="Toggle Playlist"
           >
-            <RiPlayListFill className="text-[9px]" />
+            <RiPlayListFill className="text-[10px]" />
             <span>LIST</span>
           </button>
         </div>
@@ -145,24 +147,26 @@ export function AvengersAudioHud() {
         <div className="flex items-center gap-1 shrink-0">
           <button
             type="button"
+            data-hud-btn
             onClick={(e) => {
               e.stopPropagation();
               prev();
             }}
-            className="w-[22px] h-[32px] sm:w-[24px] sm:h-[34px] rounded-full flex items-center justify-center bg-black/50 border border-white/15 text-white/80 hover:text-arc-cyan hover:border-arc-cyan/50 hover:bg-black/80 active:scale-95 transition-all cursor-pointer focus:outline-none"
+            className="hud-btn w-[20px] h-[26px] sm:w-[22px] sm:h-[28px] rounded-full flex items-center justify-center bg-black/50 border border-white/15 text-white/80 hover:text-arc-cyan hover:border-arc-cyan/50 hover:bg-black/80 active:scale-95 transition-all cursor-pointer focus:outline-none"
             title="Previous Track"
             aria-label="Previous Track"
           >
-            <RiSkipBackFill className="text-[10px]" />
+            <RiSkipBackFill className="text-[11px]" />
           </button>
 
           <button
             type="button"
+            data-hud-btn
             onClick={(e) => {
               e.stopPropagation();
               togglePlay();
             }}
-            className={`w-[26px] h-[38px] sm:w-[28px] sm:h-[40px] rounded-full flex items-center justify-center shrink-0 cursor-pointer focus:outline-none transition-all duration-200 active:scale-95 ${
+            className={`hud-btn w-[24px] h-[32px] sm:w-[26px] sm:h-[34px] rounded-full flex items-center justify-center shrink-0 cursor-pointer focus:outline-none transition-all duration-200 active:scale-95 ${
               isPlaying
                 ? "bg-[#ED1D24] text-white shadow-[0_0_12px_rgba(237,29,36,0.7)] hover:brightness-110"
                 : "bg-black/80 border border-arc-cyan text-arc-cyan shadow-[0_0_10px_rgba(0,212,255,0.4)] hover:border-[#33e1ff]"
@@ -171,23 +175,24 @@ export function AvengersAudioHud() {
             aria-label={isPlaying ? "Pause theme music" : "Play theme music"}
           >
             {isPlaying ? (
-              <RiPauseFill className="text-xs text-white" />
+              <RiPauseFill className="text-[13px] text-white" />
             ) : (
-              <RiPlayFill className="text-xs text-white ml-0.5" />
+              <RiPlayFill className="text-[13px] text-white ml-0.5" />
             )}
           </button>
 
           <button
             type="button"
+            data-hud-btn
             onClick={(e) => {
               e.stopPropagation();
               next();
             }}
-            className="w-[22px] h-[32px] sm:w-[24px] sm:h-[34px] rounded-full flex items-center justify-center bg-black/50 border border-white/15 text-white/80 hover:text-arc-cyan hover:border-arc-cyan/50 hover:bg-black/80 active:scale-95 transition-all cursor-pointer focus:outline-none"
+            className="hud-btn w-[20px] h-[26px] sm:w-[22px] sm:h-[28px] rounded-full flex items-center justify-center bg-black/50 border border-white/15 text-white/80 hover:text-arc-cyan hover:border-arc-cyan/50 hover:bg-black/80 active:scale-95 transition-all cursor-pointer focus:outline-none"
             title="Next Track"
             aria-label="Next Track"
           >
-            <RiSkipForwardFill className="text-[10px]" />
+            <RiSkipForwardFill className="text-[11px]" />
           </button>
         </div>
 
@@ -244,7 +249,7 @@ export function AvengersAudioHud() {
           </div>
 
           {/* Glowing Full-Width HUD Progress Bar */}
-          <div className="w-full h-[2px] bg-black/60 border border-white/10 rounded-full mt-1 overflow-hidden shadow-inner">
+          <div className="w-full h-[2px] bg-black/60 border border-white/10 rounded-full mt-0.5 overflow-hidden shadow-inner">
             <div
               className="h-full bg-gradient-to-r from-arc-cyan via-[#FFD700] to-marvel-red transition-all duration-300 shadow-[0_0_8px_#00D4FF]"
               style={{ width: `${Math.round(progress * 100)}%` }}

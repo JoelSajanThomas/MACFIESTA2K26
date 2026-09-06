@@ -324,7 +324,7 @@ export function HeroSection() {
               initial={{ opacity: 0, scale: 0.92, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               transition={{ duration: 0.9, delay: 0.4, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className="relative w-full max-w-[340px] sm:max-w-[365px] rounded-2xl p-3.5 sm:p-4.5 space-y-2.5 sm:space-y-3 flex flex-col items-center justify-center mx-auto lg:mx-0 overflow-hidden border border-white/20 shadow-[0_16px_40px_rgba(0,0,0,0.55),0_0_24px_rgba(0,212,255,0.18)] border-glow-flow"
+              className="relative w-full max-w-[340px] sm:max-w-[365px] rounded-2xl p-3 sm:p-4 space-y-2 sm:space-y-2.5 flex flex-col items-center justify-center mx-auto lg:mx-0 overflow-hidden border border-white/20 shadow-[0_16px_40px_rgba(0,0,0,0.55),0_0_24px_rgba(0,212,255,0.18)] border-glow-flow"
               style={{
                 backdropFilter: "blur(20px) saturate(180%)",
                 WebkitBackdropFilter: "blur(20px) saturate(180%)",
