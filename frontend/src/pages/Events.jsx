@@ -89,7 +89,7 @@ export default function Events() {
               prizePool: prize,
               venue: apiEvt.venue && apiEvt.venue !== "TBD" ? apiEvt.venue : (local?.venue || "Campus Fest Arena"),
               time: apiEvt.event_time ? `Day 1, ${apiEvt.event_time}` : (local?.time || "10:00 AM onwards"),
-              coverImage: apiEvt.image || local?.coverImage || (isSchool ? "/MARVEL/peakpx.png" : "/MARVEL/4081455907815375.png"),
+              coverImage: apiEvt.image || local?.coverImage || (isSchool ? "/MARVEL/download (6).jpg" : "/MARVEL/4081455907815375.png"),
               hero: local?.hero || (isSchool ? "Superhero Junior" : "Avenger Hero"),
               subtitle: apiEvt.department || local?.subtitle || (isSchool ? "School Championship" : "College Challenge"),
               level: local?.level || (isSchool ? "Level: Junior" : "Level: Alpha"),

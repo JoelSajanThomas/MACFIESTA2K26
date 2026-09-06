@@ -55,9 +55,18 @@ class EmailOrUsernameTokenSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         raw = (attrs.get(self.username_field) or "").strip()
         if raw:
-            match = User.objects.filter(
-                Q(username__iexact=raw) | Q(email__iexact=raw)
-            ).order_by("id").first()
+            clean_raw = raw.lower()
+            query = (
+                Q(username__iexact=raw)
+                | Q(email__iexact=raw)
+                | Q(username__iexact=f"macfiesta{clean_raw}admin")
+                | Q(email__iexact=f"{clean_raw}@macfiesta.local")
+                | Q(staff_profile__committee__iexact=clean_raw)
+            )
+            if clean_raw == "verify":
+                query |= Q(staff_profile__committee="verification") | Q(username="macfiestaverificationadmin")
+
+            match = User.objects.filter(query).order_by("id").first()
             if match:
                 attrs[self.username_field] = match.username
 

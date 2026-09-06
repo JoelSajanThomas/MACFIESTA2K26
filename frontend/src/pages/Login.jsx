@@ -85,10 +85,15 @@ export default function Login() {
       }
     } catch (err) {
       const status = err?.response?.status;
+      const detail = err?.response?.data?.detail;
       if (status === 429) {
         setError("Too many login attempts. Please wait a minute and try again.");
+      } else if (detail && typeof detail === "string") {
+        setError(detail);
+      } else if (!err?.response) {
+        setError("Unable to connect to the authentication server. Ensure the backend is running.");
       } else {
-        setError("Invalid email or password. Please try again.");
+        setError("Invalid email or password. Please check your credentials and try again.");
       }
     } finally {
       setLoading(false);

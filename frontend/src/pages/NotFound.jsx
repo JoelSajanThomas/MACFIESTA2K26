@@ -11,9 +11,20 @@ export default function NotFound() {
 
   return (
     <div className="min-h-[85vh] w-full flex items-center justify-center px-4 py-16 relative overflow-hidden font-space select-none">
+      {/* Background Marvel Image Backdrop */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <img
+          src="/MARVEL/download (6).jpg"
+          alt="Marvel Comic Backdrop"
+          className="w-full h-full object-cover object-center opacity-85 contrast-[1.05] saturate-[1.1] brightness-[0.92]"
+        />
+        {/* Cinematic gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#05050A]/40 via-black/30 to-[#05050A]/85 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_50%,rgba(5,5,10,0.6)_100%)] pointer-events-none" />
+      </div>
       {/* Dynamic Multiverse Ambient Glows */}
-      <div className="absolute top-1/3 left-1/4 w-96 h-96 rounded-full bg-marvel-red/20 blur-[130px] pointer-events-none" />
-      <div className="absolute bottom-1/3 right-1/4 w-96 h-96 rounded-full bg-arc-cyan/20 blur-[130px] pointer-events-none" />
+      <div className="absolute top-1/3 left-1/4 w-96 h-96 rounded-full bg-marvel-red/20 blur-[130px] pointer-events-none z-10" />
+      <div className="absolute bottom-1/3 right-1/4 w-96 h-96 rounded-full bg-arc-cyan/20 blur-[130px] pointer-events-none z-10" />
 
       <motion.div
         initial={{ opacity: 0, scale: 0.92, y: 20 }}

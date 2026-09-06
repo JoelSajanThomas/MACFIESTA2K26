@@ -74,8 +74,8 @@ const fallbackFeatured = [
     prize: "₹15,000",
     venue: "Gotham Campus Perimeter",
     time: "Day 1, 10:00 AM",
-    image: "/MARVEL/3025924746959430.jpg",
-    heroAvatar: "/MARVEL/3025924746959430.jpg",
+    image: "/MARVEL/download (6).jpg",
+    heroAvatar: "/MARVEL/download (6).jpg",
     link: "/events/the-dark-knight-hunt-for-the-signal",
     border: "border-metallic-gold/40 hover:border-metallic-gold",
     glow: "hover:shadow-[0_0_40px_rgba(255,215,0,0.45)]",
@@ -98,8 +98,8 @@ const HERO_DECORATIONS: Record<string, { border: string; glow: string; themeColo
   "avengers-code-assemble": { border: "border-marvel-red/40 hover:border-marvel-red", glow: "hover:shadow-[0_0_40px_rgba(237,29,36,0.45)]", themeColor: "from-marvel-red/30 to-metallic-gold/10", badgeBg: "bg-marvel-red text-white shadow-[0_0_12px_#ED1D24]", accentColor: "#ED1D24", image: "/MARVEL/4081455907815375.png" },
   "battle-of-wakanda": { border: "border-vibranium-purple/40 hover:border-vibranium-purple", glow: "hover:shadow-[0_0_40px_rgba(123,47,190,0.45)]", themeColor: "from-vibranium-purple/30 to-blue-600/10", badgeBg: "bg-vibranium-purple text-white shadow-[0_0_12px_#7B2FBE]", accentColor: "#7B2FBE", image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800&auto=format&fit=crop" },
   "stark-industries-the-pitch": { border: "border-metallic-gold/40 hover:border-metallic-gold", glow: "hover:shadow-[0_0_40px_rgba(255,215,0,0.45)]", themeColor: "from-metallic-gold/30 to-amber-600/10", badgeBg: "bg-metallic-gold text-black shadow-[0_0_12px_#FFD700]", accentColor: "#D4AF37", image: "/MARVEL/300685712645038155.png" },
-  "the-dark-knight-hunt-for-the-signal": { border: "border-metallic-gold/40 hover:border-metallic-gold", glow: "hover:shadow-[0_0_40px_rgba(255,215,0,0.45)]", themeColor: "from-metallic-gold/30 to-black/50", badgeBg: "bg-metallic-gold text-black shadow-[0_0_12px_#FFD700]", accentColor: "#FFD700", image: "/MARVEL/3025924746959430.jpg" },
-  "the-flash-code-rush": { border: "border-metallic-gold/40 hover:border-metallic-gold", glow: "hover:shadow-[0_0_40px_rgba(255,215,0,0.45)]", themeColor: "from-metallic-gold/30 to-marvel-red/10", badgeBg: "bg-metallic-gold text-black shadow-[0_0_12px_#FFD700]", accentColor: "#FFD700", image: "/MARVEL/61080138757668761.png" },
+  "the-dark-knight-hunt-for-the-signal": { border: "border-metallic-gold/40 hover:border-metallic-gold", glow: "hover:shadow-[0_0_40px_rgba(255,215,0,0.45)]", themeColor: "from-metallic-gold/30 to-black/50", badgeBg: "bg-metallic-gold text-black shadow-[0_0_12px_#FFD700]", accentColor: "#FFD700", image: "/MARVEL/download (6).jpg" },
+  "the-flash-code-rush": { border: "border-metallic-gold/40 hover:border-metallic-gold", glow: "hover:shadow-[0_0_40px_rgba(255,215,0,0.45)]", themeColor: "from-metallic-gold/30 to-marvel-red/10", badgeBg: "bg-metallic-gold text-black shadow-[0_0_12px_#FFD700]", accentColor: "#FFD700", image: "/MARVEL/download (6).jpg" },
 };
 
 function TiltCard({ item, idx }: { item: typeof fallbackFeatured[0]; idx: number }) {

@@ -72,13 +72,25 @@ export default function ChangePassword() {
   }
 
   return (
-    <>
-      <PageHeader
-        eyebrow="Security"
-        title="Change Password"
-        subtitle="Update your password before using the coordinator tools."
-        image={PAGE_IMAGES.login}
-      />
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Background Marvel Image Backdrop */}
+      <div className="fixed inset-0 z-0 overflow-hidden pointer-events-none">
+        <img
+          src="/MARVEL/download (6).jpg"
+          alt="Security Marvel Backdrop"
+          className="w-full h-full object-cover object-center opacity-85 contrast-[1.05] saturate-[1.1] brightness-[0.92]"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#05050A]/40 via-black/25 to-[#05050A]/85 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_50%,rgba(5,5,10,0.6)_100%)] pointer-events-none" />
+      </div>
+
+      <div className="relative z-10">
+        <PageHeader
+          eyebrow="Security"
+          title="Change Password"
+          subtitle="Update your password before using the coordinator tools."
+          image={PAGE_IMAGES.login}
+        />
       <section className="section page-content">
         <div className="container narrow">
           <motion.form
@@ -137,6 +149,7 @@ export default function ChangePassword() {
           </motion.form>
         </div>
       </section>
-    </>
+      </div>
+    </div>
   );
 }

@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface BackgroundVideoProps {
-  src: string;
+  src?: string;
   fallbackSrc?: string;
+  fallbackImage?: string;
   opacity?: string;
   className?: string;
   gradientOverlay?: boolean;
@@ -13,11 +14,13 @@ interface BackgroundVideoProps {
 export function BackgroundVideo({
   src = "/MARVEL/Video Project 5.mp4",
   fallbackSrc = "/MARVEL/Video Project 4.mp4",
-  opacity = "opacity-75",
+  fallbackImage = "/MARVEL/download (6).jpg",
+  opacity = "opacity-85",
   className = "",
   gradientOverlay = true,
 }: BackgroundVideoProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [isVideoReady, setIsVideoReady] = useState(false);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -76,7 +79,14 @@ export function BackgroundVideo({
   };
 
   return (
-    <div className={`absolute inset-0 z-0 overflow-hidden pointer-events-none ${opacity} ${className}`}>
+    <div className={`fixed inset-0 z-0 overflow-hidden pointer-events-none ${className}`}>
+      {/* Marvel Comic Image Backdrop (Always active as baseline or fallback) */}
+      <img
+        src={fallbackImage}
+        alt="Marvel Cinematic Backdrop"
+        className={`w-full h-full object-cover object-center absolute inset-0 contrast-[1.05] saturate-[1.1] brightness-[0.92] ${opacity}`}
+      />
+
       <video
         ref={videoRef}
         autoPlay
@@ -86,7 +96,13 @@ export function BackgroundVideo({
         preload="metadata"
         disablePictureInPicture
         disableRemotePlayback
-        className="w-full h-full object-cover object-center"
+        poster={fallbackImage}
+        onLoadedData={() => setIsVideoReady(true)}
+        onPlaying={() => setIsVideoReady(true)}
+        onError={() => setIsVideoReady(false)}
+        className={`w-full h-full object-cover object-center transition-opacity duration-700 ${
+          isVideoReady ? opacity : "opacity-0 pointer-events-none"
+        }`}
         style={{
           transform: "translate3d(0, 0, 0)",
           willChange: "transform",
@@ -101,8 +117,8 @@ export function BackgroundVideo({
 
       {gradientOverlay && (
         <>
-          <div className="absolute inset-0 bg-gradient-to-b from-[#05050A]/40 via-[#05050A]/50 to-[#05050A]/90 pointer-events-none" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_40%,rgba(5,5,10,0.6)_95%)] pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#05050A]/40 via-black/25 to-[#05050A]/85 pointer-events-none" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_45%,rgba(5,5,10,0.7)_100%)] pointer-events-none" />
         </>
       )}
     </div>
