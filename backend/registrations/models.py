@@ -153,6 +153,9 @@ class Registration(models.Model):
         indexes = [
             models.Index(fields=["event", "is_waiting_list"]),
             models.Index(fields=["registration_number"]),
+            models.Index(fields=["user", "cancelled_at"]),
+            models.Index(fields=["-registered_at"]),
+            models.Index(fields=["payment_status", "cancelled_at"]),
         ]
 
     def assign_registration_number(self):
@@ -349,6 +352,13 @@ class TeamMember(models.Model):
     event_attendance_marked = models.BooleanField(default=False)
     event_attended_at = models.DateTimeField(null=True, blank=True)
     qr_pass_code = models.CharField(max_length=64, blank=True, unique=True, null=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=["registration", "role"]),
+            models.Index(fields=["email"]),
+            models.Index(fields=["invitation_status"]),
+        ]
 
     def save(self, *args, **kwargs):
         if not self.qr_pass_code:

@@ -57,8 +57,8 @@ ALLOWED_HOSTS = env_list("ALLOWED_HOSTS")
 if not ALLOWED_HOSTS:
     ALLOWED_HOSTS = ["*"]
 
-# Allow all CORS origins if explicitly set, or if CORS_ALLOW_ALL_ORIGINS=True, or if DEBUG
-CORS_ALLOW_ALL_ORIGINS = env_bool("CORS_ALLOW_ALL_ORIGINS", True)
+# Allow all CORS origins if explicitly set, or if DEBUG
+CORS_ALLOW_ALL_ORIGINS = env_bool("CORS_ALLOW_ALL_ORIGINS", DEBUG)
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS")
 
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS", CORS_ALLOWED_ORIGINS)
@@ -72,6 +72,9 @@ if not CSRF_TRUSTED_ORIGINS:
         "http://127.0.0.1:8000",
         "https://*.onrender.com",
         "https://*.vercel.app",
+        "https://localhost",
+        "capacitor://localhost",
+        "http://localhost",
     ]
 
 # Auto-trust Render external domain if running on Render
@@ -91,6 +94,7 @@ AUTHENTICATION_BACKENDS = [
 
 
 REST_FRAMEWORK = {
+    "EXCEPTION_HANDLER": "config.exceptions.custom_exception_handler",
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.AllowAny",
     ],
@@ -270,6 +274,30 @@ else:
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
             "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
+
+# Multi-worker safe cache configuration
+REDIS_URL = os.environ.get("REDIS_URL")
+if REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": REDIS_URL,
+        }
+    }
+elif not DEBUG:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.db.DatabaseCache",
+            "LOCATION": "macfiesta_cache_table",
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "macfiesta-dev-cache",
         }
     }
 

@@ -12,6 +12,7 @@ from config.auth_views import (
     ThrottledTokenObtainPairView,
     ThrottledTokenRefreshView,
 )
+from config.health import health_check_view
 
 
 def api_root(_request):
@@ -28,6 +29,7 @@ def api_root(_request):
         "<ul>"
         "<li><a href='/admin/'>/admin/</a> — Django Admin</li>"
         "<li><a href='/api/'>/api/</a> — REST API</li>"
+        "<li><a href='/health/'>/health/</a> — System Health Check</li>"
         "</ul>"
         "</body></html>",
         content_type="text/html",
@@ -36,6 +38,8 @@ def api_root(_request):
 
 urlpatterns = [
     path('', api_root),
+    path('health/', health_check_view, name='health_check'),
+    path('api/health/', health_check_view, name='api_health_check'),
     path('admin/', admin.site.urls),
 
     path('api/', include('api_urls')),

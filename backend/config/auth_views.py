@@ -346,19 +346,14 @@ class PasswordResetRequestView(APIView):
         )
 
         from_email = getattr(settings, "DEFAULT_FROM_EMAIL", "macfiesta@macfast.org")
-        try:
-            msg = EmailMultiAlternatives(subject, text_message, from_email, [target_email])
-            msg.attach_alternative(html_message, "text/html")
-            msg.send(fail_silently=False)
-        except Exception as exc:
-            logger.exception("Failed to send password reset OTP to %s (user_id=%s): %s", target_email, user.id, exc)
-            return Response(
-                {
-                    "detail": "Failed to transmit OTP via email. Please check your network or try again in a few moments.",
-                    "error": str(exc),
-                },
-                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            )
+        send_mail_async(
+            subject=subject,
+            message=text_message,
+            recipient_list=[target_email],
+            from_email=from_email,
+            html_message=html_message,
+            context_id=f"pwd_reset_user_{user.id}",
+        )
 
         if settings.DEBUG:
             logger.info("Password OTP generated for user_id=%s (email=%s, otp=%s)", user.id, target_email, otp)

@@ -15,12 +15,13 @@ ALL_MODULES = (
     "announcements",
     "gallery",
     "hospitality",
+    "finance",
 )
 
 # What each committee can open in Admin (and write via API when enforced).
 MODULES_BY_COMMITTEE = {
     "core": list(ALL_MODULES),
-    "finance": ["insights", "registrations", "verification", "reports"],
+    "finance": ["insights", "registrations", "verification", "reports", "finance"],
     "food": ["insights", "registrations", "reports", "announcements", "hospitality"],
     "hospitality": ["insights", "registrations", "verification", "reports", "hospitality"],
 
