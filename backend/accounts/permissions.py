@@ -79,6 +79,13 @@ def user_modules(user):
     return profile.modules
 
 
+MODULE_ALIASES = {
+    "payments": "finance",
+    "payment": "finance",
+}
+
+
 def user_has_module(user, module):
-    return module in user_modules(user)
+    normalized = MODULE_ALIASES.get(module, module)
+    return normalized in user_modules(user)
 

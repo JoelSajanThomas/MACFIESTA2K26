@@ -774,7 +774,7 @@ class AdminRegistrationDetailView(RetrieveUpdateAPIView):
 
 
 @api_view(["POST"])
-@permission_classes([HasModule("payments")])
+@permission_classes([HasModule("finance", "registrations")])
 def admin_verify_member_finance(request, member_id):
     """Finance desk verifies or rejects a single team member's payment."""
     member = TeamMember.objects.filter(pk=member_id).first()

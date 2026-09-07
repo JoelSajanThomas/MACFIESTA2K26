@@ -76,10 +76,13 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https?:\/\/localhost(:\d+)?$",
     r"^https?:\/\/127\.0\.0\.1(:\d+)?$",
     r"^https?:\/\/192\.168\.\d+\.\d+(:\d+)?$",
+    r"^https?:\/\/172\.(1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+(:\d+)?$",
     r"^https?:\/\/10\.\d+\.\d+\.\d+(:\d+)?$",
     r"^https:\/\/.*\.vercel\.app$",
     r"^https:\/\/.*\.onrender\.com$",
 ]
+if DEBUG:
+    CORS_ALLOWED_ORIGIN_REGEXES.append(r"^https?:\/\/.*")
 
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS", CORS_ALLOWED_ORIGINS)
 if not CSRF_TRUSTED_ORIGINS:

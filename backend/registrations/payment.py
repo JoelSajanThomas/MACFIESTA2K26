@@ -19,7 +19,10 @@ def can_manage_payments(user: User | None) -> bool:
     profile = getattr(user, "staff_profile", None)
     if profile is None:
         return False
-    return profile.committee in ("finance", "core")
+    if profile.committee in ("finance", "core"):
+        return True
+    from accounts.permissions import user_has_module
+    return user_has_module(user, "finance")
 
 
 def payment_is_cleared(reg) -> bool:
