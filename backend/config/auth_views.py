@@ -3,6 +3,7 @@ import re
 import secrets
 
 from config.mail_utils import send_mail_async
+from config.registration_status import is_registration_open
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -190,6 +191,15 @@ class SignupView(APIView):
     throttle_classes = [SignupRateThrottle]
 
     def post(self, request):
+        if not is_registration_open():
+            return Response(
+                {
+                    "detail": "Registrations are currently closed. New accounts cannot be created at this time.",
+                    "code": "registration_closed",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         serializer = SignupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()

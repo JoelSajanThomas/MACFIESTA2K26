@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import AdminFormLayout, {
   FormInput,
   FormTextarea,
+  FormCheckbox,
   ImageUploadPreview,
 } from "../../../components/admin/AdminFormLayout";
 import LoadingState from "../../../components/ui/LoadingState";
@@ -40,6 +41,7 @@ const EMPTY = {
   terms_body: "",
   privacy_body: "",
   brochure_url: "",
+  is_registration_open: true,
 };
 
 function SettingsSection({ title, description, children }) {
@@ -101,6 +103,7 @@ export default function AdminSiteSettingsForm() {
             terms_body: s.terms_body || "",
             privacy_body: s.privacy_body || "",
             brochure_url: s.brochure_url || "",
+            is_registration_open: s.is_registration_open !== undefined ? Boolean(s.is_registration_open) : true,
           });
           if (s.hero_image) setHeroPreview(mediaUrl(s.hero_image));
           if (s.about_image) setAboutPreview(mediaUrl(s.about_image));
@@ -113,8 +116,11 @@ export default function AdminSiteSettingsForm() {
   }, []);
 
   function handleChange(e) {
-    const { name, value } = e.target;
-    setForm((p) => ({ ...p, [name]: name === "fest_year" ? Number(value) : value }));
+    const { name, value, type, checked } = e.target;
+    setForm((p) => ({
+      ...p,
+      [name]: type === "checkbox" ? checked : name === "fest_year" ? Number(value) : value,
+    }));
     if (error) setError("");
     if (success) setSuccess("");
   }
@@ -192,10 +198,16 @@ export default function AdminSiteSettingsForm() {
           />
         </SettingsSection>
 
-        <SettingsSection title="Venue & dates" description="When and where the fest takes place.">
+        <SettingsSection title="Venue & dates" description="When and where the fest takes place, and registration availability.">
           <FormInput label="Fest date" name="fest_date" type="date" value={form.fest_date} onChange={handleChange} />
           <FormInput label="Venue" name="venue" value={form.venue} onChange={handleChange} />
           <FormInput label="Location" name="location" value={form.location} onChange={handleChange} />
+          <FormCheckbox
+            label="Registration open (allow new account creation & event registration)"
+            name="is_registration_open"
+            checked={Boolean(form.is_registration_open)}
+            onChange={handleChange}
+          />
         </SettingsSection>
 
         <SettingsSection title="Contact & social" description="Public contact channels and social links.">

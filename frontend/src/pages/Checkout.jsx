@@ -515,9 +515,15 @@ export default function Checkout() {
       setError(phoneErr);
       return;
     }
-    if (!isQuickConfirm && !accForm.txn.trim() && !accForm.proof) {
-      setError("Please enter your UPI Transaction Reference / UTR or upload payment proof.");
-      return;
+    if (!isQuickConfirm && accTotalAmount > 0) {
+      if (!accForm.txn.trim()) {
+        setError("Please enter your UPI Transaction Reference / UTR ID.");
+        return;
+      }
+      if (!accForm.proof) {
+        setError("Payment proof screenshot is compulsory. Please attach your payment receipt / screenshot.");
+        return;
+      }
     }
 
     setAccSubmitting(true);
@@ -847,6 +853,10 @@ export default function Checkout() {
     }
     if (!paymentForm.txn.trim()) {
       setError("UPI Transaction Reference / UTR ID is required.");
+      return;
+    }
+    if (!paymentForm.proof) {
+      setError("Payment proof screenshot is compulsory. Please attach your payment receipt / screenshot.");
       return;
     }
 
@@ -1726,17 +1736,28 @@ export default function Checkout() {
                   </div>
 
                   <div>
-                    <label className="block text-[10px] font-bold uppercase text-white/60 mb-1.5">
-                      Upload Payment Screenshot / Receipt (Optional if UTR provided)
-                    </label>
-                    <label className="flex flex-col items-center justify-center p-4 border border-dashed border-white/20 hover:border-arc-cyan rounded-xl bg-white/[0.02] hover:bg-white/[0.05] cursor-pointer transition-all">
-                      <RiUploadCloud2Line className="text-2xl text-arc-cyan mb-1" />
-                      <span className="text-white/70 text-[11px]">
-                        {accForm.proof ? accForm.proof.name : "Click to browse payment screenshot"}
+                    <label className="block text-[10px] font-bold uppercase text-white mb-1.5 flex items-center justify-between">
+                      <span>
+                        Upload Payment Screenshot / Receipt <span className="text-red-400 font-bold">* (Compulsory)</span>
                       </span>
+                      {accForm.proof && (
+                        <span className="text-emerald-400 font-mono text-[10px]">Proof attached</span>
+                      )}
+                    </label>
+                    <label className={`flex flex-col items-center justify-center p-4 border border-dashed rounded-xl cursor-pointer transition-all ${
+                      accForm.proof
+                        ? "border-emerald-500/60 bg-emerald-500/10"
+                        : "border-white/20 hover:border-arc-cyan bg-white/[0.02] hover:bg-white/[0.05]"
+                    }`}>
+                      <RiUploadCloud2Line className={`text-2xl mb-1 ${accForm.proof ? "text-emerald-400" : "text-arc-cyan"}`} />
+                      <span className="text-white/70 text-[11px] text-center font-mono">
+                        {accForm.proof ? `✓ ${accForm.proof.name}` : "Click to browse payment screenshot *"}
+                      </span>
+                      <span className="text-[10px] text-white/40 mt-0.5">PNG, JPG, JPEG accepted</span>
                       <input
                         type="file"
                         accept="image/*"
+                        required
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) {
@@ -1747,6 +1768,11 @@ export default function Checkout() {
                         className="hidden"
                       />
                     </label>
+                    {!accForm.proof && (
+                      <p className="mt-1 text-[10px] text-amber-400/90 font-mono">
+                        * Uploading proof is compulsory to verify payment and allocate room.
+                      </p>
+                    )}
 
                     {accProofPreview && (
                       <div className="mt-2 text-center">
@@ -2811,23 +2837,38 @@ export default function Checkout() {
                       />
                     </div>
 
-                    <div className="space-y-1">
-                      <label className="text-xs font-bold text-white uppercase">
-                        Payment Screenshot Proof (Optional)
+                    <div className="space-y-1.5">
+                      <label className="text-xs font-bold text-white uppercase flex items-center justify-between">
+                        <span>
+                          Payment Screenshot Proof <span className="text-red-400 font-bold">* (Compulsory)</span>
+                        </span>
+                        {paymentForm.proof && (
+                          <span className="text-emerald-400 font-mono text-[10px]">Proof attached</span>
+                        )}
                       </label>
                       <input
                         type="file"
                         accept="image/*"
+                        required
                         onChange={(e) => setPaymentForm({ ...paymentForm, proof: e.target.files[0] })}
-                        className="w-full text-xs text-white/60 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-white/10 file:text-white hover:file:bg-white/20"
+                        className="w-full text-xs text-white/60 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-metallic-gold/20 file:text-metallic-gold hover:file:bg-metallic-gold hover:file:text-black cursor-pointer"
                       />
+                      {paymentForm.proof ? (
+                        <p className="text-[10px] text-emerald-400 font-mono">
+                          ✓ Attached: {paymentForm.proof.name}
+                        </p>
+                      ) : (
+                        <p className="text-[10px] text-amber-400/90 font-mono">
+                          * Uploading proof screenshot is compulsory to verify credentials and lock registrations.
+                        </p>
+                      )}
                     </div>
 
                     <div className="pt-2 space-y-2">
                       <button
                         type="submit"
-                        disabled={submitting}
-                        className="w-full py-3 bg-metallic-gold hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg font-excon-black cursor-pointer disabled:opacity-50 text-center block"
+                        disabled={submitting || !paymentForm.txn.trim() || !paymentForm.proof}
+                        className="w-full py-3 bg-metallic-gold hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg font-excon-black cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-center block"
                       >
                         {submitting ? "Submitting Payment..." : "Submit Payment & Lock All Registrations"}
                       </button>

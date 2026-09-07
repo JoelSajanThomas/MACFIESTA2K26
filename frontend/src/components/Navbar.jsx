@@ -31,6 +31,7 @@ import { getCurrentUser, isLoggedIn } from "../services/api";
 import { AUTH_CHANGE_EVENT, logout, isUnauthorized } from "../utils/auth";
 import { BRAND } from "../utils/brand";
 import { getCartItems, clearCart } from "../utils/eventCart";
+import { useFestivalControl } from "../lib/festivalStore";
 
 const mainNavItems = [
   { href: "/", label: "MISSION CONTROL" },
@@ -71,6 +72,8 @@ export default function Navbar() {
   const [user, setUser] = useState(null);
   const [cartCount, setCartCount] = useState(() => getCartItems().length);
   const isAuth = Boolean(user || isLoggedIn());
+  const { settings } = useFestivalControl();
+  const registrationOpen = settings?.registrationOpen ?? true;
 
   const dropdownRef = useRef(null);
   const location = useLocation();
@@ -292,13 +295,23 @@ export default function Navbar() {
               </Link>
             )}
             {!isAuth ? (
-              <Link
-                to="/register"
-                className="px-3 py-1 text-[10px] font-black text-black bg-gradient-to-r from-metallic-gold to-[#f59e0b] rounded-full tracking-wider uppercase shadow-[0_0_12px_rgba(212,175,55,0.4)] flex items-center gap-1"
-              >
-                <RiTicketLine className="text-xs" />
-                <span>Pass</span>
-              </Link>
+              registrationOpen ? (
+                <Link
+                  to="/register"
+                  className="px-3 py-1 text-[10px] font-black text-black bg-gradient-to-r from-metallic-gold to-[#f59e0b] rounded-full tracking-wider uppercase shadow-[0_0_12px_rgba(212,175,55,0.4)] flex items-center gap-1"
+                >
+                  <RiTicketLine className="text-xs" />
+                  <span>Pass</span>
+                </Link>
+              ) : (
+                <Link
+                  to="/login"
+                  className="px-3 py-1 text-[10px] font-black text-black bg-metallic-gold rounded-full tracking-wider uppercase shadow-[0_0_12px_rgba(212,175,55,0.4)] flex items-center gap-1"
+                >
+                  <RiUserLine className="text-xs" />
+                  <span>Login</span>
+                </Link>
+              )
             ) : (
               <Link
                 to={user?.is_staff || user?.is_superuser ? "/admin" : "/student-dashboard"}
@@ -415,23 +428,29 @@ export default function Navbar() {
                   <p className="text-[10.5px] text-white/70 leading-tight">
                     Earth&apos;s premier collegiate fest at MACFAST. Join the battle!
                   </p>
-                  <div className="grid grid-cols-2 gap-2 pt-1">
+                  <div className={`grid ${registrationOpen ? "grid-cols-2" : "grid-cols-1"} gap-2 pt-1`}>
                     <Link
                       to="/login"
                       onClick={closeMobile}
-                      className="flex items-center justify-center gap-1 py-1.5 px-2.5 text-[10.5px] font-bold bg-white/5 border border-white/20 text-white rounded-lg tracking-wider uppercase hover:border-white transition-all"
+                      className={`flex items-center justify-center gap-1 py-1.5 px-2.5 text-[10.5px] tracking-wider uppercase transition-all rounded-lg ${
+                        !registrationOpen
+                          ? "bg-metallic-gold text-black font-black shadow-[0_0_14px_rgba(212,175,55,0.4)]"
+                          : "font-bold bg-white/5 border border-white/20 text-white hover:border-white"
+                      }`}
                     >
                       <RiUserLine className="text-xs" />
-                      <span>Login</span>
+                      <span>{registrationOpen ? "Login" : "Agent Login"}</span>
                     </Link>
-                    <Link
-                      to="/register"
-                      onClick={closeMobile}
-                      className="flex items-center justify-center gap-1 py-1.5 px-2.5 text-[10.5px] font-black bg-gradient-to-r from-metallic-gold to-[#f59e0b] text-black rounded-lg tracking-wider uppercase shadow-[0_0_14px_rgba(212,175,55,0.4)]"
-                    >
-                      <RiShieldFlashLine className="text-xs" />
-                      <span>Get Pass</span>
-                    </Link>
+                    {registrationOpen && (
+                      <Link
+                        to="/register"
+                        onClick={closeMobile}
+                        className="flex items-center justify-center gap-1 py-1.5 px-2.5 text-[10.5px] font-black bg-gradient-to-r from-metallic-gold to-[#f59e0b] text-black rounded-lg tracking-wider uppercase shadow-[0_0_14px_rgba(212,175,55,0.4)]"
+                      >
+                        <RiShieldFlashLine className="text-xs" />
+                        <span>Get Pass</span>
+                      </Link>
+                    )}
                   </div>
                 </div>
               )}

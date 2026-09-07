@@ -9,6 +9,7 @@ from registrations.models import Registration
 from results.models import Result
 from gallery.models import GalleryImage
 from accounts.drf import HasModule
+from config.registration_status import is_registration_open
 
 
 @api_view(["GET"])
@@ -64,6 +65,7 @@ def public_fest_config(request):
                 "facebook": settings.FACEBOOK_URL,
             },
             "qr_image_api_url": settings.QR_IMAGE_API_URL,
+            "registration_open": is_registration_open(),
         }
     )
 

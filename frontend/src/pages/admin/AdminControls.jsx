@@ -15,7 +15,8 @@ import {
 import { useFestivalControl } from "../../lib/festivalStore";
 import { useAdminStaff } from "../../components/admin/AdminStaffContext";
 import PurgeDataModal from "../../components/admin/PurgeDataModal";
-import { downloadSystemBackup } from "../../services/api";
+import { downloadSystemBackup, getSiteSettings, updateSiteSettings, createSiteSettings } from "../../services/api";
+import { invalidateSiteSettingsCache } from "../../hooks/useSiteSettings";
 
 export default function AdminControls() {
   const staff = useAdminStaff();
@@ -129,9 +130,20 @@ export default function AdminControls() {
             </div>
             <button
               type="button"
-              onClick={() => {
+              onClick={async () => {
                 const next = !settings.registrationOpen;
                 updateSettings({ registrationOpen: next });
+                try {
+                  const res = await getSiteSettings();
+                  if (res?.data && res.data.length > 0) {
+                    await updateSiteSettings(res.data[0].id, { is_registration_open: next });
+                  } else {
+                    await createSiteSettings({ is_registration_open: next });
+                  }
+                  invalidateSiteSettingsCache();
+                } catch (e) {
+                  console.warn("Could not sync registrationOpen to backend SiteSettings:", e);
+                }
                 flash(next ? "✓ Registrations are now OPEN site-wide!" : "⚠️ Registrations are now CLOSED site-wide!");
               }}
               className={`relative w-16 h-8 rounded-full transition-all duration-300 cursor-pointer border-2 shadow-lg flex-shrink-0 ${

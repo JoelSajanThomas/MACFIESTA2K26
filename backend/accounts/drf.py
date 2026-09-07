@@ -22,8 +22,8 @@ class IsAdminOrReadOnly(BasePermission):
         return user_has_module(user, module)
 
 
-def HasModule(module_name):
-    """Factory: permission_classes = [HasModule("registrations")]"""
+def HasModule(*module_names):
+    """Factory: permission_classes = [HasModule("registrations")] or [HasModule("finance", "registrations")]"""
 
     class _HasModule(BasePermission):
         def has_permission(self, request, view=None):
@@ -32,10 +32,15 @@ def HasModule(module_name):
                 return False
             if not (user.is_staff or user.is_superuser):
                 return False
-            return user_has_module(user, module_name)
+            if user.is_superuser:
+                return True
+            return any(user_has_module(user, m) for m in module_names)
 
-    _HasModule.__name__ = f"HasModule_{module_name}"
+    _HasModule.__name__ = f"HasModule_{'_'.join(module_names)}"
     return _HasModule
+
+
+HasAnyModule = HasModule
 
 
 class HasStaffModule(BasePermission):
@@ -47,6 +52,8 @@ class HasStaffModule(BasePermission):
             return False
         if not (user.is_staff or user.is_superuser):
             return False
+        if user.is_superuser:
+            return True
         module = getattr(view, "required_module", None)
         if not module:
             return True
@@ -58,6 +65,7 @@ __all__ = [
     "IsAdminOrReadOnly",
     "HasStaffModule",
     "HasModule",
+    "HasAnyModule",
     "IsAdminUser",
     "user_has_module",
     "user_modules",

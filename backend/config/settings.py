@@ -60,6 +60,29 @@ if not ALLOWED_HOSTS:
 # Allow all CORS origins if explicitly set, or if DEBUG
 CORS_ALLOW_ALL_ORIGINS = env_bool("CORS_ALLOW_ALL_ORIGINS", DEBUG)
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS")
+CORS_ALLOW_CREDENTIALS = True
+
+from corsheaders.defaults import default_headers
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "x-admin-password",
+    "x-csrftoken",
+    "x-requested-with",
+    "cache-control",
+    "pragma",
+]
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https?:\/\/localhost(:\d+)?$",
+    r"^https?:\/\/127\.0\.0\.1(:\d+)?$",
+    r"^https?:\/\/192\.168\.\d+\.\d+(:\d+)?$",
+    r"^https?:\/\/172\.(1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+(:\d+)?$",
+    r"^https?:\/\/10\.\d+\.\d+\.\d+(:\d+)?$",
+    r"^https:\/\/.*\.vercel\.app$",
+    r"^https:\/\/.*\.onrender\.com$",
+]
+if DEBUG:
+    CORS_ALLOWED_ORIGIN_REGEXES.append(r"^https?:\/\/.*")
 
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS", CORS_ALLOWED_ORIGINS)
 if not CSRF_TRUSTED_ORIGINS:
@@ -99,6 +122,7 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.AllowAny",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        "config.authentication.QueryParamJWTAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_THROTTLE_CLASSES": [
@@ -173,6 +197,7 @@ DESK_PASSWORD_TEMPLATE = os.environ.get("DESK_PASSWORD_TEMPLATE", "")
 # QR / pass HMAC salt (uses Django SECRET_KEY under the hood; salt should be unique per deploy)
 REGISTRATION_SIGNER_SALT = os.environ.get("REGISTRATION_SIGNER_SALT", "macfiesta.registration.pass")
 REGISTRATION_PASS_MAX_AGE_DAYS = int(os.environ.get("REGISTRATION_PASS_MAX_AGE_DAYS", "60"))
+REGISTRATION_OPEN = os.environ.get("REGISTRATION_OPEN", "true").lower() in ("true", "1", "yes")
 
 # Public contact fallbacks (CMS site-settings can override on the site)
 CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "macfiesta@macfast.org")

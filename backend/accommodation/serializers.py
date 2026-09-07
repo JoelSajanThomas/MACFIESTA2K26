@@ -107,6 +107,31 @@ class AccommodationBookingSerializer(serializers.ModelSerializer):
                 validate_phone_number(phone)
             except Exception as e:
                 raise serializers.ValidationError({"phone": str(e)})
+
+        # Enforce payment proof if payment is required and not free or auto-confirmed
+        payment_amount = attrs.get("payment_amount")
+        if payment_amount is None and self.instance:
+            payment_amount = self.instance.payment_amount
+        payment_status = attrs.get("payment_status")
+        if payment_status is None and self.instance:
+            payment_status = self.instance.payment_status
+
+        if payment_amount and float(payment_amount) > 0 and payment_status not in ("free", "confirmed"):
+            proof = attrs.get("payment_proof")
+            existing_proof = self.instance.payment_proof if self.instance else None
+            if not proof and not existing_proof:
+                raise serializers.ValidationError({
+                    "payment_proof": "Payment proof screenshot is compulsory. Please upload your payment receipt / screenshot."
+                })
+            if proof:
+                from django.core.exceptions import ValidationError as DjangoValidationError
+                from config.validators import validate_uploaded_image
+                try:
+                    validate_uploaded_image(proof)
+                except DjangoValidationError as exc:
+                    msg = exc.messages[0] if getattr(exc, "messages", None) else "Invalid image file."
+                    raise serializers.ValidationError({"payment_proof": msg}) from exc
+
         return super().validate(attrs)
 
     def create(self, validated_data):

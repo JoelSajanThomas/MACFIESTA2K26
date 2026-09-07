@@ -3,6 +3,7 @@ import { Link, useParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import html2canvas from "html2canvas";
 import { jsPDF } from "jspdf";
+import QRCode from "qrcode";
 import {
   RiShieldFlashLine,
   RiPrinterLine,
@@ -27,7 +28,9 @@ export function ParticipantPass() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
   const [downloading, setDownloading] = useState(false);
+  const [downloadType, setDownloadType] = useState("");
   const [qrBase64, setQrBase64] = useState("");
+  const [bgBase64, setBgBase64] = useState("");
   const ticketRef = useRef(null);
 
   usePageSeo({
@@ -61,19 +64,39 @@ export function ParticipantPass() {
   }, [id]);
 
   useEffect(() => {
-    if (!data) return;
-    const qrPayload = data.registration_number || data.pass_token || "";
-    const rawQr = registrationQrImageUrl(qrPayload, 300);
-    // Convert QR to Base64 so html2canvas never encounters CORS canvas tainting
-    fetch(rawQr)
+    // Preload ticket background image as Base64 to ensure instant, zero-CORS canvas generation
+    fetch("/pass-ticket-bg.jpg")
       .then((res) => res.blob())
       .then((blob) => {
         const reader = new FileReader();
-        reader.onloadend = () => setQrBase64(reader.result);
+        reader.onloadend = () => setBgBase64(reader.result);
         reader.readAsDataURL(blob);
       })
-      .catch(() => {
-        setQrBase64(rawQr);
+      .catch((err) => {
+        console.warn("Could not preload background image as Base64:", err);
+      });
+  }, []);
+
+  useEffect(() => {
+    if (!data) return;
+    const qrPayload = data.registration_number || data.pass_token || "";
+    if (!qrPayload) return;
+
+    // Generate local Base64 QR code - 100% offline, guaranteed zero CORS/canvas tainting
+    QRCode.toDataURL(qrPayload, {
+      width: 360,
+      margin: 1,
+      color: {
+        dark: "#0A0D1A",
+        light: "#FFFFFF",
+      },
+    })
+      .then((url) => {
+        setQrBase64(url);
+      })
+      .catch((err) => {
+        console.warn("Local QR generation error, using fallback:", err);
+        setQrBase64(registrationQrImageUrl(qrPayload, 300));
       });
   }, [data]);
 
@@ -125,6 +148,14 @@ export function ParticipantPass() {
   async function generateCanvas() {
     if (!ticketRef.current) return null;
 
+    if (document.fonts?.ready) {
+      try {
+        await document.fonts.ready;
+      } catch {
+        // ignore font ready errors
+      }
+    }
+
     // Temporarily hide any bot or non-ticket floating widgets if any exist in DOM
     const floatingElements = document.querySelectorAll(
       ".jarvis-assistant, [data-jarvis-bot], [data-html2canvas-ignore], .print-hide"
@@ -135,11 +166,12 @@ export function ParticipantPass() {
 
     try {
       return await html2canvas(ticketRef.current, {
-        scale: 2.5,
+        scale: 3,
         useCORS: true,
-        allowTaint: true,
+        allowTaint: false,
         backgroundColor: null,
         logging: false,
+        imageTimeout: 8000,
         ignoreElements: (el) =>
           el.hasAttribute?.("data-html2canvas-ignore") ||
           el.classList?.contains("jarvis-assistant") ||
@@ -155,44 +187,78 @@ export function ParticipantPass() {
   async function downloadTicketImage() {
     if (downloading) return;
     setDownloading(true);
+    setDownloadType("png");
     try {
       const canvas = await generateCanvas();
-      if (!canvas) return;
+      if (!canvas) throw new Error("Could not create ticket canvas.");
+
+      const filename = `macfiesta-pass-${data.registration_number || "entry"}.png`;
+      const dataUrl = canvas.toDataURL("image/png");
+
       const link = document.createElement("a");
-      link.download = `macfiesta-pass-${data.registration_number || "entry"}.png`;
-      link.href = canvas.toDataURL("image/png");
+      link.download = filename;
+      link.href = dataUrl;
+      document.body.appendChild(link);
       link.click();
+      setTimeout(() => {
+        if (link.parentNode) link.parentNode.removeChild(link);
+      }, 200);
     } catch (err) {
       console.error("Could not download ticket image:", err);
-      window.print();
+      alert("Could not generate ticket image. Please try again.");
     } finally {
       setDownloading(false);
+      setDownloadType("");
     }
   }
 
   async function downloadTicketPdf() {
     if (downloading) return;
     setDownloading(true);
+    setDownloadType("pdf");
     try {
       const canvas = await generateCanvas();
-      if (!canvas) return;
+      if (!canvas) throw new Error("Could not create ticket canvas.");
+
       const imgData = canvas.toDataURL("image/png");
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
         format: "a4",
       });
-      const pdfWidth = 175;
-      const pdfHeight = (1024 / 727) * pdfWidth;
-      const x = (210 - pdfWidth) / 2;
-      const y = (297 - pdfHeight) / 2;
-      pdf.addImage(imgData, "PNG", x, y, pdfWidth, pdfHeight, undefined, "FAST");
+
+      // Standard A4 dimensions: 210mm x 297mm
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const margin = 10; // 10mm margins ensures fit on a single page
+      const maxContentWidth = pageWidth - (margin * 2); // 190mm
+      const maxContentHeight = pageHeight - (margin * 2); // 277mm
+
+      const imgWidthPx = canvas.width;
+      const imgHeightPx = canvas.height;
+      const aspectRatio = imgHeightPx / imgWidthPx;
+
+      let renderWidth = maxContentWidth;
+      let renderHeight = renderWidth * aspectRatio;
+
+      // Fit strictly within single A4 page bounds
+      if (renderHeight > maxContentHeight) {
+        renderHeight = maxContentHeight;
+        renderWidth = renderHeight / aspectRatio;
+      }
+
+      // Center horizontally and vertically on the single page
+      const posX = (pageWidth - renderWidth) / 2;
+      const posY = (pageHeight - renderHeight) / 2;
+
+      pdf.addImage(imgData, "PNG", posX, posY, renderWidth, renderHeight, undefined, "FAST");
       pdf.save(`macfiesta-pass-${data.registration_number || "entry"}.pdf`);
     } catch (err) {
       console.error("Could not download ticket PDF:", err);
-      window.print();
+      alert("Could not generate ticket PDF. Please try again.");
     } finally {
       setDownloading(false);
+      setDownloadType("");
     }
   }
 
@@ -308,17 +374,24 @@ export function ParticipantPass() {
           <div
             ref={ticketRef}
             id="official-pass-ticket"
-            className="relative w-full max-w-[500px] aspect-[727/1024] rounded-3xl shadow-[0_25px_80px_rgba(0,0,0,0.9),0_0_50px_rgba(230,57,70,0.25),0_0_80px_rgba(212,175,55,0.2)] border-2 border-metallic-gold/50 hover:border-metallic-gold/80 transition-all duration-300 overflow-hidden select-none"
+            className="relative w-full max-w-[500px] aspect-[727/1024] rounded-3xl shadow-[0_25px_80px_rgba(0,0,0,0.9),0_0_50px_rgba(230,57,70,0.25),0_0_80px_rgba(212,175,55,0.2)] border-2 border-metallic-gold/50 hover:border-metallic-gold/80 transition-all duration-300 overflow-hidden select-none bg-black"
             style={{
-              backgroundImage: "url('/pass-ticket-bg.jpg')",
+              backgroundImage: `url('${bgBase64 || "/pass-ticket-bg.jpg"}')`,
               backgroundSize: "100% 100%",
               backgroundPosition: "center",
               backgroundRepeat: "no-repeat",
             }}
           >
+            {/* Direct underlying image so canvas rasterization has full asset support */}
+            <img
+              src={bgBase64 || "/pass-ticket-bg.jpg"}
+              alt="Pass Background"
+              crossOrigin="anonymous"
+              className="absolute inset-0 w-full h-full object-fill pointer-events-none select-none z-0"
+            />
             {/* Middle Container for Pass Details: Completely transparent directly on the poster parchment */}
             <div
-              className="absolute flex flex-col items-center justify-between text-center box-border"
+              className="absolute flex flex-col items-center justify-between text-center box-border z-10"
               style={{
                 top: "19%",
                 bottom: "22%",
@@ -422,7 +495,7 @@ export function ParticipantPass() {
               className="flex-1 py-3.5 px-4 bg-gradient-to-r from-[#d4af37] via-[#ffd700] to-[#f59e0b] hover:brightness-110 text-[#0A0D1A] font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_30px_rgba(212,175,55,0.45)] hover:shadow-[0_0_40px_rgba(212,175,55,0.7)] font-excon-black cursor-pointer inline-flex items-center justify-center gap-2 hover:scale-[1.02] active:scale-[0.98]"
             >
               <RiDownload2Line className="text-base text-[#0A0D1A]" />
-              <span>{downloading ? "Generating…" : "Download Pass (PNG)"}</span>
+              <span>{downloading && downloadType === "png" ? "Generating PNG…" : "Download Pass (PNG)"}</span>
             </button>
             <button
               type="button"
@@ -431,7 +504,7 @@ export function ParticipantPass() {
               className="flex-1 py-3.5 px-4 bg-[#0A0D1A]/90 hover:bg-[#0A0D1A] text-white font-bold text-xs uppercase tracking-widest rounded-2xl transition-all border border-metallic-gold/50 hover:border-metallic-gold font-excon-bold inline-flex items-center justify-center gap-2 cursor-pointer shadow-[0_0_20px_rgba(212,175,55,0.15)] hover:scale-[1.02] active:scale-[0.98]"
             >
               <RiFilePdfLine className="text-base text-metallic-gold" />
-              <span>Download PDF</span>
+              <span>{downloading && downloadType === "pdf" ? "Generating PDF…" : "Download PDF"}</span>
             </button>
             <button
               type="button"
