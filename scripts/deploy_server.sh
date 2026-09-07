@@ -88,8 +88,8 @@ SECURE_SSL_REDIRECT=False
 # Fest payments & fees
 PAYMENT_ACCOUNT_NAME=MANAGER MAR ATHANASIOS COLLEGE FOR ADVANCED STUDIES TIRUVALLA
 PAYMENT_UPI_ID=macfast12230qr@fbl
-HOSTEL_PAYMENT_ACCOUNT_NAME=ST ALPHONSA HOSTEL
-HOSTEL_PAYMENT_UPI_ID=stalphonsahostel@iob
+HOSTEL_PAYMENT_ACCOUNT_NAME=MACFAST HOSTELS
+HOSTEL_PAYMENT_UPI_ID=macfast12230qr@fbl
 FOOD_PACKAGE_FEE=170.00
 ACCOMMODATION_FEE_PER_PERSON=350.00
 TRANSPORT_ASSIST_FEE=100.00
@@ -105,6 +105,7 @@ python manage.py collectstatic --noinput
 
 echo "Syncing all 23 official school & college events in database..."
 python manage.py sync_macfiesta_2026_events || true
+python manage.py seed_hostels || true
 
 # 6. Frontend Build
 echo "[6/8] Building frontend production bundle..."

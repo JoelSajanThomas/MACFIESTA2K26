@@ -80,6 +80,7 @@ CORS_ALLOWED_ORIGIN_REGEXES = [
     r"^https?:\/\/10\.\d+\.\d+\.\d+(:\d+)?$",
     r"^https:\/\/.*\.vercel\.app$",
     r"^https:\/\/.*\.onrender\.com$",
+    r"^https:\/\/.*\.github\.io$",
 ]
 if DEBUG:
     CORS_ALLOWED_ORIGIN_REGEXES.append(r"^https?:\/\/.*")
@@ -96,6 +97,7 @@ if not CSRF_TRUSTED_ORIGINS:
         "https://*.onrender.com",
         "https://*.vercel.app",
         "https://macfiesta.vercel.app",
+        "https://joelzacharia.github.io",
         "https://macfiesta-pro-api.onrender.com",
         "https://localhost",
         "capacitor://localhost",
