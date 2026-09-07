@@ -13,6 +13,7 @@ import { notifyAuthChange } from "../utils/auth";
 import { defaultAdminPath, volunteerHomePath } from "../utils/committeeAccess";
 import { BackgroundVideo } from "../components/ui/BackgroundVideo";
 import { usePageSeo } from "../hooks/usePageSeo";
+import { useFestivalControl } from "../lib/festivalStore";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -29,6 +30,9 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const { settings } = useFestivalControl();
+  const registrationOpen = settings?.registrationOpen ?? true;
 
   usePageSeo({
     title: "Agent Sign In · MacFiesta 2026",
@@ -223,14 +227,20 @@ export default function Login() {
             </button>
           </form>
 
-          {/* Switch to Register */}
-          <div className="text-center pt-2 border-t border-white/10 space-y-1">
-            <p className="text-xs text-white/60 font-excon">
-              Need a new Agent clearance?{" "}
-              <Link to={registerHref} className="text-arc-cyan hover:text-white font-bold font-excon-bold">
-                Create Account
-              </Link>
-            </p>
+          {/* Switch to Register or Closed Notice */}
+          <div className="text-center pt-2 border-t border-white/10 space-y-2">
+            {registrationOpen ? (
+              <p className="text-xs text-white/60 font-excon">
+                Need a new Agent clearance?{" "}
+                <Link to={registerHref} className="text-arc-cyan hover:text-white font-bold font-excon-bold">
+                  Create Account
+                </Link>
+              </p>
+            ) : (
+              <div className="p-2.5 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 text-[11px] font-excon text-center leading-snug">
+                New account registrations are closed. Registered agents can sign in above.
+              </div>
+            )}
             <p className="text-[11px] text-white/40 font-excon">
               <Link to="/forgot-password" className="hover:text-white transition-colors">
                 Forgot password?

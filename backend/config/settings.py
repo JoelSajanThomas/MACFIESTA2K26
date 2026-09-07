@@ -173,6 +173,7 @@ DESK_PASSWORD_TEMPLATE = os.environ.get("DESK_PASSWORD_TEMPLATE", "")
 # QR / pass HMAC salt (uses Django SECRET_KEY under the hood; salt should be unique per deploy)
 REGISTRATION_SIGNER_SALT = os.environ.get("REGISTRATION_SIGNER_SALT", "macfiesta.registration.pass")
 REGISTRATION_PASS_MAX_AGE_DAYS = int(os.environ.get("REGISTRATION_PASS_MAX_AGE_DAYS", "60"))
+REGISTRATION_OPEN = os.environ.get("REGISTRATION_OPEN", "true").lower() in ("true", "1", "yes")
 
 # Public contact fallbacks (CMS site-settings can override on the site)
 CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "macfiesta@macfast.org")

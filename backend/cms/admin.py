@@ -16,7 +16,8 @@ from .models import (
 
 @admin.register(SiteSetting)
 class SiteSettingAdmin(admin.ModelAdmin):
-    list_display = ("fest_name", "fest_year", "updated_at")
+    list_display = ("fest_name", "fest_year", "is_registration_open", "updated_at")
+    list_editable = ("is_registration_open",)
 
 
 @admin.register(FestivalHighlight)

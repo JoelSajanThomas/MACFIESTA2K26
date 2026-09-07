@@ -49,10 +49,12 @@ export function resolveSiteSettings(apiList = []) {
       logo_image_url: BRAND.logo.mark,
       terms_body: "",
       privacy_body: "",
+      is_registration_open: true,
     };
   }
   return {
     ...s,
+    is_registration_open: s.is_registration_open !== undefined ? Boolean(s.is_registration_open) : true,
     hero_image_url: mediaUrl(s.hero_image) || heroImage,
     about_image_url: mediaUrl(s.about_image) || BRAND.logo.src,
     logo_image_url: mediaUrl(s.logo_image) || BRAND.logo.mark,
