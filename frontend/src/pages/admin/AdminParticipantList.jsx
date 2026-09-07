@@ -22,7 +22,7 @@ import LoadingState from "../../components/ui/LoadingState";
 import ErrorState from "../../components/ui/ErrorState";
 import EmptyState from "../../components/ui/EmptyState";
 import PurgeDataModal from "../../components/admin/PurgeDataModal";
-import { getParticipantList, createParticipant, updateParticipant } from "../../services/api";
+import { getParticipantList, createParticipant, updateParticipant, downloadParticipantsCSV } from "../../services/api";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -317,20 +317,18 @@ export default function AdminParticipantList() {
   async function handleExport() {
     setExporting(true);
     try {
-      const token = localStorage.getItem("access_token") || "";
-      const params = new URLSearchParams({ export: "csv" });
-      if (debouncedSearch) params.set("q", debouncedSearch);
-      const res = await fetch(`/api/admin/participants/?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (!res.ok) throw new Error();
-      const blob = await res.blob();
+      const blob = await downloadParticipantsCSV(debouncedSearch);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url; a.download = "macfiesta_participants.csv"; a.click();
+      a.href = url;
+      a.download = "macfiesta_participants.csv";
+      a.click();
       URL.revokeObjectURL(url);
-    } catch { alert("CSV export failed."); }
-    finally { setExporting(false); }
+    } catch {
+      alert("CSV export failed.");
+    } finally {
+      setExporting(false);
+    }
   }
 
   const startIndex = (page - 1) * PAGE_SIZE + 1;

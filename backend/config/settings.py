@@ -60,6 +60,26 @@ if not ALLOWED_HOSTS:
 # Allow all CORS origins if explicitly set, or if DEBUG
 CORS_ALLOW_ALL_ORIGINS = env_bool("CORS_ALLOW_ALL_ORIGINS", DEBUG)
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS")
+CORS_ALLOW_CREDENTIALS = True
+
+from corsheaders.defaults import default_headers
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "x-admin-password",
+    "x-csrftoken",
+    "x-requested-with",
+    "cache-control",
+    "pragma",
+]
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https?:\/\/localhost(:\d+)?$",
+    r"^https?:\/\/127\.0\.0\.1(:\d+)?$",
+    r"^https?:\/\/192\.168\.\d+\.\d+(:\d+)?$",
+    r"^https?:\/\/10\.\d+\.\d+\.\d+(:\d+)?$",
+    r"^https:\/\/.*\.vercel\.app$",
+    r"^https:\/\/.*\.onrender\.com$",
+]
 
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS", CORS_ALLOWED_ORIGINS)
 if not CSRF_TRUSTED_ORIGINS:
@@ -99,6 +119,7 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.AllowAny",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        "config.authentication.QueryParamJWTAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_THROTTLE_CLASSES": [
