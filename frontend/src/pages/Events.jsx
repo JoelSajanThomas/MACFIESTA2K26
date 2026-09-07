@@ -33,6 +33,25 @@ const CATEGORY_TABS = [
   { id: "general", label: "Adventure & Creative" },
 ];
 
+function isSquadEvent(e) {
+  if (!e) return false;
+  if (e.type === "squad" || e.type === "team") return true;
+  if (e.type === "solo" || e.type === "individual") return false;
+  const max = e.max_team_size != null
+    ? Number(e.max_team_size)
+    : (e.maxTeamSize != null ? Number(e.maxTeamSize) : null);
+  if (max != null && !Number.isNaN(max)) return max > 1;
+  const min = e.min_team_size != null
+    ? Number(e.min_team_size)
+    : (e.minTeamSize != null ? Number(e.minTeamSize) : null);
+  if (min != null && !Number.isNaN(min)) return min > 1;
+  return false;
+}
+
+function isSoloEvent(e) {
+  return !isSquadEvent(e);
+}
+
 export default function Events() {
   const [events, setEvents] = useState(ALL_EVENTS || []);
   const [search, setSearch] = useState("");
@@ -82,6 +101,8 @@ export default function Events() {
               scope: scope,
               type: teamType,
               maxTeamSize: maxTeam,
+              max_team_size: maxTeam,
+              min_team_size: apiEvt.min_team_size ?? local?.min_team_size ?? 1,
               category: apiEvt.category || "general",
               department: apiEvt.department || "",
               description: apiEvt.description || "Official MacFiesta 2026 festival championship mission brief.",
@@ -135,11 +156,11 @@ export default function Events() {
   }, [events, selectedScope]);
 
   const soloCount = useMemo(
-    () => scopeEvents.filter((e) => e.type === "solo" || (e.maxTeamSize || 1) <= 1).length,
+    () => scopeEvents.filter((e) => isSoloEvent(e)).length,
     [scopeEvents]
   );
   const squadCount = useMemo(
-    () => scopeEvents.filter((e) => e.type === "squad" || (e.maxTeamSize && e.maxTeamSize > 1)).length,
+    () => scopeEvents.filter((e) => isSquadEvent(e)).length,
     [scopeEvents]
   );
 
@@ -165,7 +186,7 @@ export default function Events() {
 
       const matchScope = selectedScope === "all" || e.scope === selectedScope;
 
-      const isSquad = e.type === "squad" || (e.maxTeamSize && e.maxTeamSize > 1);
+      const isSquad = isSquadEvent(e);
       const matchType =
         selectedType === "all" ||
         (selectedType === "solo" && !isSquad) ||
@@ -422,12 +443,12 @@ export default function Events() {
                   <div className="absolute top-3 right-3 z-20 flex items-center gap-1.5">
                     <span
                       className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-full font-excon-bold border ${
-                        item.type === "squad"
+                        isSquadEvent(item)
                           ? "bg-arc-cyan/20 text-arc-cyan border-arc-cyan/40"
                           : "bg-white/10 text-white/80 border-white/20"
                       }`}
                     >
-                      {item.type === "squad" ? (item.maxTeamSize || item.max_team_size ? `👥 Squad (${item.maxTeamSize || item.max_team_size}P)` : "👥 Squad") : "👤 Solo"}
+                      {isSquadEvent(item) ? (item.maxTeamSize || item.max_team_size ? `👥 Squad (${item.maxTeamSize || item.max_team_size}P)` : "👥 Squad") : "👤 Solo"}
                     </span>
                     <span
                       className={`px-2 py-0.5 text-[9px] font-black uppercase tracking-wider rounded-full font-excon-black border ${
