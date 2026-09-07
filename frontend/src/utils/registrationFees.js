@@ -37,8 +37,8 @@ export const MACFIESTA_PAYMENT = {
     "Pay the registration amount to the official MacFiesta account. Keep your UPI transaction reference / UTR for verification."
   ),
   upiId: envStr("VITE_PAYMENT_UPI_ID", "macfast12230qr@fbl"),
-  hostelAccountName: envStr("VITE_HOSTEL_PAYMENT_ACCOUNT_NAME", "ST ALPHONSA HOSTEL"),
-  hostelUpiId: envStr("VITE_HOSTEL_PAYMENT_UPI_ID", "stalphonsahostel@iob"),
+  hostelAccountName: envStr("VITE_HOSTEL_PAYMENT_ACCOUNT_NAME", "MACFAST HOSTELS"),
+  hostelUpiId: envStr("VITE_HOSTEL_PAYMENT_UPI_ID", "macfast12230qr@fbl"),
   bankName: envStr("VITE_PAYMENT_BANK_NAME", ""),
   accountNumber: envStr("VITE_PAYMENT_ACCOUNT_NUMBER", ""),
   ifsc: envStr("VITE_PAYMENT_IFSC", ""),

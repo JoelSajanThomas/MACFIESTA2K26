@@ -31,6 +31,42 @@ export default function AdminControls() {
     setTimeout(() => setStatusMsg(""), 4000);
   };
 
+  const [backupBusy, setBackupBusy] = useState(false);
+
+  async function syncSiteFlag(fields, okMsg) {
+    try {
+      const res = await getSiteSettings();
+      if (res?.data && res.data.length > 0) {
+        await updateSiteSettings(res.data[0].id, fields);
+      } else {
+        await createSiteSettings(fields);
+      }
+      invalidateSiteSettingsCache();
+      flash(okMsg);
+    } catch (e) {
+      flash("Saved on this browser, but the server did not accept the change. Try again.");
+    }
+  }
+
+  async function handleDownloadBackup() {
+    setBackupBusy(true);
+    try {
+      const blob = await downloadSystemBackup();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `macfiesta_backup_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      flash("Backup download failed. Sign in as super admin and try again.");
+    } finally {
+      setBackupBusy(false);
+    }
+  }
+
   if (!isSuperuser) {
     return (
       <div className="admin-ops-page admin-access-denied max-w-lg mx-auto text-center py-12 space-y-4">
@@ -133,18 +169,10 @@ export default function AdminControls() {
               onClick={async () => {
                 const next = !settings.registrationOpen;
                 updateSettings({ registrationOpen: next });
-                try {
-                  const res = await getSiteSettings();
-                  if (res?.data && res.data.length > 0) {
-                    await updateSiteSettings(res.data[0].id, { is_registration_open: next });
-                  } else {
-                    await createSiteSettings({ is_registration_open: next });
-                  }
-                  invalidateSiteSettingsCache();
-                } catch (e) {
-                  console.warn("Could not sync registrationOpen to backend SiteSettings:", e);
-                }
-                flash(next ? "✓ Registrations are now OPEN site-wide!" : "⚠️ Registrations are now CLOSED site-wide!");
+                await syncSiteFlag(
+                  { is_registration_open: next },
+                  next ? "✓ Registrations are now OPEN site-wide!" : "⚠️ Registrations are now CLOSED site-wide!"
+                );
               }}
               className={`relative w-16 h-8 rounded-full transition-all duration-300 cursor-pointer border-2 shadow-lg flex-shrink-0 ${
                 settings.registrationOpen
@@ -214,10 +242,15 @@ export default function AdminControls() {
             </div>
             <button
               type="button"
-              onClick={() => {
+              onClick={async () => {
                 const next = !settings.maintenanceMode;
                 updateSettings({ maintenanceMode: next });
-                flash(next ? "⚠️ MAINTENANCE MODE ENABLED — Site is now offline to the public!" : "✓ Site is now restored to LIVE public access!");
+                await syncSiteFlag(
+                  { is_maintenance_mode: next },
+                  next
+                    ? "⚠️ MAINTENANCE MODE ENABLED — Site is now offline to the public!"
+                    : "✓ Site is now restored to LIVE public access!"
+                );
               }}
               className={`relative w-16 h-8 rounded-full transition-all duration-300 cursor-pointer border-2 shadow-lg flex-shrink-0 ${
                 settings.maintenanceMode
@@ -280,14 +313,15 @@ export default function AdminControls() {
             </p>
           </div>
 
-          <a
-            href={downloadSystemBackup()}
-            download
-            className="px-5 py-3 rounded-2xl bg-arc-cyan/20 hover:bg-arc-cyan border border-arc-cyan/50 text-arc-cyan hover:text-black text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 shrink-0 shadow-lg cursor-pointer font-excon-black no-underline"
+          <button
+            type="button"
+            onClick={handleDownloadBackup}
+            disabled={backupBusy}
+            className="px-5 py-3 rounded-2xl bg-arc-cyan/20 hover:bg-arc-cyan border border-arc-cyan/50 text-arc-cyan hover:text-black text-xs font-black uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-2 shrink-0 shadow-lg cursor-pointer font-excon-black disabled:opacity-50"
           >
             <RiDownload2Line className="text-base" />
-            <span>Download Database Backup</span>
-          </a>
+            <span>{backupBusy ? "Preparing backup…" : "Download Database Backup"}</span>
+          </button>
         </div>
       </div>
 

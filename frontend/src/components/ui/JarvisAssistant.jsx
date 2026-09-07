@@ -26,7 +26,7 @@ const PRESET_QUERIES = [
 ];
 
 const MARVEL_RESPONSES = {
-  events: `MACFIESTA 2026 hosts 23 official missions across General, Technical, Arts, Management, and Sports categories! Key missions include Vibe Coding Hackathon, Stark Industries Shark Tank, BGMI Battle of Wakanda, Spider-Verse Photography, and STARK EXPO!`,
+  events: `MACFIESTA 2026 hosts 22 official missions across General, Technical, Arts, Management, and Sports categories! Key missions include Vibe Coding Hackathon, Stark Industries Shark Tank, BGMI Battle of Wakanda, Spider-Verse Photography, and STARK EXPO!`,
   schedule: `S.H.I.E.L.D. Mission Timeline:\n• Day 1 (Sept 24): School Day Missions, Stark Expo, Treasure Hunt & Science showcases.\n• Day 2 (Sept 25): College Day Arena, Coding Sprints, Cultural Battles & Pro Show!`,
   location: `MACFAST (Mar Athanasios College for Advanced Studies) is located in Thiruvalla, Pathanamthitta, Kerala. Coordinates locked, Agent.`,
   prize: `The total prize pool across all missions is officially announced with individual prizes up to ₹15,000 per flagship event along with S.H.I.E.L.D. Certificates and Champion Trophies!`,

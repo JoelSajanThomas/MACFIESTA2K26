@@ -22,7 +22,14 @@ import LoadingState from "../../components/ui/LoadingState";
 import ErrorState from "../../components/ui/ErrorState";
 import EmptyState from "../../components/ui/EmptyState";
 import PurgeDataModal from "../../components/admin/PurgeDataModal";
-import { getParticipantList, createParticipant, updateParticipant, downloadParticipantsCSV } from "../../services/api";
+import ConfirmDialog from "../../components/admin/ConfirmDialog";
+import {
+  getParticipantList,
+  createParticipant,
+  updateParticipant,
+  deleteParticipant,
+  downloadParticipantsCSV,
+} from "../../services/api";
 
 // ─── helpers ────────────────────────────────────────────────────────────────
 
@@ -278,6 +285,8 @@ export default function AdminParticipantList() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [purgeModalOpen, setPurgeModalOpen] = useState(false);
   const [editUser, setEditUser] = useState(null);
+  const [deleteUser, setDeleteUser] = useState(null);
+  const [deleting, setDeleting] = useState(false);
   const [togglingId, setTogglingId] = useState(null);
   const debounceRef = useRef(null);
 
@@ -286,6 +295,20 @@ export default function AdminParticipantList() {
     clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => { setDebouncedSearch(val); setPage(1); }, 350);
   }, []);
+
+  async function handleConfirmDelete() {
+    if (!deleteUser) return;
+    setDeleting(true);
+    try {
+      await deleteParticipant(deleteUser.id);
+      setDeleteUser(null);
+      load();
+    } catch (err) {
+      alert(parseErr(err));
+    } finally {
+      setDeleting(false);
+    }
+  }
 
   const load = useCallback(() => {
     setLoading(true);
@@ -483,6 +506,16 @@ export default function AdminParticipantList() {
                         {u.is_active ? <RiToggleFill style={{ color: "#10b981" }} /> : <RiToggleLine />}
                         {u.is_active ? "Deactivate" : "Activate"}
                       </button>
+                      {/* Delete */}
+                      <button
+                        type="button"
+                        className="btn btn-outline btn-sm"
+                        style={{ borderColor: "rgba(239, 68, 68, 0.4)", color: "#f87171", display: "flex", alignItems: "center", gap: "0.3rem" }}
+                        onClick={() => setDeleteUser(u)}
+                        disabled={deleting}
+                      >
+                        <RiDeleteBin7Line /> Delete
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -509,6 +542,18 @@ export default function AdminParticipantList() {
           <button type="button" className="btn btn-outline btn-sm" disabled={page === numPages} onClick={() => setPage((p) => Math.min(numPages, p + 1))}>Next →</button>
         </div>
       )}
+
+      {/* Single Participant Delete Confirmation */}
+      <ConfirmDialog
+        open={Boolean(deleteUser)}
+        title={`Delete user "${deleteUser?.username}"?`}
+        message="This will permanently delete this participant account and all associated registrations and records. This action cannot be undone."
+        confirmLabel="Delete User"
+        danger={true}
+        busy={deleting}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteUser(null)}
+      />
     </div>
   );
 }

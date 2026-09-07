@@ -50,11 +50,13 @@ export function resolveSiteSettings(apiList = []) {
       terms_body: "",
       privacy_body: "",
       is_registration_open: true,
+      is_maintenance_mode: false,
     };
   }
   return {
     ...s,
     is_registration_open: s.is_registration_open !== undefined ? Boolean(s.is_registration_open) : true,
+    is_maintenance_mode: Boolean(s.is_maintenance_mode),
     hero_image_url: mediaUrl(s.hero_image) || heroImage,
     about_image_url: mediaUrl(s.about_image) || BRAND.logo.src,
     logo_image_url: mediaUrl(s.logo_image) || BRAND.logo.mark,

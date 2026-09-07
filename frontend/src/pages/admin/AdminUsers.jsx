@@ -2,10 +2,12 @@ import { useEffect, useState } from "react";
 import LoadingState from "../../components/ui/LoadingState";
 import ErrorState from "../../components/ui/ErrorState";
 import EmptyState from "../../components/ui/EmptyState";
+import ConfirmDialog from "../../components/admin/ConfirmDialog";
 import {
   createStaffAccount,
   getStaffDirectory,
   updateStaffAccount,
+  deleteStaffAccount,
 } from "../../services/api";
 
 const COMMITTEE_OPTIONS = [
@@ -61,18 +63,32 @@ export default function AdminUsers() {
   const [editing, setEditing] = useState(null);
   const [editDraft, setEditDraft] = useState({});
 
+  // Filter & search states
+  const [searchTerm, setSearchTerm] = useState("");
+  const [committeeFilter, setCommitteeFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState(null);
+
   function load() {
     setLoading(true);
     setError("");
-    getStaffDirectory()
+    const params = {};
+    if (searchTerm.trim()) params.q = searchTerm.trim();
+    if (committeeFilter) params.committee = committeeFilter;
+    if (statusFilter) params.is_active = statusFilter;
+
+    getStaffDirectory(params)
       .then((res) => setRows(res.data?.results || []))
       .catch(() => setError("Could not load staff / volunteer accounts."))
       .finally(() => setLoading(false));
   }
 
   useEffect(() => {
-    load();
-  }, []);
+    const timer = setTimeout(() => {
+      load();
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [searchTerm, committeeFilter, statusFilter]);
 
   async function handleCreate(e) {
     e.preventDefault();
@@ -124,6 +140,22 @@ export default function AdminUsers() {
     setBusy(true);
     try {
       await updateStaffAccount(row.id, { is_active: !row.is_active });
+      load();
+    } catch (err) {
+      setFormMsg(parseErr(err));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleConfirmDelete() {
+    if (!deleteTarget) return;
+    setBusy(true);
+    setFormMsg("");
+    try {
+      await deleteStaffAccount(deleteTarget.id);
+      setDeleteTarget(null);
+      setFormMsg(`Account "${deleteTarget.username}" deleted successfully.`);
       load();
     } catch (err) {
       setFormMsg(parseErr(err));
@@ -248,11 +280,96 @@ export default function AdminUsers() {
         {formMsg ? <p className="muted-line" style={{ marginTop: "0.75rem" }}>{formMsg}</p> : null}
       </section>
 
+      {/* Filter Toolbar */}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.75rem", alignItems: "center", marginBottom: "1.25rem" }}>
+        <div style={{ position: "relative", flex: "1 1 240px", minWidth: 0 }}>
+          <input
+            id="staff-search"
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder="Search by name, username, email, phone…"
+            style={{
+              width: "100%",
+              padding: "0.6rem 0.85rem",
+              borderRadius: "0.5rem",
+              border: "1px solid rgba(255,255,255,0.15)",
+              background: "rgba(255,255,255,0.05)",
+              color: "#fff",
+              fontSize: "0.88rem",
+            }}
+          />
+        </div>
+
+        <select
+          value={committeeFilter}
+          onChange={(e) => setCommitteeFilter(e.target.value)}
+          style={{
+            padding: "0.6rem 0.85rem",
+            borderRadius: "0.5rem",
+            border: "1px solid rgba(255,255,255,0.15)",
+            background: "#18181b",
+            color: "#fff",
+            fontSize: "0.88rem",
+          }}
+        >
+          <option value="">All Committees</option>
+          {COMMITTEE_OPTIONS.map((c) => (
+            <option key={c.value} value={c.value}>
+              {c.label}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          style={{
+            padding: "0.6rem 0.85rem",
+            borderRadius: "0.5rem",
+            border: "1px solid rgba(255,255,255,0.15)",
+            background: "#18181b",
+            color: "#fff",
+            fontSize: "0.88rem",
+          }}
+        >
+          <option value="">All Status</option>
+          <option value="true">Active Only</option>
+          <option value="false">Inactive Only</option>
+        </select>
+
+        {(searchTerm || committeeFilter || statusFilter) && (
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            onClick={() => {
+              setSearchTerm("");
+              setCommitteeFilter("");
+              setStatusFilter("");
+            }}
+          >
+            Reset Filters
+          </button>
+        )}
+      </div>
+
+      {!loading && !error && (
+        <div style={{ display: "flex", gap: "1.5rem", marginBottom: "1rem", fontSize: "0.78rem", color: "#888" }}>
+          <span>
+            <strong style={{ color: "#fff" }}>{rows.length}</strong> {searchTerm || committeeFilter || statusFilter ? "matching" : "total"} staff member{rows.length !== 1 ? "s" : ""}
+          </span>
+        </div>
+      )}
+
       {loading && <LoadingState message="Loading staff…" />}
       {error && <ErrorState message={error} onRetry={load} />}
 
       {!loading && !error && rows.length === 0 && (
-        <EmptyState title="No staff accounts" message="Add a volunteer above." icon="" />
+        <EmptyState
+          title={searchTerm || committeeFilter || statusFilter ? "No staff match filters" : "No staff accounts"}
+          message={searchTerm || committeeFilter || statusFilter ? "Try adjusting or resetting your search filters." : "Add a volunteer above."}
+          icon=""
+        />
       )}
 
       {!loading && !error && rows.length > 0 && (
@@ -326,21 +443,23 @@ export default function AdminUsers() {
                       </td>
                       <td>{u.last_login ? new Date(u.last_login).toLocaleString() : "Never"}</td>
                       <td>
-                        <button
-                          type="button"
-                          className="btn btn-gold btn-sm"
-                          disabled={busy}
-                          onClick={() => saveEdit(u.id)}
-                        >
-                          Save
-                        </button>{" "}
-                        <button
-                          type="button"
-                          className="btn btn-outline btn-sm"
-                          onClick={() => setEditing(null)}
-                        >
-                          Cancel
-                        </button>
+                        <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+                          <button
+                            type="button"
+                            className="btn btn-gold btn-sm"
+                            disabled={busy}
+                            onClick={() => saveEdit(u.id)}
+                          >
+                            Save
+                          </button>{" "}
+                          <button
+                            type="button"
+                            className="btn btn-outline btn-sm"
+                            onClick={() => setEditing(null)}
+                          >
+                            Cancel
+                          </button>
+                        </div>
                       </td>
                     </>
                   ) : (
@@ -356,22 +475,33 @@ export default function AdminUsers() {
                       <td>{u.is_active ? "Active" : "Inactive"}</td>
                       <td>{u.last_login ? new Date(u.last_login).toLocaleString() : "Never"}</td>
                       <td>
-                        <button
-                          type="button"
-                          className="btn btn-card btn-sm"
-                          onClick={() => startEdit(u)}
-                          disabled={busy}
-                        >
-                          Edit
-                        </button>{" "}
-                        <button
-                          type="button"
-                          className="btn btn-outline btn-sm"
-                          onClick={() => toggleActive(u)}
-                          disabled={busy}
-                        >
-                          {u.is_active ? "Deactivate" : "Activate"}
-                        </button>
+                        <div style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+                          <button
+                            type="button"
+                            className="btn btn-card btn-sm"
+                            onClick={() => startEdit(u)}
+                            disabled={busy}
+                          >
+                            Edit
+                          </button>{" "}
+                          <button
+                            type="button"
+                            className="btn btn-outline btn-sm"
+                            onClick={() => toggleActive(u)}
+                            disabled={busy}
+                          >
+                            {u.is_active ? "Deactivate" : "Activate"}
+                          </button>{" "}
+                          <button
+                            type="button"
+                            className="btn btn-outline btn-sm"
+                            style={{ borderColor: "rgba(239, 68, 68, 0.4)", color: "#f87171" }}
+                            onClick={() => setDeleteTarget(u)}
+                            disabled={busy}
+                          >
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </>
                   )}
@@ -381,6 +511,18 @@ export default function AdminUsers() {
           </table>
         </div>
       )}
+
+      {/* Delete Staff Confirmation Dialog */}
+      <ConfirmDialog
+        open={Boolean(deleteTarget)}
+        title={`Delete staff account "${deleteTarget?.username}"?`}
+        message="This will permanently delete this staff/volunteer member and revoke all portal permissions. This action cannot be undone."
+        confirmLabel="Delete Staff"
+        danger={true}
+        busy={busy}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </div>
   );
 }

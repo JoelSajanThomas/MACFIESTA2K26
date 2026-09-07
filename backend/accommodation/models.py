@@ -23,14 +23,39 @@ class Hostel(models.Model):
     )
     warden_name = models.CharField(max_length=120)
     warden_phone = models.CharField(max_length=30)
-    total_capacity = models.PositiveIntegerField(default=100)
+    total_capacity = models.PositiveIntegerField(default=50)
     available_beds = models.PositiveIntegerField(default=50)
     description = models.TextField(blank=True)
     is_active = models.BooleanField(default=True)
     order = models.PositiveIntegerField(default=0)
 
+    HOLDING_STATUSES = ("pending", "confirmed", "allocated", "checked_in")
+
     class Meta:
         ordering = ["order", "name"]
+
+    def occupied_bed_count(self):
+        from django.db.models import Sum
+        return (
+            self.bookings.filter(status__in=self.HOLDING_STATUSES).aggregate(
+                total=Sum("persons_count")
+            )["total"]
+            or 0
+        )
+
+    def beds_remaining(self):
+        cap = self.total_capacity or 0
+        return max(0, cap - self.occupied_bed_count())
+
+    def is_full(self):
+        return self.beds_remaining() <= 0
+
+    def sync_available_beds(self):
+        remaining = self.beds_remaining()
+        if self.available_beds != remaining:
+            self.available_beds = remaining
+            self.save(update_fields=["available_beds"])
+        return remaining
 
     def __str__(self):
         return f"{self.name} ({self.get_gender_display()})"

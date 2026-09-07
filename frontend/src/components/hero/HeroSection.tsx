@@ -259,7 +259,7 @@ export function HeroSection() {
               className="text-white/95 max-w-lg mx-auto lg:mx-0 font-space text-xs sm:text-sm md:text-base leading-relaxed font-medium pt-0.5 sm:pt-1 drop-shadow-[0_2px_4px_rgba(0,0,0,0.95)]"
             >
               &ldquo;Every Hero Has A Mission.&rdquo; — Earth&apos;s premier national collegiate festival at MACFAST. Assemble across{" "}
-              <span className="text-arc-cyan font-bold drop-shadow-[0_0_8px_rgba(0,212,255,0.6)]">23 high-level missions</span>.
+              <span className="text-arc-cyan font-bold drop-shadow-[0_0_8px_rgba(0,212,255,0.6)]">22 high-level missions</span>.
             </motion.p>
 
             {/* CTA buttons */}

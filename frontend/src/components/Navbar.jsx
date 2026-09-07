@@ -51,7 +51,7 @@ const dropdownNavItems = [
 ];
 
 const MOBILE_TACTICAL_TILES = [
-  { href: "/events", label: "Missions", subtitle: "23 Arena Battles", icon: RiCompass3Line, color: "text-marvel-red" },
+  { href: "/events", label: "Missions", subtitle: "22 Arena Battles", icon: RiCompass3Line, color: "text-marvel-red" },
   { href: "/schedule", label: "Timeline", subtitle: "Day 1 & 2 Agenda", icon: RiTimeLine, color: "text-arc-cyan" },
   { href: "/scoreboard", label: "Scoreboard", subtitle: "Multiverse Ranks", icon: RiTrophyLine, color: "text-metallic-gold" },
   { href: "/accommodation", label: "Quarters", subtitle: "Hostel & Meals", icon: RiHotelBedLine, color: "text-arc-cyan" },

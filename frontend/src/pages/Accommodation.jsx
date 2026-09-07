@@ -35,8 +35,11 @@ const defaultHostelsData = [
     wardenName: "Prof. Alexander Varghese",
     wardenPhone: "+91 94470 12345",
     availability: "Available",
+    availableBeds: 50,
+    totalCapacity: 50,
+    isFull: false,
     badgeColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-    description: "Spacious on-campus mens hostel. ₹350/day stay without food, with optional campus mess dining."
+    description: "Spacious on-campus mens hostel. 50 beds. Booking closes when full."
   },
 
   // FEMALE ACCOMMODATION
@@ -53,24 +56,11 @@ const defaultHostelsData = [
     wardenName: "Sr. Grace Mary",
     wardenPhone: "+91 94463 67890",
     availability: "Available",
+    availableBeds: 50,
+    totalCapacity: 50,
+    isFull: false,
     badgeColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-    description: "Exclusive secure ladies hostel inside MACFAST campus with female wardens, biometric entry, and mess dining."
-  },
-  {
-    id: "st-alphonsa",
-    name: "St. Alphonsa Ladies Hostel",
-    gender: "female",
-    type: "Campus Annex Ladies Hostel",
-    location: "South Gate Residency Wing",
-    distance: "3 min walk to Fest Arena",
-    roomTypes: ["4-Sharing Spacious Rooms", "Dormitory Hall"],
-    tariff: "₹350 / night (stay without food)",
-    amenities: ["Female Warden On-Duty", "Hot Water", "Free Wi-Fi", "Common Lounge", "Mess Dining Available (B: ₹50, L: ₹70, D: ₹50)", "Emergency Support"],
-    wardenName: "Ms. Anitha John",
-    wardenPhone: "+91 98472 11223",
-    availability: "Available",
-    badgeColor: "bg-emerald-500/20 text-emerald-400 border-emerald-500/30",
-    description: "Comfortable and safe ladies hostel featuring attached washrooms, cozy beds, and dedicated festival support staff."
+    description: "Exclusive secure ladies hostel. 50 beds. Booking closes when full."
   }
 ];
 
@@ -102,7 +92,10 @@ export default function Accommodation() {
             amenities: h.amenities_list || (h.amenities ? h.amenities.split(", ") : []),
             wardenName: h.warden_name,
             wardenPhone: h.warden_phone,
-            availability: h.available_beds > 0 ? "Available" : "Full",
+            availability: h.is_full || h.available_beds <= 0 ? "Full — booking closed" : `${h.available_beds} / ${h.total_capacity || 50} beds free`,
+            availableBeds: h.available_beds,
+            totalCapacity: h.total_capacity || 50,
+            isFull: Boolean(h.is_full) || h.available_beds <= 0,
             badgeColor: h.available_beds > 0 ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" : "bg-red-500/20 text-red-400 border-red-500/30",
             description: h.description,
           }));
@@ -324,10 +317,10 @@ export default function Accommodation() {
                 <span>OFFICIAL RESERVATION POLICY</span>
               </div>
               <h3 className="font-black text-white uppercase tracking-wider font-excon-black text-base sm:text-xl">
-                Accommodation Is Reserved Strictly During Checkout
+                Book At Checkout · 50 Beds Per Hostel
               </h3>
               <p className="text-white/75 font-mono text-xs sm:text-sm leading-relaxed max-w-2xl">
-                To guarantee confirmed bed allocation and seamless delegate pass verification, hostel accommodation bookings can only be requested and finalized together with your event registrations during <strong>Checkout</strong>.
+                St. Thomas (boys) and St. Teresa (girls) each have 50 beds. After 50 bookings that hostel closes. Hospitality allocates rooms and marks check-in at the desk.
               </p>
             </div>
           </div>
@@ -369,7 +362,7 @@ export default function Accommodation() {
                 }`}
             >
               <RiMenLine />
-              <span>Mens Hostels</span>
+              <span>Mens Hostel</span>
             </button>
 
             <button
@@ -381,7 +374,7 @@ export default function Accommodation() {
                 }`}
             >
               <RiWomenLine />
-              <span>Ladies Hostels</span>
+              <span>Ladies Hostel</span>
             </button>
           </div>
 
@@ -477,6 +470,11 @@ export default function Accommodation() {
 
               {/* Action Buttons — Direct to Checkout */}
               <div className="grid grid-cols-2 gap-2 pt-2">
+                {hostel.isFull ? (
+                  <span className="w-full py-2.5 bg-red-500/15 border border-red-500/40 text-red-300 font-black text-[11px] uppercase tracking-wider rounded-xl flex items-center justify-center gap-1.5 font-excon-black text-center col-span-1">
+                    Booking closed
+                  </span>
+                ) : (
                 <Link
                   to={`/checkout?accommodation=true&hostel=${encodeURIComponent(hostel.name)}`}
                   className="w-full py-2.5 bg-arc-cyan hover:bg-white text-black font-black text-[11px] uppercase tracking-wider rounded-xl transition-all flex items-center justify-center gap-1.5 shadow-[0_0_15px_rgba(0,212,255,0.4)] hover:shadow-[0_0_25px_rgba(0,212,255,0.7)] font-excon-black text-center"
@@ -484,6 +482,7 @@ export default function Accommodation() {
                   <RiHotelBedLine className="text-sm" />
                   <span>Reserve In Checkout</span>
                 </Link>
+                )}
 
                 <a
                   href={`tel:${hostel.wardenPhone}`}
@@ -526,7 +525,7 @@ export default function Accommodation() {
             </li>
             <li className="flex items-start gap-2">
               <span className="text-metallic-gold">★</span>
-              <span>Accommodation and meal plans are reserved together seamlessly during Checkout.</span>
+              <span>St. Thomas Mens Hostel and St. Teresa Ladies Hostel each have <strong>50 beds</strong>. Booking closes for that hostel once all 50 are taken.</span>
             </li>
           </ul>
         </div>

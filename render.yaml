@@ -26,16 +26,28 @@
           "sync": false
         },
         {
+          "key": "FRONTEND_BASE_URL",
+          "value": "https://macfiesta.vercel.app"
+        },
+        {
           "key": "ALLOWED_HOSTS",
-          "sync": false
+          "value": "macfiesta-pro-api.onrender.com,.onrender.com"
         },
         {
           "key": "CORS_ALLOWED_ORIGINS",
-          "sync": false
+          "value": "https://macfiesta.vercel.app"
         },
         {
           "key": "CSRF_TRUSTED_ORIGINS",
-          "sync": false
+          "value": "https://macfiesta.vercel.app,https://macfiesta-pro-api.onrender.com"
+        },
+        {
+          "key": "HOSTEL_PAYMENT_ACCOUNT_NAME",
+          "value": "MACFAST HOSTELS"
+        },
+        {
+          "key": "HOSTEL_PAYMENT_UPI_ID",
+          "value": "macfast12230qr@fbl"
         },
         {
           "key": "EMAIL_BACKEND",

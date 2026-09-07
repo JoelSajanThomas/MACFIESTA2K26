@@ -13,7 +13,7 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
 from accounts.drf import HasModule
-from accounts.models import StaffProfile
+from accounts.models import StaffProfile, AuditLog
 from accounts.permissions import ALL_MODULES, MODULES_BY_COMMITTEE
 
 User = get_user_model()
@@ -140,6 +140,27 @@ def staff_directory(request):
             .select_related("staff_profile")
             .order_by("username")
         )
+        q = (request.query_params.get("q") or "").strip()
+        committee = (request.query_params.get("committee") or "").strip().lower()
+        is_active = request.query_params.get("is_active")
+
+        if q:
+            qs = qs.filter(
+                Q(username__icontains=q)
+                | Q(email__icontains=q)
+                | Q(first_name__icontains=q)
+                | Q(last_name__icontains=q)
+                | Q(staff_profile__display_name__icontains=q)
+                | Q(staff_profile__phone__icontains=q)
+            )
+        if committee:
+            qs = qs.filter(staff_profile__committee=committee)
+        if is_active is not None and is_active != "":
+            if str(is_active).lower() in ("true", "1"):
+                qs = qs.filter(is_active=True)
+            elif str(is_active).lower() in ("false", "0"):
+                qs = qs.filter(is_active=False)
+
         rows = [_serialize_staff(u) for u in qs]
         return Response({"results": rows, "count": len(rows)})
 
@@ -168,18 +189,51 @@ def staff_directory(request):
             phone=data.get("phone") or "",
             must_change_password=True,
         )
+        AuditLog.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            action="CREATE_STAFF",
+            resource_type="staff",
+            resource_id=str(user.id),
+            details=f"Created staff account {user.username} ({data['committee']})",
+        )
 
     return Response(_serialize_staff(user), status=status.HTTP_201_CREATED)
 
 
-@api_view(["PATCH"])
+@api_view(["GET", "PATCH", "DELETE"])
 @permission_classes([HasModule("users")])
 def staff_detail(request, pk):
-    """Update volunteer/staff: committee, active, phone, reset password."""
+    """Retrieve, update, or delete volunteer/staff: committee, active, phone, reset password."""
     try:
         user = User.objects.select_related("staff_profile").get(pk=pk, is_staff=True)
     except User.DoesNotExist:
         return Response({"detail": "Staff account not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == "GET":
+        return Response(_serialize_staff(user))
+
+    if request.method == "DELETE":
+        if user.pk == request.user.pk:
+            return Response(
+                {"detail": "You cannot delete your own staff account."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if user.is_superuser and not request.user.is_superuser:
+            return Response(
+                {"detail": "Only superusers can delete superuser accounts."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        username = user.username
+        user_id = user.pk
+        user.delete()
+        AuditLog.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            action="DELETE_STAFF",
+            resource_type="staff",
+            resource_id=str(user_id),
+            details=f"Deleted staff account {username}",
+        )
+        return Response({"detail": f"Staff account {username} successfully deleted."}, status=status.HTTP_200_OK)
 
     # Protect last superuser / self-lockouts lightly
     if user.is_superuser and not request.user.is_superuser:
@@ -245,6 +299,14 @@ def staff_detail(request, pk):
         update_fields.append("must_change_password")
     if update_fields:
         profile.save(update_fields=list(dict.fromkeys(update_fields)))
+
+    AuditLog.objects.create(
+        user=request.user if request.user.is_authenticated else None,
+        action="UPDATE_STAFF",
+        resource_type="staff",
+        resource_id=str(user.pk),
+        details=f"Updated staff account {user.username}",
+    )
 
     user.refresh_from_db()
     return Response(_serialize_staff(user))
@@ -393,10 +455,10 @@ def participant_user_list(request):
     })
 
 
-@api_view(["GET", "PATCH"])
+@api_view(["GET", "PATCH", "DELETE"])
 @permission_classes([HasModule("users")])
 def participant_user_detail(request, pk):
-    """Retrieve or update a single participant user.
+    """Retrieve, update, or delete a single participant user.
 
     PATCH body (all optional):
       - is_active  : bool   — activate / deactivate the account
@@ -411,6 +473,19 @@ def participant_user_detail(request, pk):
 
     if request.method == "GET":
         return Response(_serialize_participant(user))
+
+    if request.method == "DELETE":
+        username = user.username
+        user_id = user.pk
+        user.delete()
+        AuditLog.objects.create(
+            user=request.user if request.user.is_authenticated else None,
+            action="DELETE_PARTICIPANT",
+            resource_type="participant",
+            resource_id=str(user_id),
+            details=f"Deleted participant user {username}",
+        )
+        return Response({"detail": f"Participant {username} successfully deleted."}, status=status.HTTP_200_OK)
 
     data = request.data
     errors = {}

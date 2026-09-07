@@ -410,7 +410,7 @@ export default function PaymentProofPanel({
             <span className="text-white/50 shrink-0">Beneficiary:</span>
             <span className="text-white font-bold text-right">
               {qrType === "hostel"
-                ? (payment.hostelAccountName || "ST ALPHONSA HOSTEL")
+                ? (payment.hostelAccountName || "MACFAST HOSTELS")
                 : payment.accountName}
             </span>
           </div>
@@ -418,7 +418,7 @@ export default function PaymentProofPanel({
             <span className="text-white/50">UPI ID:</span>
             <span className="text-metallic-gold font-mono font-bold">
               {qrType === "hostel"
-                ? (payment.hostelUpiId || "stalphonsahostel@iob")
+                ? (payment.hostelUpiId || "macfast12230qr@fbl")
                 : payment.upiId}
             </span>
           </div>

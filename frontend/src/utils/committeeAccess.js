@@ -8,8 +8,8 @@ export const ADMIN_NAV = [
   { to: "/admin/events", label: "Events", module: "events", group: "Operations" },
   { to: "/admin/registrations", label: "Registrations", module: "registrations", group: "Operations" },
   { to: "/admin/institutions", label: "Colleges & Schools", module: "registrations", group: "Operations" },
-  { to: "/admin/payments", label: "Payments", module: "registrations", group: "Operations", financeOnly: true },
-  { to: "/admin/hospitality", label: "Hospitality", module: "registrations", group: "Operations", hospitalityOnly: true },
+  { to: "/admin/payments", label: "Payments", module: "finance", group: "Operations", financeOnly: true },
+  { to: "/admin/hospitality", label: "Hospitality", module: "hospitality", group: "Operations", hospitalityOnly: true },
   { to: "/admin/verification", label: "Verification", module: "verification", group: "Operations" },
   { to: "/admin/results", label: "Results", module: "results", group: "Operations" },
   { to: "/admin/schedule", label: "Schedule", module: "schedule", group: "Operations" },
@@ -57,14 +57,20 @@ export function filterAdminNav(modules, committee = null, isSuperuser = false) {
   const set = new Set(modules || []);
 
   return ADMIN_NAV.filter((item) => {
-    if (!set.has(item.module)) return false;
+    if (item.module === "finance") {
+      if (!set.has("finance") && !set.has("registrations")) return false;
+    } else if (item.module === "hospitality") {
+      if (!set.has("hospitality") && !set.has("registrations")) return false;
+    } else if (!set.has(item.module)) {
+      return false;
+    }
 
     if (item.superuserOnly && !isSuperuser && committee !== "core") {
       return false;
     }
 
     if (item.financeOnly && committee && !["finance", "core"].includes(committee)) {
-      if (committee !== "finance" && committee !== "core") return false;
+      return false;
     }
 
     if (item.hospitalityOnly && committee && !["hospitality", "food", "core"].includes(committee)) {
@@ -248,7 +254,7 @@ export function committeeBottomNav(committee, modules = []) {
 
   return list.filter((item) => {
 
-    if (item.to.includes("payments") && !has("registrations")) return false;
+    if (item.to.includes("payments") && !has("finance") && !has("registrations")) return false;
 
     if (item.to.includes("verification") && !has("verification")) return false;
 
@@ -268,7 +274,7 @@ export function committeeBottomNav(committee, modules = []) {
 
     if (item.to.includes("/content") && !has("content") && !has("guests") && !has("sponsors")) return false;
 
-    if (item.to.includes("hospitality") && !has("registrations")) return false;
+    if (item.to.includes("hospitality") && !has("hospitality") && !has("registrations")) return false;
 
     return true;
 
@@ -329,12 +335,12 @@ export function pathAllowed(pathname, modules, committee = null, isSuperuser = f
   }
 
   if (pathname.startsWith("/admin/payments") || pathname === "/admin/finance") {
-    return set.has("registrations") && (!committee || ["finance", "core"].includes(committee));
+    return (set.has("finance") || set.has("registrations")) && (!committee || ["finance", "core"].includes(committee));
   }
 
   if (pathname.startsWith("/admin/hospitality") || pathname === "/admin/food") {
     return (
-      set.has("registrations") &&
+      (set.has("hospitality") || set.has("registrations")) &&
       (!committee || ["hospitality", "food", "core"].includes(committee))
     );
   }

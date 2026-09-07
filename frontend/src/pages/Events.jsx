@@ -240,7 +240,7 @@ export default function Events() {
           </h1>
 
           <p className="text-white/80 text-xs sm:text-sm font-excon font-normal">
-            Choose your battle arena. Compete across {events.length || 23} official competitions across College &amp; School divisions.
+            Choose your battle arena. Compete across {events.length || 22} official competitions across College &amp; School divisions.
           </p>
         </div>
 

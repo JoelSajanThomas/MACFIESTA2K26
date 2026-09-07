@@ -17,12 +17,12 @@ import {
   RiLockLine,
 } from "react-icons/ri";
 import { useFestivalControl } from "../lib/festivalStore";
-import { getCurrentUser, isLoggedIn } from "../services/api";
+import { getCurrentUser, isLoggedIn, getUniversePoll, voteUniversePoll } from "../services/api";
 import { AUTH_CHANGE_EVENT } from "../utils/auth";
 
 const LIVE_FEEDS = [
   "PORTAL CO-ORDINATES: 9.3835° N, 76.5741° E (MACFAST CAMPUS)",
-  "STATUS: 23 ARENA MISSIONS INITIALIZED & READY",
+  "STATUS: 22 ARENA MISSIONS INITIALIZED & READY",
   "PRIZE BOUNTY: ₹1,50,000+ ACROSS COLLEGE & SCHOOL MISSIONS",
   "S.H.I.E.L.D. PROTOCOL: LEVEL 10 SECURITY ACTIVE",
   "REGISTRATION DESK: SATELLITE ENCRYPTION LIVE",
@@ -83,18 +83,10 @@ export default function Footer() {
 
   const [currentUser, setCurrentUser] = useState(null);
 
-  // Marvel vs DC Clean Single-Vote State Starting from 0
-  const [marvelVotes, setMarvelVotes] = useState(() => {
-    const saved = localStorage.getItem("mf_poll_marvel_v5");
-    return saved ? parseInt(saved, 10) : 0;
-  });
-  const [dcVotes, setDcVotes] = useState(() => {
-    const saved = localStorage.getItem("mf_poll_dc_v5");
-    return saved ? parseInt(saved, 10) : 0;
-  });
-  const [userVoted, setUserVoted] = useState(() => {
-    return localStorage.getItem("mf_poll_voted_v5") || null;
-  });
+  // Marvel vs DC — server-backed single vote
+  const [marvelVotes, setMarvelVotes] = useState(0);
+  const [dcVotes, setDcVotes] = useState(0);
+  const [userVoted, setUserVoted] = useState(null);
   const [feedbackToast, setFeedbackToast] = useState(null);
 
   // Rotating Live Telemetry Feed
@@ -107,16 +99,7 @@ export default function Footer() {
         return;
       }
       getCurrentUser()
-        .then((res) => {
-          setCurrentUser(res.data);
-          const userKey = res.data?.email || res.data?.id;
-          if (userKey) {
-            const savedUserVote = localStorage.getItem(`mf_user_vote_v5_${userKey}`);
-            if (savedUserVote) {
-              setUserVoted(savedUserVote);
-            }
-          }
-        })
+        .then((res) => setCurrentUser(res.data))
         .catch(() => setCurrentUser(null));
     }
     checkUser();
@@ -125,25 +108,20 @@ export default function Footer() {
   }, []);
 
   useEffect(() => {
-    // Thoroughly purge all past legacy vote data from localStorage
-    try {
-      ["mf_marvel_votes", "mf_dc_votes", "mf_user_allegiance", "mf_poll_marvel_v3", "mf_poll_dc_v3", "mf_poll_voted_v3", "mf_poll_marvel_v4", "mf_poll_dc_v4", "mf_poll_voted_v4"].forEach((k) => {
-        localStorage.removeItem(k);
-      });
-      Object.keys(localStorage).forEach((k) => {
-        if (k.startsWith("mf_user_vote_") && !k.startsWith("mf_user_vote_v5_")) {
-          localStorage.removeItem(k);
-        }
-      });
-    } catch {
-      // Ignore localStorage errors
-    }
+    getUniversePoll()
+      .then((res) => {
+        const d = res.data || {};
+        setMarvelVotes(Number(d.marvel) || 0);
+        setDcVotes(Number(d.dc) || 0);
+        setUserVoted(d.my_vote || null);
+      })
+      .catch(() => {});
 
     const interval = setInterval(() => {
       setFeedIndex((prev) => (prev + 1) % LIVE_FEEDS.length);
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [currentUser]);
 
   if (
     pathname?.startsWith("/admin") ||
@@ -155,49 +133,47 @@ export default function Footer() {
     return null;
   }
 
-  const handleVote = (side) => {
-    // Check if user is logged in
+  const handleVote = async (side) => {
     if (!isLoggedIn()) {
-      setFeedbackToast("🔒 AUTHENTICATION REQUIRED • REDIRECTING TO LOGIN...");
+      setFeedbackToast("AUTHENTICATION REQUIRED • REDIRECTING TO LOGIN...");
       setTimeout(() => {
         navigate("/login");
       }, 1400);
       return;
     }
 
-    const userKey = currentUser?.email || currentUser?.id || "authenticated_agent";
-    const userVoteRecord = localStorage.getItem(`mf_user_vote_v5_${userKey}`) || userVoted;
-
-    // Strictly only 1 vote allowed per user account
-    if (userVoteRecord) {
-      setFeedbackToast("⚠️ VOTE LOCKED: ALLEGIANCE ALREADY RECORDED!");
+    if (userVoted) {
+      setFeedbackToast("VOTE LOCKED: ALLEGIANCE ALREADY RECORDED!");
       setTimeout(() => setFeedbackToast(null), 2500);
       return;
     }
 
     playSfx(side);
-
-    if (side === "marvel") {
-      const nextMarvel = marvelVotes + 1;
-      setMarvelVotes(nextMarvel);
-      localStorage.setItem("mf_poll_marvel_v5", nextMarvel.toString());
-      localStorage.setItem(`mf_user_vote_v5_${userKey}`, "marvel");
-      localStorage.setItem("mf_poll_voted_v5", "marvel");
-      setUserVoted("marvel");
-      setFeedbackToast("⚡ MARVELVERSE ALLEGIANCE RECORDED! (+1)");
-    } else {
-      const nextDc = dcVotes + 1;
-      setDcVotes(nextDc);
-      localStorage.setItem("mf_poll_dc_v5", nextDc.toString());
-      localStorage.setItem(`mf_user_vote_v5_${userKey}`, "dc");
-      localStorage.setItem("mf_poll_voted_v5", "dc");
-      setUserVoted("dc");
-      setFeedbackToast("🦇 JUSTICE LEAGUE ALLEGIANCE RECORDED! (+1)");
+    try {
+      const res = await voteUniversePoll(side);
+      const d = res.data || {};
+      if (d.marvel != null) setMarvelVotes(Number(d.marvel) || 0);
+      if (d.dc != null) setDcVotes(Number(d.dc) || 0);
+      setUserVoted(d.my_vote || d.choice || side);
+      if (d.already_voted) {
+        setFeedbackToast("VOTE LOCKED: ALLEGIANCE ALREADY RECORDED!");
+      } else if (side === "marvel") {
+        setFeedbackToast("MARVELVERSE ALLEGIANCE RECORDED!");
+      } else {
+        setFeedbackToast("JUSTICE LEAGUE ALLEGIANCE RECORDED!");
+      }
+      const refresh = await getUniversePoll();
+      setMarvelVotes(Number(refresh.data?.marvel) || 0);
+      setDcVotes(Number(refresh.data?.dc) || 0);
+      setUserVoted(refresh.data?.my_vote || side);
+    } catch (err) {
+      if (err?.response?.status === 401) {
+        navigate("/login");
+        return;
+      }
+      setFeedbackToast("Could not record vote. Try again.");
     }
-
-    setTimeout(() => {
-      setFeedbackToast(null);
-    }, 3200);
+    setTimeout(() => setFeedbackToast(null), 3200);
   };
 
   const handleNextFeed = () => {
@@ -421,7 +397,7 @@ export default function Footer() {
             </Link>
 
             <p className="text-[11px] text-white/60 leading-snug max-w-md font-space">
-              Earth&apos;s premier national collegiate festival at MACFAST. 23 Arena Missions across School &amp; College divisions.
+              Earth&apos;s premier national collegiate festival at MACFAST. 22 Arena Missions across School &amp; College divisions.
             </p>
 
             {/* Social Alliances Connect */}
@@ -511,9 +487,6 @@ export default function Footer() {
           </div>
 
           <div className="flex items-center gap-2.5">
-            <span>
-              Engineered by <span className="text-metallic-gold font-bold uppercase">Joel Sajan Thomas & Joel Zacharia</span>
-            </span>
             <button
               onClick={scrollToTop}
               type="button"

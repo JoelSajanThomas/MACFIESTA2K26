@@ -1,5 +1,5 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from django.db.models import Count, Q, Sum
 from django.utils import timezone
@@ -31,14 +31,25 @@ def public_fest_config(request):
     (payment display details + add-on fees + QR image API).
     """
     from django.conf import settings
+    from cms.models import SiteSetting
+
+    site = SiteSetting.objects.first()
+    contact_email = (site.contact_email if site and site.contact_email else "") or settings.CONTACT_EMAIL
+    contact_phone = (site.contact_phone if site and site.contact_phone else "") or settings.CONTACT_PHONE
 
     return Response(
         {
+            "fest_name": (site.fest_name if site else "") or "MacFiesta",
+            "fest_theme": (site.tagline if site else "") or "Where Legends Rise",
+            "tagline": (site.tagline if site else "") or "Where Legends Rise",
+            "contact_email": contact_email,
+            "contact_phone": contact_phone,
+            "maintenance_mode": bool(site and site.is_maintenance_mode),
             "payment": {
                 "account_name": settings.PAYMENT_ACCOUNT_NAME,
                 "upi_id": settings.PAYMENT_UPI_ID,
-                "hostel_account_name": getattr(settings, "HOSTEL_PAYMENT_ACCOUNT_NAME", "ST ALPHONSA HOSTEL"),
-                "hostel_upi_id": getattr(settings, "HOSTEL_PAYMENT_UPI_ID", "stalphonsahostel@iob"),
+                "hostel_account_name": getattr(settings, "HOSTEL_PAYMENT_ACCOUNT_NAME", "MACFAST HOSTELS"),
+                "hostel_upi_id": getattr(settings, "HOSTEL_PAYMENT_UPI_ID", "macfast12230qr@fbl"),
                 "bank_name": settings.PAYMENT_BANK_NAME,
                 "account_number": settings.PAYMENT_ACCOUNT_NUMBER,
                 "ifsc": settings.PAYMENT_IFSC,
@@ -55,8 +66,8 @@ def public_fest_config(request):
                 "transport_assist": float(settings.TRANSPORT_ASSIST_FEE),
             },
             "contact": {
-                "email": settings.CONTACT_EMAIL,
-                "phone": settings.CONTACT_PHONE,
+                "email": contact_email,
+                "phone": contact_phone,
                 "registration_help_email": settings.REGISTRATION_HELP_EMAIL,
                 "registration_help_phone": settings.REGISTRATION_HELP_PHONE,
                 "website": settings.OFFICIAL_WEBSITE,
@@ -180,6 +191,7 @@ def current_user(request):
         return Response({"detail": "Account is inactive."}, status=403)
 
     profile = getattr(user, "staff_profile", None)
+    participant = getattr(user, "participant_profile", None)
     modules = user_modules(user)
     full_name = (user.get_full_name() or "").strip()
     display = ""
@@ -187,6 +199,11 @@ def current_user(request):
         display = profile.display_name.strip()
     if not display:
         display = full_name or user.username
+    phone = ""
+    if profile and profile.phone:
+        phone = profile.phone
+    elif participant and participant.phone:
+        phone = participant.phone
     return Response({
         "id": user.id,
         "username": user.username,
@@ -204,7 +221,9 @@ def current_user(request):
             else ("Core Team" if user.is_superuser else None)
         ),
         "display_name": display,
-        "phone": (profile.phone if profile else "") or "",
+        "phone": phone,
+        "college_name": (participant.college_name if participant else "") or "",
+        "gender": (participant.gender if participant else "") or "",
         "modules": modules,
         "must_change_password": bool(profile and profile.must_change_password),
     })
@@ -264,4 +283,47 @@ def admin_system_backup(request):
     timestamp = timezone.now().strftime("%Y%m%d_%H%M%S")
     response["Content-Disposition"] = f'attachment; filename="macfiesta_backup_{timestamp}.json"'
     return response
+
+
+@api_view(["GET", "POST"])
+@permission_classes([AllowAny])
+def public_universe_poll(request):
+    from django.db.models import Count
+    from accounts.models import UniversePollVote
+
+    if request.method == "POST":
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication required."}, status=401)
+        choice = (request.data.get("choice") or "").strip().lower()
+        if choice not in ("marvel", "dc"):
+            return Response({"choice": ["Vote marvel or dc."]}, status=400)
+        vote, created = UniversePollVote.objects.get_or_create(
+            user=request.user,
+            defaults={"choice": choice},
+        )
+        if not created:
+            return Response(
+                {
+                    "detail": "Vote already recorded.",
+                    "choice": vote.choice,
+                    "already_voted": True,
+                },
+                status=200,
+            )
+
+    counts = {
+        row["choice"]: row["n"]
+        for row in UniversePollVote.objects.values("choice").annotate(n=Count("id"))
+    }
+    my_vote = None
+    if request.user.is_authenticated:
+        existing = UniversePollVote.objects.filter(user=request.user).first()
+        my_vote = existing.choice if existing else None
+    return Response(
+        {
+            "marvel": counts.get("marvel", 0),
+            "dc": counts.get("dc", 0),
+            "my_vote": my_vote,
+        }
+    )
 

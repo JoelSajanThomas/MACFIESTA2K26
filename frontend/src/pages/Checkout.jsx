@@ -33,7 +33,7 @@ import { usePageSeo } from "../hooks/usePageSeo";
 import { loadParticipantProfile, saveParticipantProfile } from "../utils/participantProfile";
 import { getCartItems, syncCart, clearCart } from "../utils/eventCart";
 import { ALL_EVENTS } from "../lib/eventsData";
-import { MACFIESTA_PAYMENT, buildUpiPayLink } from "../utils/registrationFees";
+import { MACFIESTA_PAYMENT, buildUpiPayLink, applyPublicFestConfig, registrationQrImageUrl } from "../utils/registrationFees";
 import {
   getEvents,
   getCurrentUser,
@@ -42,6 +42,7 @@ import {
   submitRegistrationPaymentBatch,
   getHostels,
   createAccommodationBooking,
+  getPublicFestConfig,
 } from "../services/api";
 
 const SOLO_EVENT_SLUGS = new Set([
@@ -129,8 +130,8 @@ function validatePhone(raw) {
 const ACC_STEPS = [
   { num: 1, label: "HOSTEL & DATES" },
   { num: 2, label: "DELEGATE INFO" },
-  { num: 3, label: "PAYMENT" },
-  { num: 4, label: "CONFIRMED" },
+  { num: 3, label: "SUBMIT REQUEST" },
+  { num: 4, label: "BOOKED" },
 ];
 
 export default function Checkout() {
@@ -198,6 +199,7 @@ export default function Checkout() {
     txn: "",
     proof: null,
   });
+  const [batchProofPreview, setBatchProofPreview] = useState(null);
 
   // UI state
   const [submitting, setSubmitting] = useState(false);
@@ -236,6 +238,10 @@ export default function Checkout() {
     const pHostels = getHostels()
       .then((res) => (Array.isArray(res?.data) ? res.data : []))
       .catch(() => []);
+
+    getPublicFestConfig()
+      .then((res) => applyPublicFestConfig(res.data))
+      .catch(() => {});
 
     Promise.all([pEvents, pUser, pHostels])
       .then(([evList, user, hList]) => {
@@ -500,10 +506,14 @@ export default function Checkout() {
     return hostels.filter((h) => h.gender === accGenderFilter || h.gender === "all");
   }, [hostels, accGenderFilter]);
 
-  async function handleAccSubmit(e, isQuickConfirm = false) {
+  async function handleAccSubmit(e) {
     if (e) e.preventDefault();
     if (!selectedHostel) {
       setError("Please select a hostel.");
+      return;
+    }
+    if (Number(selectedHostel.available_beds || 0) < accHeadcount || selectedHostel.is_full) {
+      setError(`${selectedHostel.name} is full. Booking is closed for this hostel.`);
       return;
     }
     if (!accForm.full_name.trim()) {
@@ -515,13 +525,13 @@ export default function Checkout() {
       setError(phoneErr);
       return;
     }
-    if (!isQuickConfirm && accTotalAmount > 0) {
-      if (!accForm.txn.trim()) {
-        setError("Please enter your UPI Transaction Reference / UTR ID.");
+    if (accTotalAmount > 0) {
+      if (!String(accForm.txn || "").trim()) {
+        setError("Enter the UPI UTR / transaction ID after paying.");
         return;
       }
       if (!accForm.proof) {
-        setError("Payment proof screenshot is compulsory. Please attach your payment receipt / screenshot.");
+        setError("Upload your hostel payment screenshot for finance verification.");
         return;
       }
     }
@@ -530,35 +540,28 @@ export default function Checkout() {
     setError("");
 
     try {
-      const fd = new FormData();
-      fd.append("hostel", selectedHostel.id);
-      fd.append("full_name", accForm.full_name.trim());
-      fd.append("email", accForm.email.trim());
-      fd.append("phone", accForm.phone.trim());
-      fd.append("college", accForm.college.trim() || "MACFAST Campus");
-      fd.append("gender", accForm.gender);
-      fd.append("persons_count", accForm.persons_count);
-      fd.append("check_in_date", accForm.check_in_date);
-      fd.append("check_out_date", accForm.check_out_date);
-      fd.append("include_breakfast", accForm.include_breakfast ? "true" : "false");
-      fd.append("include_lunch", accForm.include_lunch ? "true" : "false");
-      fd.append("include_dinner", accForm.include_dinner ? "true" : "false");
-      fd.append("special_requests", accForm.special_requests.trim());
-      fd.append("payment_amount", String(accTotalAmount.toFixed(2)));
-      fd.append("payment_status", isQuickConfirm ? "confirmed" : "pending");
-      fd.append("payment_method", "upi_qr");
-      fd.append(
-        "payment_transaction_id",
-        accForm.txn.trim() || (isQuickConfirm ? `HST-AUTO-${Date.now().toString().slice(-6)}` : "")
-      );
-      if (accForm.proof) {
-        fd.append("payment_proof", accForm.proof);
-      }
-
-      const res = await createAccommodationBooking(fd);
+      const form = new FormData();
+      form.append("hostel", selectedHostel.id);
+      form.append("full_name", accForm.full_name.trim());
+      form.append("email", accForm.email.trim());
+      form.append("phone", accForm.phone.trim());
+      form.append("college", accForm.college.trim() || "MACFAST Campus");
+      form.append("gender", accForm.gender);
+      form.append("persons_count", String(accForm.persons_count));
+      form.append("check_in_date", accForm.check_in_date);
+      form.append("check_out_date", accForm.check_out_date);
+      form.append("include_breakfast", accForm.include_breakfast ? "true" : "false");
+      form.append("include_lunch", accForm.include_lunch ? "true" : "false");
+      form.append("include_dinner", accForm.include_dinner ? "true" : "false");
+      form.append("special_requests", accForm.special_requests.trim());
+      form.append("payment_amount", Number(accTotalAmount.toFixed(2)));
+      form.append("payment_method", "upi_qr");
+      if (accForm.txn.trim()) form.append("payment_transaction_id", accForm.txn.trim());
+      if (accForm.proof) form.append("payment_proof", accForm.proof);
+      const res = await createAccommodationBooking(form);
       setAccBookingResult(res.data);
       setAccStep(4);
-      setSuccessMsg(`Accommodation booking ${res.data.booking_id} reserved successfully!`);
+      setSuccessMsg(`Stay booking ${res.data.booking_id} received. Finance will verify payment; hospitality will allocate your room.`);
       setTimeout(() => setSuccessMsg(""), 4000);
     } catch (err) {
       const d = err?.response?.data;
@@ -568,9 +571,11 @@ export default function Checkout() {
           : d?.detail ||
             d?.hostel ||
             d?.phone ||
+            d?.payment_transaction_id ||
+            d?.payment_proof ||
             d?.check_out_date ||
             "Failed to submit hostel booking. Please try again.";
-      setError(String(msg));
+      setError(String(Array.isArray(msg) ? msg[0] : msg));
     } finally {
       setAccSubmitting(false);
     }
@@ -909,8 +914,6 @@ export default function Checkout() {
       const res = await submitRegistrationPaymentBatch({
         payment_batch_id: batchId,
         payment_transaction_id: paymentForm.txn.trim() || `FREE-BATCH-${Date.now().toString().slice(-6)}`,
-        auto_confirm: true,
-        status: "paid",
       });
       const updated = res.data.registrations || registrations;
       setRegistrations(updated);
@@ -997,7 +1000,7 @@ export default function Checkout() {
               Hostel Accommodation Booking
             </h1>
             <p className="text-xs sm:text-sm text-white/60 max-w-xl mx-auto font-mono">
-              Select Quarters → Delegate Info → UPI Payment &amp; Proof → Bed Confirmed
+              Select Quarters → Delegate Info → Submit Booking → Hospitality Allocates Room
             </p>
           </div>
         ) : (
@@ -1154,6 +1157,9 @@ export default function Checkout() {
                     <h2 className="text-2xl font-black uppercase text-white font-excon-black">
                       Select Hostel Wing &amp; Stay Dates
                     </h2>
+                    <p className="text-[11px] text-white/50 font-mono mt-1 max-w-xl">
+                      Each hostel has 50 beds. Booking closes for that hostel once all 50 are taken. Hospitality will allocate your room.
+                    </p>
                   </div>
 
                   {/* Gender Filter for Hostels */}
@@ -1191,18 +1197,22 @@ export default function Checkout() {
                 {/* Hostels Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {filteredHostels.map((h) => {
-                    const isSelected = selectedHostel?.id === h.id;
+                    const isFull = Boolean(h.is_full) || Number(h.available_beds || 0) <= 0;
+                    const isSelected = selectedHostel?.id === h.id && !isFull;
                     return (
                       <div
                         key={h.id}
                         onClick={() => {
+                          if (isFull) return;
                           setSelectedHostel(h);
                           setAccForm((prev) => ({ ...prev, hostel_id: h.id }));
                         }}
-                        className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between space-y-4 ${
-                          isSelected
-                            ? "border-arc-cyan bg-arc-cyan/10 shadow-[0_0_25px_rgba(0,212,255,0.25)] ring-2 ring-arc-cyan"
-                            : "border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.06]"
+                        className={`p-5 rounded-2xl border transition-all flex flex-col justify-between space-y-4 ${
+                          isFull
+                            ? "border-red-500/40 bg-red-500/5 opacity-70 cursor-not-allowed"
+                            : isSelected
+                            ? "border-arc-cyan bg-arc-cyan/10 shadow-[0_0_25px_rgba(0,212,255,0.25)] ring-2 ring-arc-cyan cursor-pointer"
+                            : "border-white/10 bg-white/[0.03] hover:border-white/25 hover:bg-white/[0.06] cursor-pointer"
                         }`}
                       >
                         <div className="space-y-2">
@@ -1216,8 +1226,8 @@ export default function Checkout() {
                             >
                               {h.gender === "female" ? "Ladies Hostel" : "Mens Hostel"}
                             </span>
-                            <span className="text-[10px] font-mono text-emerald-400 font-bold">
-                              {h.available_beds} beds free
+                            <span className={`text-[10px] font-mono font-bold ${isFull ? "text-red-400" : "text-emerald-400"}`}>
+                              {isFull ? "Booking closed" : `${h.available_beds} / ${h.total_capacity || 50} beds free`}
                             </span>
                           </div>
 
@@ -1462,10 +1472,14 @@ export default function Checkout() {
                 <div className="flex justify-end pt-4 border-t border-white/10">
                   <button
                     type="button"
-                    disabled={!selectedHostel}
+                    disabled={!selectedHostel || selectedHostel.is_full || Number(selectedHostel.available_beds || 0) <= 0}
                     onClick={() => {
                       if (!selectedHostel) {
                         setError("Please choose a hostel wing.");
+                        return;
+                      }
+                      if (selectedHostel.is_full || Number(selectedHostel.available_beds || 0) <= 0) {
+                        setError("This hostel is full. Booking is closed.");
                         return;
                       }
                       setError("");
@@ -1618,7 +1632,7 @@ export default function Checkout() {
                       type="submit"
                       className="px-8 py-3.5 bg-arc-cyan hover:bg-white text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-[0_0_20px_rgba(0,212,255,0.4)] font-excon-black flex items-center gap-2 cursor-pointer"
                     >
-                      <span>Proceed to Payment</span>
+                      <span>Review Request</span>
                       <RiArrowRightLine />
                     </button>
                   </div>
@@ -1626,27 +1640,30 @@ export default function Checkout() {
               </div>
             )}
 
-            {/* Step 3: UPI Payment */}
+            {/* Step 3: Review and submit stay request */}
             {accStep === 3 && (
               <div className="marvel-card p-6 sm:p-8 rounded-3xl border border-white/15 bg-[#0A0D1A]/95 shadow-2xl space-y-6">
                 <div className="flex items-center justify-between border-b border-white/10 pb-4">
                   <div>
                     <span className="text-[10px] uppercase font-bold text-arc-cyan tracking-widest font-mono block">
-                      STEP 3 OF 4: OFFICIAL PAYMENT
+                      STEP 3 OF 4: CONFIRM BOOKING
                     </span>
                     <h2 className="text-2xl font-black uppercase text-white font-excon-black">
-                      Accommodation UPI Payment
+                      Submit Stay Booking
                     </h2>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] text-white/50 block font-mono">TOTAL PAYABLE</span>
+                    <span className="text-[10px] text-white/50 block font-mono">ESTIMATED STAY</span>
                     <span className="text-xl font-black text-metallic-gold font-excon-black">
                       ₹{accTotalAmount.toFixed(2)}
                     </span>
                   </div>
                 </div>
 
-                {/* Booking Summary Strip */}
+                <div className="p-4 rounded-2xl bg-arc-cyan/10 border border-arc-cyan/30 text-xs font-mono text-white/80 leading-relaxed">
+                  Pay the stay amount, then submit UTR + screenshot. Finance verifies the payment. Hospitality allocates your room and marks check-in at the desk.
+                </div>
+
                 <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 grid grid-cols-2 sm:grid-cols-5 gap-3 text-xs font-mono">
                   <div>
                     <span className="text-white/40 block text-[10px] uppercase">Quarters</span>
@@ -1670,144 +1687,111 @@ export default function Checkout() {
                   </div>
                 </div>
 
-                {/* UPI QR Code Display */}
-                <div className="p-6 rounded-3xl bg-black/60 border border-arc-cyan/30 text-center space-y-4 shadow-xl max-w-md mx-auto">
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-mono text-arc-cyan uppercase tracking-widest font-bold">
-                      S.H.I.E.L.D. QUARTERS QR
+                <div className="p-5 rounded-2xl bg-black/40 border border-white/10 space-y-3 max-w-md mx-auto font-mono text-xs">
+                  <div className="flex justify-between py-1 border-b border-white/5">
+                    <span className="text-white/50">College</span>
+                    <span className="font-bold text-white">{accForm.college || "—"}</span>
+                  </div>
+                  <div className="flex justify-between py-1 border-b border-white/5">
+                    <span className="text-white/50">Phone</span>
+                    <span className="font-bold text-white">{accForm.phone || "—"}</span>
+                  </div>
+                  <div className="flex justify-between py-1">
+                    <span className="text-white/50">Dates</span>
+                    <span className="font-bold text-white">
+                      {accForm.check_in_date} → {accForm.check_out_date}
                     </span>
-                    <h3 className="text-lg font-black text-white uppercase font-excon-black">
-                      Scan to Pay ₹{accTotalAmount.toFixed(2)}
-                    </h3>
                   </div>
-
-                  <div className="p-3 bg-white rounded-2xl shadow-[0_0_25px_rgba(0,212,255,0.25)] border-2 border-arc-cyan/40 inline-block">
-                    <img
-                      src="/hostel-payment-qr.jpg"
-                      alt="Hostel Payment QR"
-                      onError={(e) => {
-                        e.currentTarget.src = "/images/payment-qr.png";
-                      }}
-                      className="w-48 h-48 sm:w-56 sm:h-56 object-contain block mx-auto"
-                    />
-                  </div>
-
-                  <div className="p-3 rounded-2xl bg-white/5 border border-white/10 text-xs font-mono text-left space-y-1">
-                    <div className="flex justify-between items-center">
-                      <span className="text-white/50">Beneficiary:</span>
-                      <span className="text-white font-bold">ST ALPHONSA HOSTEL</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-white/50">UPI ID:</span>
-                      <span className="text-arc-cyan font-bold">stalphonsahostel@iob</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-white/50">Amount Due:</span>
-                      <span className="text-metallic-gold font-black">₹{accTotalAmount.toFixed(2)}</span>
-                    </div>
-                  </div>
-
-                  <p className="text-[11px] text-white/50 font-mono">
-                    Scan via Google Pay, PhonePe, Paytm, BHIM, or any UPI banking app.
-                  </p>
-
-                  <a
-                    href={`upi://pay?pa=stalphonsahostel@iob&pn=ST%20ALPHONSA%20HOSTEL&am=${accTotalAmount.toFixed(2)}&cu=INR&tn=MacFiesta%20Hostel`}
-                    className="w-full py-3.5 px-4 bg-arc-cyan hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_20px_rgba(0,212,255,0.35)] font-excon-black inline-flex items-center justify-center gap-2 cursor-pointer"
-                  >
-                    <span>Open UPI / GPay App (₹{accTotalAmount.toLocaleString("en-IN")})</span>
-                    <RiExternalLinkLine className="text-sm" />
-                  </a>
                 </div>
 
-                {/* Verification Inputs */}
-                <div className="p-5 rounded-2xl bg-black/40 border border-white/10 space-y-4 max-w-md mx-auto font-mono text-xs">
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase text-white/60 mb-1.5">
-                      UPI UTR / Transaction ID (12 Digits)
-                    </label>
-                    <input
-                      type="text"
-                      value={accForm.txn}
-                      onChange={(e) => setAccForm((prev) => ({ ...prev, txn: e.target.value }))}
-                      placeholder="e.g. 629102938475"
-                      className="w-full px-4 py-3 bg-white/5 border border-white/15 rounded-xl text-white focus:outline-none focus:border-arc-cyan font-mono uppercase"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-[10px] font-bold uppercase text-white mb-1.5 flex items-center justify-between">
-                      <span>
-                        Upload Payment Screenshot / Receipt <span className="text-red-400 font-bold">* (Compulsory)</span>
-                      </span>
-                      {accForm.proof && (
-                        <span className="text-emerald-400 font-mono text-[10px]">Proof attached</span>
-                      )}
-                    </label>
-                    <label className={`flex flex-col items-center justify-center p-4 border border-dashed rounded-xl cursor-pointer transition-all ${
-                      accForm.proof
-                        ? "border-emerald-500/60 bg-emerald-500/10"
-                        : "border-white/20 hover:border-arc-cyan bg-white/[0.02] hover:bg-white/[0.05]"
-                    }`}>
-                      <RiUploadCloud2Line className={`text-2xl mb-1 ${accForm.proof ? "text-emerald-400" : "text-arc-cyan"}`} />
-                      <span className="text-white/70 text-[11px] text-center font-mono">
-                        {accForm.proof ? `✓ ${accForm.proof.name}` : "Click to browse payment screenshot *"}
-                      </span>
-                      <span className="text-[10px] text-white/40 mt-0.5">PNG, JPG, JPEG accepted</span>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        required
-                        onChange={(e) => {
-                          const file = e.target.files?.[0];
-                          if (file) {
-                            setAccForm((prev) => ({ ...prev, proof: file }));
-                            setAccProofPreview(URL.createObjectURL(file));
-                          }
-                        }}
-                        className="hidden"
-                      />
-                    </label>
-                    {!accForm.proof && (
-                      <p className="mt-1 text-[10px] text-amber-400/90 font-mono">
-                        * Uploading proof is compulsory to verify payment and allocate room.
-                      </p>
-                    )}
-
-                    {accProofPreview && (
-                      <div className="mt-2 text-center">
+                {accTotalAmount > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5 max-w-3xl mx-auto">
+                    <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 flex flex-col items-center justify-center text-center space-y-2">
+                      <div className="w-36 h-36 rounded-xl bg-white p-2 flex items-center justify-center">
                         <img
-                          src={accProofPreview}
-                          alt="Payment Screenshot Preview"
-                          className="max-h-32 mx-auto rounded-lg border border-arc-cyan/40"
+                          src={registrationQrImageUrl(
+                            `upi://pay?pa=${encodeURIComponent(MACFIESTA_PAYMENT.hostelUpiId || MACFIESTA_PAYMENT.upiId)}&pn=${encodeURIComponent((MACFIESTA_PAYMENT.hostelAccountName || MACFIESTA_PAYMENT.accountName || "MacFiesta").slice(0, 50))}&am=${accTotalAmount.toFixed(2)}&cu=INR`,
+                            140
+                          )}
+                          alt="Hostel payment QR"
+                          className="w-full h-full object-contain"
                         />
                       </div>
-                    )}
+                      <span className="text-[11px] text-white/60">Scan with GPay / PhonePe / Paytm</span>
+                      <span className="text-[10px] text-metallic-gold font-bold">
+                        UPI ID: {MACFIESTA_PAYMENT.hostelUpiId || MACFIESTA_PAYMENT.upiId}
+                      </span>
+                      <a
+                        href={buildUpiPayLink(
+                          {
+                            upiId: MACFIESTA_PAYMENT.hostelUpiId || MACFIESTA_PAYMENT.upiId,
+                            accountName: MACFIESTA_PAYMENT.hostelAccountName || MACFIESTA_PAYMENT.accountName,
+                          },
+                          {
+                            amount: accTotalAmount,
+                            note: `MacFiesta hostel ${selectedHostel?.name || "stay"}`,
+                          }
+                        )}
+                        className="w-full py-3 px-4 bg-metallic-gold hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl transition-all font-excon-black inline-flex items-center justify-center gap-2 cursor-pointer mt-1"
+                      >
+                        <span>Open UPI / GPay (₹{Number(accTotalAmount || 0).toLocaleString("en-IN")})</span>
+                        <RiExternalLinkLine className="text-sm" />
+                      </a>
+                    </div>
+                    <div className="space-y-3 text-left">
+                      <div className="space-y-1">
+                        <label className="text-xs font-bold text-white uppercase">
+                          UPI Transaction / UTR Ref ID <span className="text-red-400">*</span>
+                        </label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. 123456789012"
+                          value={accForm.txn}
+                          onChange={(e) => setAccForm({ ...accForm, txn: e.target.value })}
+                          className="w-full px-3.5 py-2.5 rounded-xl bg-black/50 border border-white/15 text-white placeholder-white/30 text-xs focus:border-metallic-gold outline-none"
+                        />
+                      </div>
+                      <label className="text-xs font-bold text-white uppercase flex items-center gap-1.5">
+                        Payment Screenshot <span className="text-red-400">*</span>
+                      </label>
+                      <label
+                        className={`flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-2xl cursor-pointer transition-all ${
+                          accForm.proof
+                            ? "border-emerald-500/60 bg-emerald-500/10"
+                            : "border-white/20 hover:border-metallic-gold bg-white/[0.02]"
+                        }`}
+                      >
+                        <RiUploadCloud2Line className={`text-2xl mb-1 ${accForm.proof ? "text-emerald-400" : "text-metallic-gold"}`} />
+                        <span className="text-white/80 text-[11px] text-center font-mono font-bold">
+                          {accForm.proof ? `✓ ${accForm.proof.name}` : "Click to browse payment screenshot *"}
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/png,image/jpeg,image/jpg,image/webp"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0] || null;
+                            setAccForm({ ...accForm, proof: file });
+                            if (accProofPreview) URL.revokeObjectURL(accProofPreview);
+                            setAccProofPreview(file ? URL.createObjectURL(file) : null);
+                          }}
+                        />
+                      </label>
+                    </div>
                   </div>
+                )}
 
-                  {/* Buttons */}
-                  <div className="space-y-2 pt-2">
-                    <button
-                      type="button"
-                      disabled={accSubmitting}
-                      onClick={(e) => handleAccSubmit(e, false)}
-                      className="w-full py-3.5 bg-arc-cyan hover:bg-white text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-[0_0_20px_rgba(0,212,255,0.4)] font-excon-black flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
-                    >
-                      <RiLockLine />
-                      <span>{accSubmitting ? "Submitting Reservation..." : "Submit Reservation & Payment"}</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      disabled={accSubmitting}
-                      onClick={(e) => handleAccSubmit(e, true)}
-                      className="w-full py-2.5 bg-metallic-gold/15 hover:bg-metallic-gold/30 border border-metallic-gold/40 text-metallic-gold font-black text-[11px] uppercase tracking-wider rounded-xl transition-all font-excon-black flex items-center justify-center gap-1.5 cursor-pointer"
-                    >
-                      <RiSparklingLine />
-                      <span>⚡ Instant Confirm &amp; Lock Bed</span>
-                    </button>
-                  </div>
-
+                <div className="space-y-2 max-w-md mx-auto">
+                  <button
+                    type="button"
+                    disabled={accSubmitting || (accTotalAmount > 0 && (!accForm.txn.trim() || !accForm.proof))}
+                    onClick={(e) => handleAccSubmit(e)}
+                    className="w-full py-3.5 bg-arc-cyan hover:bg-white text-black font-black text-xs uppercase tracking-wider rounded-xl transition-all shadow-[0_0_20px_rgba(0,212,255,0.4)] font-excon-black flex items-center justify-center gap-2 cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <RiHotelBedLine />
+                    <span>{accSubmitting ? "Submitting Booking…" : "Confirm Hostel Booking"}</span>
+                  </button>
                   <div className="pt-2 text-center">
                     <button
                       type="button"
@@ -1821,33 +1805,32 @@ export default function Checkout() {
               </div>
             )}
 
-            {/* Step 4: Confirmed */}
+            {/* Step 4: Booking received */}
             {accStep === 4 && (
               <div className="marvel-card p-6 sm:p-8 rounded-3xl border border-arc-cyan/50 bg-[#0A0D1A]/95 shadow-[0_0_50px_rgba(0,212,255,0.2)] space-y-6 text-center">
-                <div className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-500 text-emerald-400 flex items-center justify-center text-3xl mx-auto shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+                <div className="w-16 h-16 rounded-full bg-emerald-500/20 border-2 border-emerald-400 text-emerald-300 flex items-center justify-center text-3xl mx-auto shadow-[0_0_30px_rgba(16,185,129,0.3)]">
                   <RiCheckboxCircleLine />
                 </div>
 
                 <div className="space-y-1">
-                  <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 text-[10px] font-black uppercase font-mono">
-                    ACCOMMODATION ALLOCATION CONFIRMED
+                  <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 text-[10px] font-black uppercase font-mono">
+                    BOOKING RECEIVED
                   </div>
                   <h2 className="text-2xl sm:text-3xl font-black uppercase text-white font-excon-black">
-                    Hostel Bed Reserved!
+                    Hostel Stay Booked
                   </h2>
-                  <p className="text-xs text-white/60 font-mono">
-                    Your on-campus festival stay has been logged into the hospitality system.
+                  <p className="text-xs text-white/60 font-mono max-w-lg mx-auto">
+                    Your bed is held after payment is submitted. Finance verifies the UPI screenshot; hospitality allocates a room and marks check-in.
                   </p>
                 </div>
 
-                {/* Dossier Card */}
                 <div className="p-5 rounded-2xl bg-black/40 border border-white/10 text-left font-mono text-xs space-y-2.5 max-w-lg mx-auto">
                   <div className="flex justify-between py-1 border-b border-white/5">
-                    <span className="text-white/50">Booking Reference:</span>
-                    <span className="font-bold text-arc-cyan">{accBookingResult?.booking_id || "HST-2026-CONFIRMED"}</span>
+                    <span className="text-white/50">Request Reference:</span>
+                    <span className="font-bold text-arc-cyan">{accBookingResult?.booking_id || "HST-2026-PENDING"}</span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-white/5">
-                    <span className="text-white/50">Hostel Wing:</span>
+                    <span className="text-white/50">Requested Hostel:</span>
                     <span className="font-bold text-white">{accBookingResult?.hostel_name || selectedHostel?.name}</span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-white/5">
@@ -1873,13 +1856,13 @@ export default function Checkout() {
                     <span className="font-bold text-metallic-gold">{mealPlanSummary}</span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-white/5">
-                    <span className="text-white/50">Total Amount:</span>
+                    <span className="text-white/50">Estimated Amount:</span>
                     <span className="font-bold text-white">₹{Number(accBookingResult?.payment_amount || accTotalAmount).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between py-1 border-b border-white/5">
                     <span className="text-white/50">Status:</span>
-                    <span className="font-bold text-emerald-400 uppercase">
-                      {accBookingResult?.status === "confirmed" ? "Confirmed Allocation" : "Pending Allocation"}
+                    <span className="font-bold text-emerald-300 uppercase">
+                      Booked · hospitality will allocate room
                     </span>
                   </div>
                   <div className="flex justify-between py-1">
@@ -1890,7 +1873,6 @@ export default function Checkout() {
                   </div>
                 </div>
 
-                {/* Actions */}
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-4 border-t border-white/10">
                   <Link
                     to="/student-dashboard"
@@ -2775,7 +2757,7 @@ export default function Checkout() {
               </div>
               <div className="text-xs text-white/60 space-y-0.5 sm:text-right">
                 <span className="block text-white font-bold">MACFAST Official UPI Gateway</span>
-                <span className="block text-arc-cyan">macfast12230qr@fbl</span>
+                <span className="block text-arc-cyan">{MACFIESTA_PAYMENT.upiId}</span>
               </div>
             </div>
 
@@ -2802,13 +2784,16 @@ export default function Checkout() {
                   <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/10 flex flex-col items-center justify-center text-center space-y-2">
                     <div className="w-36 h-36 rounded-xl bg-white p-2 flex items-center justify-center">
                       <img
-                        src={`https://api.qrserver.com/v1/create-qr-code/?size=140x140&data=upi://pay?pa=macfast12230qr@fbl%26pn=MACFAST%26am=${totalFee.toFixed(2)}%26cu=INR`}
+                        src={registrationQrImageUrl(
+                          `upi://pay?pa=${encodeURIComponent(MACFIESTA_PAYMENT.upiId)}&pn=${encodeURIComponent((MACFIESTA_PAYMENT.accountName || "MacFiesta").slice(0, 50))}&am=${totalFee.toFixed(2)}&cu=INR`,
+                          140
+                        )}
                         alt="Payment QR"
                         className="w-full h-full object-contain"
                       />
                     </div>
                     <span className="text-[11px] text-white/60">Scan with GPay / PhonePe / Paytm</span>
-                    <span className="text-[10px] text-metallic-gold font-bold">UPI ID: macfast12230qr@fbl</span>
+                    <span className="text-[10px] text-metallic-gold font-bold">UPI ID: {MACFIESTA_PAYMENT.upiId}</span>
                     <a
                       href={buildUpiPayLink(MACFIESTA_PAYMENT, {
                         amount: totalFee,
@@ -2837,29 +2822,82 @@ export default function Checkout() {
                       />
                     </div>
 
-                    <div className="space-y-1.5">
+                    <div className="space-y-2">
                       <label className="text-xs font-bold text-white uppercase flex items-center justify-between">
-                        <span>
-                          Payment Screenshot Proof <span className="text-red-400 font-bold">* (Compulsory)</span>
+                        <span className="flex items-center gap-1.5">
+                          <span>Payment Screenshot Proof</span>
+                          <span className="px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30 text-[10px] font-black uppercase tracking-wider">
+                            * Compulsory
+                          </span>
                         </span>
                         {paymentForm.proof && (
                           <span className="text-emerald-400 font-mono text-[10px]">Proof attached</span>
                         )}
                       </label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        required
-                        onChange={(e) => setPaymentForm({ ...paymentForm, proof: e.target.files[0] })}
-                        className="w-full text-xs text-white/60 file:mr-3 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-metallic-gold/20 file:text-metallic-gold hover:file:bg-metallic-gold hover:file:text-black cursor-pointer"
-                      />
-                      {paymentForm.proof ? (
-                        <p className="text-[10px] text-emerald-400 font-mono">
-                          ✓ Attached: {paymentForm.proof.name}
-                        </p>
-                      ) : (
-                        <p className="text-[10px] text-amber-400/90 font-mono">
-                          * Uploading proof screenshot is compulsory to verify credentials and lock registrations.
+
+                      <label
+                        className={`flex flex-col items-center justify-center p-4 border-2 border-dashed rounded-2xl cursor-pointer transition-all ${
+                          paymentForm.proof
+                            ? "border-emerald-500/60 bg-emerald-500/10"
+                            : "border-white/20 hover:border-metallic-gold bg-white/[0.02] hover:bg-white/[0.05]"
+                        }`}
+                      >
+                        <RiUploadCloud2Line
+                          className={`text-2xl mb-1 ${paymentForm.proof ? "text-emerald-400" : "text-metallic-gold"}`}
+                        />
+                        <span className="text-white/80 text-[11px] text-center font-mono font-bold">
+                          {paymentForm.proof ? `✓ ${paymentForm.proof.name}` : "Click to browse payment screenshot *"}
+                        </span>
+                        <span className="text-[10px] text-white/40 mt-0.5">
+                          PNG, JPG, JPEG accepted · Transaction details must be visible
+                        </span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          required
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              setPaymentForm((prev) => ({ ...prev, proof: file }));
+                              setBatchProofPreview(URL.createObjectURL(file));
+                            }
+                          }}
+                          className="hidden"
+                        />
+                      </label>
+
+                      {batchProofPreview && (
+                        <div className="relative p-2 rounded-xl bg-black/60 border border-white/10 flex items-center gap-3">
+                          <img
+                            src={batchProofPreview}
+                            alt="Payment Screenshot Preview"
+                            className="w-14 h-14 object-cover rounded-lg border border-metallic-gold/30 shrink-0"
+                          />
+                          <div className="min-w-0 flex-1 font-mono text-xs">
+                            <span className="text-emerald-400 font-bold block truncate">
+                              ✓ {paymentForm.proof?.name}
+                            </span>
+                            <span className="text-[10px] text-white/40 block">
+                              {(paymentForm.proof?.size / 1024).toFixed(1)} KB · Ready to submit
+                            </span>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setPaymentForm((prev) => ({ ...prev, proof: null }));
+                              setBatchProofPreview(null);
+                            }}
+                            className="text-xs text-marvel-red hover:underline shrink-0 p-1 font-mono"
+                          >
+                            Change
+                          </button>
+                        </div>
+                      )}
+
+                      {!paymentForm.proof && (
+                        <p className="text-[10px] text-amber-400/90 font-mono flex items-center gap-1.5 pt-0.5">
+                          <RiAlertLine className="shrink-0 text-xs" />
+                          <span>* Uploading proof screenshot is compulsory to verify credentials and lock registrations.</span>
                         </p>
                       )}
                     </div>
@@ -2868,19 +2906,9 @@ export default function Checkout() {
                       <button
                         type="submit"
                         disabled={submitting || !paymentForm.txn.trim() || !paymentForm.proof}
-                        className="w-full py-3 bg-metallic-gold hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg font-excon-black cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-center block"
+                        className="w-full py-3.5 bg-metallic-gold hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-xl transition-all shadow-lg font-excon-black cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed text-center block"
                       >
-                        {submitting ? "Submitting Payment..." : "Submit Payment & Lock All Registrations"}
-                      </button>
-
-                      {/* Direct Test Payment Simulator Button */}
-                      <button
-                        type="button"
-                        disabled={submitting}
-                        onClick={handleBatchDirectConfirm}
-                        className="w-full py-2 bg-emerald-500/20 hover:bg-emerald-500 text-emerald-300 hover:text-black font-black text-[11px] uppercase tracking-wider rounded-xl transition-all border border-emerald-500/40 text-center block cursor-pointer"
-                      >
-                        ⚡ Instant Test Payment (Direct Verification)
+                        {submitting ? "Submitting Payment Proof..." : "Submit Payment & Lock All Registrations"}
                       </button>
                     </div>
                   </div>

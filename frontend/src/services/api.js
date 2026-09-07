@@ -1,7 +1,7 @@
 import axios from "axios";
 import { logout, notifyAuthChange } from "../utils/auth";
 
-export const PRODUCTION_API_URL = "https://macfiesta-api.onrender.com/api";
+export const PRODUCTION_API_URL = "https://macfiesta-pro-api.onrender.com/api";
 
 /**
  * Resolve API base for desktop, LAN phone browsers, and Capacitor.
@@ -29,7 +29,7 @@ function resolveApiBase() {
     const { protocol, hostname } = window.location;
     const isLoopback = hostname === "localhost" || hostname === "127.0.0.1";
     if (hostname.endsWith(".vercel.app") || hostname.endsWith(".netlify.app")) {
-      return PRODUCTION_API_URL;
+      return "/api";
     }
     if (hostname && !isLoopback) {
       return `${protocol}//${hostname}/api`;
@@ -168,8 +168,12 @@ export function getDashboardStats() {
   return api.get("/dashboard/stats/", { headers: authHeaders() });
 }
 
-export function getStaffDirectory() {
-  return api.get("/admin/staff/", { headers: authHeaders() });
+export function getStaffDirectory(params = {}) {
+  return api.get("/admin/staff/", { headers: authHeaders(), params });
+}
+
+export function getStaffAccount(id) {
+  return api.get(`/admin/staff/${id}/`, { headers: authHeaders() });
 }
 
 export async function createStaffAccount(data) {
@@ -178,6 +182,10 @@ export async function createStaffAccount(data) {
 
 export async function updateStaffAccount(id, data) {
   return api.patch(`/admin/staff/${id}/`, data, { headers: authHeaders() });
+}
+
+export async function deleteStaffAccount(id) {
+  return api.delete(`/admin/staff/${id}/`, { headers: authHeaders() });
 }
 
 export function getParticipantList(params = {}) {
@@ -192,11 +200,12 @@ export async function updateParticipant(id, data) {
   return api.patch(`/admin/participants/${id}/`, data, { headers: authHeaders() });
 }
 
+export async function deleteParticipant(id) {
+  return api.delete(`/admin/participants/${id}/`, { headers: authHeaders() });
+}
+
 export function exportParticipantsCSV() {
-  // Returns a URL that the browser can follow to trigger CSV download
-  const token = localStorage.getItem("access_token") || "";
-  const base = api.defaults.baseURL || "";
-  return `${base}/admin/participants/?export=csv&token=${encodeURIComponent(token)}`;
+  return downloadParticipantsCSV();
 }
 
 export async function downloadParticipantsCSV(search = "") {
@@ -302,7 +311,7 @@ export function initiateTeamPayment(registrationId) {
 }
 
 export function confirmTeamPaymentDirect(registrationId, data = {}) {
-  return api.post(`/registrations/${registrationId}/submit-payment/`, { auto_confirm: true, ...data }, { headers: authHeaders() });
+  return api.post(`/registrations/${registrationId}/submit-payment/`, { ...data }, { headers: authHeaders() });
 }
 
 export function inviteTeamMember(registrationId, data) {
@@ -496,6 +505,22 @@ export function getAdminAccommodationBookings() {
 
 export function updateAdminAccommodationBooking(id, data) {
   return api.patch(`/accommodation/bookings/${id}/`, data, adminConfig(data));
+}
+
+export function approveAccommodationBooking(id, data = {}) {
+  return api.post(`/accommodation/bookings/${id}/approve/`, data, { headers: authHeaders() });
+}
+
+export function rejectAccommodationBooking(id, data = {}) {
+  return api.post(`/accommodation/bookings/${id}/reject/`, data, { headers: authHeaders() });
+}
+
+export function verifyHostelPayment(id) {
+  return api.post(`/accommodation/bookings/${id}/verify-payment/`, {}, { headers: authHeaders() });
+}
+
+export function rejectHostelPayment(id, data = {}) {
+  return api.post(`/accommodation/bookings/${id}/reject-payment/`, data, { headers: authHeaders() });
 }
 
 export function getHospitalityStats() {
@@ -767,10 +792,20 @@ export function getAuditLogs(params = {}) {
   return api.get("/admin/audit-logs/", { headers: authHeaders(), params });
 }
 
-export function downloadSystemBackup() {
-  const token = localStorage.getItem("access_token") || "";
-  const base = api.defaults.baseURL || "";
-  return `${base}/admin/system-backup/?token=${encodeURIComponent(token)}`;
+export async function downloadSystemBackup() {
+  const res = await api.get("/admin/system-backup/", {
+    responseType: "blob",
+    headers: authHeaders(),
+  });
+  return res.data;
+}
+
+export function getUniversePoll() {
+  return api.get("/public/poll/", { headers: authHeaders() });
+}
+
+export function voteUniversePoll(choice) {
+  return api.post("/public/poll/", { choice }, { headers: authHeaders() });
 }
 
 

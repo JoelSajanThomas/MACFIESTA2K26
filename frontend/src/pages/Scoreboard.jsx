@@ -81,7 +81,7 @@ export default function Scoreboard() {
 
   usePageSeo({
     title: "Live Radar Scoreboard · College Points Leaderboard · MacFiesta 2026",
-    description: "Real-time college-wise leaderboard, power levels, and cumulative scores across all 23 MacFiesta 2026 arena missions.",
+    description: "Real-time college-wise leaderboard, power levels, and cumulative scores across all 22 MacFiesta 2026 arena missions.",
   });
 
   const fetchData = () => {

@@ -30,7 +30,7 @@ The script automatically:
 3. Sets up `.env` configured with **SQLite (`db.sqlite3`) by default**.
 4. Runs database migrations (`python manage.py migrate`).
 5. Collects all static files (`python manage.py collectstatic --noinput`).
-6. Syncs all 23 official school and college events.
+6. Syncs all 22 official school and college events.
 7. Installs frontend dependencies and builds the production bundle (`npm run build`).
 8. Configures and starts the `macfiesta.service` systemd daemon.
 9. Configures, tests, and enables the Nginx reverse proxy.

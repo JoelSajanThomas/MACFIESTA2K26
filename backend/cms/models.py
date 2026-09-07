@@ -34,6 +34,10 @@ class SiteSetting(models.Model):
         default=True,
         help_text="Allow participants to create new accounts and register for events.",
     )
+    is_maintenance_mode = models.BooleanField(
+        default=False,
+        help_text="When enabled, the public site shows the maintenance screen.",
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:

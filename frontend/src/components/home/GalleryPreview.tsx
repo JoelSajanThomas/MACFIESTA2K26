@@ -4,7 +4,7 @@ import { useRef } from "react";
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 import Image from "next/image";
-import { RiArrowRightLine, RiImageLine, RiShieldFlashLine, RiZoomInLine } from "react-icons/ri";
+import { RiArrowRightLine, RiShieldFlashLine, RiZoomInLine } from "react-icons/ri";
 import { Reveal, RevealGroup, RevealItem } from "@/components/ui/Reveal";
 import { useGalleryItems } from "@/lib/galleryStore";
 
@@ -77,41 +77,29 @@ export function GalleryPreview() {
         </Reveal>
 
         {/* Photo Grid — Staggered reveal & dynamic 3D scroll parallax depth */}
-        <RevealGroup stagger={0.12} margin="-100px" className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+        <RevealGroup stagger={0.12} margin="-100px" className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 items-stretch">
           {photos.map((photo, idx) => (
             <RevealItem key={idx}>
               <motion.div
                 style={{ y: idx % 2 === 0 ? parallaxYEven : parallaxYOdd }}
-                whileHover={{ scale: 1.03 }}
+                whileHover={{ scale: 1.02 }}
                 transition={{ type: "spring", stiffness: 300, damping: 20 }}
-                className="relative aspect-square md:aspect-[3/4] overflow-hidden rounded-2xl border border-white/8 group shadow-lg cursor-pointer hover:border-arc-cyan/40 transition-colors duration-300"
+                className="flex flex-col overflow-hidden rounded-2xl border border-white/8 group shadow-lg cursor-pointer hover:border-arc-cyan/40 transition-colors duration-300 bg-[#0A0D1A]"
               >
-                <div className="w-full h-full overflow-hidden relative">
+                <div className="relative aspect-[4/3] bg-black">
                   <Image
                     src={photo.url}
                     alt={photo.title}
                     fill
-                    className="object-cover transition-transform duration-500 ease-out group-hover:scale-110"
+                    className="object-contain p-1"
                   />
                 </div>
-
-                {/* Gradient overlay */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-400" />
-
-                {/* Hover content */}
-                <div className="absolute bottom-4 left-4 right-4 z-10 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-between">
+                <div className="px-3 py-2.5 flex items-center justify-between gap-2 border-t border-white/10 min-h-[2.75rem]">
                   <span className="text-white text-xs md:text-sm font-bold truncate uppercase tracking-wider font-space">
                     {photo.title}
                   </span>
-                  <span className="p-2 rounded-full bg-arc-cyan text-black text-xs shrink-0 shadow-[0_0_12px_#00D4FF]">
+                  <span className="p-1.5 rounded-full bg-arc-cyan text-black text-xs shrink-0 shadow-[0_0_12px_#00D4FF]">
                     <RiZoomInLine />
-                  </span>
-                </div>
-
-                {/* Top right overlay badge */}
-                <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span className="p-1.5 rounded-full bg-black/70 text-white/70 text-xs block">
-                    <RiImageLine />
                   </span>
                 </div>
               </motion.div>

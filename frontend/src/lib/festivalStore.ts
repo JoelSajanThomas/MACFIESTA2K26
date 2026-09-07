@@ -229,7 +229,7 @@ const DEFAULT_SETTINGS: FestivalSettings = {
   heroTitle: "WELCOME TO",
   heroName: "MACFIESTA",
   heroSubtitle: "MARVELVERSE",
-  heroDesc: "Unleash your superpower across 23 national inter-collegiate tech, cultural, gaming & management challenges.",
+  heroDesc: "Unleash your superpower across 22 national inter-collegiate tech, cultural, gaming & management challenges.",
   bgType: "image",
   videoBgUrl: "/MARVEL/Video Project 4.mp4",
   wallpaperUrl: "/MARVEL/3025924746959430.jpg",
@@ -367,7 +367,7 @@ const DEFAULT_ANIMATIONS: AnimationSettings = {
 
 const DEFAULT_SEO: SeoSettings = {
   metaTitle: "MacFiesta 2K26 — Premier National Inter-Collegiate Festival",
-  metaDescription: "Experience 23 national technical, cultural & gaming challenges at MACFAST Tiruvalla. Win cash prizes worth ₹20 Lakhs!",
+  metaDescription: "Experience 22 national technical, cultural & gaming challenges at MACFAST Tiruvalla. Win cash prizes worth ₹20 Lakhs!",
   keywords: "MacFiesta, MACFAST, College Fest, Inter-Collegiate, Kerala Tech Fest, Esports, Hackathon",
   ogImage: "/MARVEL/3025924746959430.jpg",
   twitterHandle: "@macfiesta",
@@ -423,7 +423,8 @@ export function getFestivalSettings(): FestivalSettings {
   if (typeof window === "undefined") return DEFAULT_SETTINGS;
   try {
     const saved = localStorage.getItem("macfiesta_control_settings");
-    return saved ? { ...DEFAULT_SETTINGS, ...JSON.parse(saved) } : DEFAULT_SETTINGS;
+    const parsed = saved ? { ...DEFAULT_SETTINGS, ...JSON.parse(saved) } : DEFAULT_SETTINGS;
+    return { ...parsed, maintenanceMode: false };
   } catch {
     return DEFAULT_SETTINGS;
   }
@@ -773,12 +774,14 @@ export function useFestivalControl() {
 
         if (configRes.status === "fulfilled" && configRes.value?.data) {
           const d = configRes.value.data;
+          const contact = d.contact || {};
           const updatedSettings: Partial<FestivalSettings> = {
             name: d.fest_name || "MacFiesta",
-            tagline: d.fest_theme || "Where Legends Rise",
+            tagline: d.fest_theme || d.tagline || "Where Legends Rise",
             registrationOpen: d.registration_open ?? true,
-            contactEmail: d.contact_email || "macfiesta@macfast.org",
-            contactPhone: d.contact_phone || "+91 94470 12345",
+            maintenanceMode: false,
+            contactEmail: d.contact_email || contact.email || "macfiesta@macfast.org",
+            contactPhone: d.contact_phone || contact.phone || "",
           };
           saveFestivalSettings(updatedSettings);
         }

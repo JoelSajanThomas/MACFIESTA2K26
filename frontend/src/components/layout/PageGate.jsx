@@ -6,8 +6,9 @@ import { useLoading } from "../../providers/LoadingProvider";
  */
 export default function PageGate({ children, bypass = false }) {
   const { isDone } = useLoading();
+  const isRoot = typeof window !== "undefined" && window.location.pathname === "/";
 
-  if (bypass) return children;
+  if (bypass || !isRoot) return children;
 
   const ready = isDone;
 
