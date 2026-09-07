@@ -75,6 +75,13 @@ class Event(models.Model):
     is_result_published = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        indexes = [
+            models.Index(fields=["is_registration_open", "status"]),
+            models.Index(fields=["event_date"]),
+            models.Index(fields=["audience"]),
+        ]
+
     def participant_count(self):
         return self.registrations.filter(is_waiting_list=False).count()
 

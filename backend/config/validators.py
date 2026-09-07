@@ -45,14 +45,19 @@ def validate_uploaded_image(image):
     ext = os.path.splitext(name)[1]
     content_type = getattr(image, "content_type", "").lower()
 
-    # Allow SVG files
+    # Secure SVG handling — block script injection and active content
     if ext == ".svg" or "svg" in content_type:
         try:
-            head = image.read(1024)
+            head = image.read(65536)  # inspect up to 64KB for malicious scripts
             image.seek(0)
             text = head.decode("utf-8", errors="ignore").lower()
+            dangerous_tokens = ["<script", "javascript:", "onload=", "onerror=", "onclick=", "<foreignobject"]
+            if any(token in text for token in dangerous_tokens):
+                raise ValidationError("SVG file contains disallowed script or interactive elements.")
             if "<svg" in text or "<?xml" in text:
                 return image
+        except ValidationError:
+            raise
         except Exception:
             pass
 
@@ -65,7 +70,7 @@ def validate_uploaded_image(image):
         if ext in COMMON_IMAGE_EXTS or content_type.startswith("image/"):
             image.seek(0)
             return image
-        raise ValidationError("Invalid image file. Please upload a valid image (PNG, JPG, SVG, WEBP, GIF, etc.).")
+        raise ValidationError("Invalid image file. Please upload a valid image (PNG, JPG, WEBP, GIF, etc.).")
 
     image.seek(0)
     return image

@@ -45,6 +45,13 @@ class StaffProfile(models.Model):
             return list(ALL_MODULES)
         return list(MODULES_BY_COMMITTEE.get(self.committee, ["insights"]))
 
+    def can_access_module(self, module: str) -> bool:
+        if self.user.is_superuser or self.committee == "core":
+            return True
+        if self.committee == module:
+            return True
+        return module in self.modules
+
 
 class AuditLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="audit_logs")

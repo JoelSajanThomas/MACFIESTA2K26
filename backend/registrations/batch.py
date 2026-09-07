@@ -99,11 +99,40 @@ def _create_one_registration(
     else:
         is_solo = (getattr(event, "type", "") in ("solo", "individual") or base.get("registration_type") == "individual")
 
-    # Clean valid members list
+    # Clean valid members list with strict validation
     valid_members = []
     if members_data:
+        from config.validators import validate_phone_number
+        from django.core.validators import validate_email as django_validate_email
+        from django.core.exceptions import ValidationError as DjangoValidationError
+
+        seen_emails = {str(base.get("email") or "").strip().lower()}
         for m in members_data:
             if m and isinstance(m, dict) and (m.get("name") or "").strip():
+                m_email = (m.get("email") or "").strip().lower()
+                if m_email:
+                    if m_email in seen_emails:
+                        raise serializers.ValidationError(
+                            {"team_members": f"Duplicate member email '{m_email}' in squad for '{event.title}'."}
+                        )
+                    try:
+                        django_validate_email(m_email)
+                    except DjangoValidationError:
+                        raise serializers.ValidationError(
+                            {"team_members": f"Invalid email format '{m_email}' for member {m.get('name')}."}
+                        )
+                    seen_emails.add(m_email)
+
+                m_phone = (m.get("phone") or "").strip()
+                if m_phone:
+                    try:
+                        m["phone"] = validate_phone_number(m_phone)
+                    except DjangoValidationError as exc:
+                        msg = exc.messages[0] if getattr(exc, "messages", None) else str(exc)
+                        raise serializers.ValidationError(
+                            {"team_members": f"Invalid phone for member {m.get('name')}: {msg}"}
+                        )
+
                 valid_members.append(m)
 
     if is_solo:
@@ -267,6 +296,23 @@ def create_registration_batch(
     for field in ("participant_name", "college_name", "phone", "email"):
         if not str(base.get(field) or "").strip():
             raise serializers.ValidationError({field: "This field is required."})
+
+    from config.validators import validate_phone_number
+    from django.core.validators import validate_email as django_validate_email
+    from django.core.exceptions import ValidationError as DjangoValidationError
+
+    try:
+        base["phone"] = validate_phone_number(base["phone"])
+    except DjangoValidationError as exc:
+        msg = exc.messages[0] if getattr(exc, "messages", None) else str(exc)
+        raise serializers.ValidationError({"phone": msg})
+
+    raw_email = str(base["email"]).strip().lower()
+    try:
+        django_validate_email(raw_email)
+        base["email"] = raw_email
+    except DjangoValidationError:
+        raise serializers.ValidationError({"email": "Enter a valid email address."})
 
     batch_id = new_payment_batch_id()
     reference = new_payment_reference()

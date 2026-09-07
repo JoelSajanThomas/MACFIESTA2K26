@@ -39,9 +39,9 @@ class SecurityHeadersMiddleware:
         # ── Referrer policy: never leak full URL to third parties ──────────
         response["Referrer-Policy"] = "strict-origin-when-cross-origin"
 
-        # ── Permissions policy: disable dangerous browser features ─────────
+        # ── Permissions policy: allow camera for QR pass scanner, disable other dangerous features
         response["Permissions-Policy"] = (
-            "camera=(), microphone=(), geolocation=(), "
+            "camera=(self), microphone=(), geolocation=(), "
             "payment=(), usb=(), interest-cohort=()"
         )
 
