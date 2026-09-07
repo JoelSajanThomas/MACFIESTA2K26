@@ -13,6 +13,8 @@ import {
   updateEvent,
   invalidateApiGetCache,
 } from "../../services/api";
+import api from "../../services/api";
+import { ALL_EVENTS } from "../../lib/eventsData";
 import { EVENT_CATEGORY_OPTIONS, EVENT_AUDIENCE_OPTIONS, exportPdf } from "../../utils/adminUtils";
 import { useAdminStaff } from "../../components/admin/AdminStaffContext";
 
@@ -38,6 +40,7 @@ export default function AdminEventsList() {
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteError, setDeleteError] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [isOfflineFallback, setIsOfflineFallback] = useState(false);
 
   function setCategory(next) {
     const nextParams = new URLSearchParams(searchParams);
@@ -46,48 +49,123 @@ export default function AdminEventsList() {
     setSearchParams(nextParams, { replace: true });
   }
 
-  function load() {
+  async function load(forceRefresh = false) {
     setLoading(true);
     setError("");
-    Promise.all([
-      getEvents(),
-      getAdminRegistrations().catch(() => ({ data: [] })),
-      getResults().catch(() => ({ data: [] })),
-    ])
-      .then(([eventsRes, regsRes, resultsRes]) => {
-        setEvents(Array.isArray(eventsRes.data) ? eventsRes.data : []);
-        const regs = Array.isArray(regsRes.data) ? regsRes.data : regsRes.data?.results || [];
-        setRawRegistrations(regs);
-        const counts = {};
-        const participants = {};
-        const eventAttended = {};
-        const gateAttended = {};
-        regs.forEach((r) => {
-          if (r.approval_status === "cancelled") return;
-          const key = r.event;
-          counts[key] = (counts[key] || 0) + 1;
-          const teamExtra = r.registration_type === "team" ? (r.team_members?.length || 0) : 0;
-          participants[key] = (participants[key] || 0) + 1 + teamExtra;
+    if (forceRefresh) {
+      invalidateApiGetCache("events");
+      invalidateApiGetCache("results");
+    }
 
-          // Event arena attendance
-          if (r.event_attendance_marked) {
-            eventAttended[key] = (eventAttended[key] || 0) + 1;
+    try {
+      const [eventsRes, regsRes, resultsRes] = await Promise.all([
+        getEvents(forceRefresh).catch(async (err) => {
+          // Retry fresh directly from API if initial attempt encountered a glitch
+          try {
+            invalidateApiGetCache("events");
+            return await api.get("/events/");
+          } catch (retryErr) {
+            return { data: null, error: retryErr || err };
           }
-          // Gate / desk verification
-          if (r.verification_attendance_marked || r.attendance_marked) {
-            gateAttended[key] = (gateAttended[key] || 0) + 1;
-          }
-        });
-        setRegCounts({ counts, participants, eventAttended, gateAttended });
-        const results = Array.isArray(resultsRes.data) ? resultsRes.data : resultsRes.data?.results || [];
-        const byEvent = {};
-        results.forEach((r) => {
-          byEvent[r.event] = (byEvent[r.event] || 0) + 1;
-        });
-        setResultMap(byEvent);
-      })
-      .catch(() => setError("Could not load events."))
-      .finally(() => setLoading(false));
+        }),
+        getAdminRegistrations().catch(() => ({ data: [] })),
+        getResults().catch(() => ({ data: [] })),
+      ]);
+
+      let eventList = [];
+      if (Array.isArray(eventsRes?.data)) {
+        eventList = eventsRes.data;
+      } else if (Array.isArray(eventsRes?.data?.results)) {
+        eventList = eventsRes.data.results;
+      } else if (Array.isArray(eventsRes?.data?.events)) {
+        eventList = eventsRes.data.events;
+      }
+
+      if (eventList.length === 0) {
+        if (eventsRes?.error) {
+          console.warn("Could not load live events from server, using local roster fallback:", eventsRes.error);
+          const fallbackList = ALL_EVENTS.map((e, idx) => ({
+            id: idx + 1,
+            title: e.title,
+            category: e.category,
+            audience: e.scope || (e.slug?.startsWith("school-") ? "school" : "college"),
+            venue: e.venue || "Campus Arena",
+            event_date: e.date || "2026-09-24",
+            event_time: e.time || "10:00:00",
+            status: e.status || "published",
+            is_result_published: false,
+            participant_count: e.registeredCount || 0,
+            min_team_size: e.min_team_size || 1,
+            max_team_size: e.max_team_size || 1,
+            registration_fee: e.registrationFee || 0,
+            prize_pool: e.prizePool || 0,
+          }));
+          setEvents(fallbackList);
+          setIsOfflineFallback(true);
+          setError("");
+        } else {
+          setEvents([]);
+          setIsOfflineFallback(false);
+        }
+      } else {
+        setEvents(eventList);
+        setIsOfflineFallback(false);
+        setError("");
+      }
+
+      const regs = Array.isArray(regsRes?.data)
+        ? regsRes.data
+        : regsRes?.data?.results || [];
+      setRawRegistrations(regs);
+      const counts = {};
+      const participants = {};
+      const eventAttended = {};
+      const gateAttended = {};
+      regs.forEach((r) => {
+        if (r.approval_status === "cancelled") return;
+        const key = r.event;
+        counts[key] = (counts[key] || 0) + 1;
+        const teamExtra = r.registration_type === "team" ? (r.team_members?.length || 0) : 0;
+        participants[key] = (participants[key] || 0) + 1 + teamExtra;
+
+        // Event arena attendance
+        if (r.event_attendance_marked) {
+          eventAttended[key] = (eventAttended[key] || 0) + 1;
+        }
+        // Gate / desk verification
+        if (r.verification_attendance_marked || r.attendance_marked) {
+          gateAttended[key] = (gateAttended[key] || 0) + 1;
+        }
+      });
+      setRegCounts({ counts, participants, eventAttended, gateAttended });
+      const results = Array.isArray(resultsRes?.data)
+        ? resultsRes.data
+        : resultsRes?.data?.results || [];
+      const byEvent = {};
+      results.forEach((r) => {
+        byEvent[r.event] = (byEvent[r.event] || 0) + 1;
+      });
+      setResultMap(byEvent);
+    } catch (err) {
+      console.error("AdminEventsList load failed:", err);
+      // Even on catastrophic unexpected catch, fallback to local roster
+      const fallbackList = ALL_EVENTS.map((e, idx) => ({
+        id: idx + 1,
+        title: e.title,
+        category: e.category,
+        audience: e.scope || (e.slug?.startsWith("school-") ? "school" : "college"),
+        venue: e.venue || "Campus Arena",
+        event_date: e.date || "2026-09-24",
+        event_time: e.time || "10:00:00",
+        status: e.status || "published",
+        is_result_published: false,
+        participant_count: e.registeredCount || 0,
+      }));
+      setEvents(fallbackList);
+      setIsOfflineFallback(true);
+    } finally {
+      setLoading(false);
+    }
   }
 
   function downloadEventPdf(event) {
@@ -220,10 +298,45 @@ export default function AdminEventsList() {
         <p className="section-eyebrow">Event Operations</p>
         <div className="admin-list-head">
           <h1>Missions</h1>
-          <Link to="/admin/events/new" className="btn btn-gold btn-sm">Add Mission</Link>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={() => load(true)}
+              title="Force reload events from server"
+            >
+              Refresh
+            </button>
+            <Link to="/admin/events/new" className="btn btn-gold btn-sm">Add Mission</Link>
+          </div>
         </div>
         <p>Open a mission to view participants, set winners, or edit details.</p>
       </header>
+
+      {isOfflineFallback && (
+        <div style={{
+          background: "rgba(234, 179, 8, 0.12)",
+          border: "1px solid rgba(234, 179, 8, 0.4)",
+          color: "#FACC15",
+          padding: "0.75rem 1rem",
+          borderRadius: "8px",
+          marginBottom: "1rem",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          fontSize: "0.875rem",
+        }}>
+          <span>⚠️ Offline cache active. Displaying missions roster. Click Reconnect to sync with live backend.</span>
+          <button
+            type="button"
+            className="btn btn-outline btn-sm"
+            style={{ borderColor: "#FACC15", color: "#FACC15" }}
+            onClick={() => load(true)}
+          >
+            Reconnect
+          </button>
+        </div>
+      )}
 
       <div className="admin-kpi-grid admin-kpi-grid--compact">
         <article className="admin-kpi-card"><strong>{summary.total}</strong><span>Total events</span></article>
@@ -250,7 +363,7 @@ export default function AdminEventsList() {
       </AdminTableToolbar>
 
       {loading && <LoadingState message="Loading events…" />}
-      {error && <ErrorState message={error} onRetry={load} />}
+      {error && <ErrorState message={error} onRetry={() => load(true)} />}
 
       {!loading && !error && filtered.length === 0 && (
         <EmptyState title="No events found" message="No events match your filters." />

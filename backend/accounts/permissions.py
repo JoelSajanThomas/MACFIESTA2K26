@@ -75,10 +75,26 @@ def user_modules(user):
         return []
     profile = getattr(user, "staff_profile", None)
     if profile is None:
-        return []
+        try:
+            from .models import StaffProfile
+            profile, _ = StaffProfile.objects.get_or_create(
+                user=user,
+                defaults={"committee": "core"},
+            )
+        except Exception:
+            return list(ALL_MODULES)
     return profile.modules
 
 
+MODULE_ALIASES = {
+    "payments": "finance",
+    "payment": "finance",
+    "stay": "hospitality",
+    "food": "hospitality",
+}
+
+
 def user_has_module(user, module):
-    return module in user_modules(user)
+    normalized = MODULE_ALIASES.get(module, module)
+    return normalized in user_modules(user)
 

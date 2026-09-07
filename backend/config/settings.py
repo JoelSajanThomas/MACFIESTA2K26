@@ -60,6 +60,30 @@ if not ALLOWED_HOSTS:
 # Allow all CORS origins if explicitly set, or if DEBUG
 CORS_ALLOW_ALL_ORIGINS = env_bool("CORS_ALLOW_ALL_ORIGINS", DEBUG)
 CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS")
+CORS_ALLOW_CREDENTIALS = True
+
+from corsheaders.defaults import default_headers
+
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    "x-admin-password",
+    "x-csrftoken",
+    "x-requested-with",
+    "cache-control",
+    "pragma",
+]
+
+CORS_ALLOWED_ORIGIN_REGEXES = [
+    r"^https?:\/\/localhost(:\d+)?$",
+    r"^https?:\/\/127\.0\.0\.1(:\d+)?$",
+    r"^https?:\/\/192\.168\.\d+\.\d+(:\d+)?$",
+    r"^https?:\/\/172\.(1[6-9]|2[0-9]|3[0-1])\.\d+\.\d+(:\d+)?$",
+    r"^https?:\/\/10\.\d+\.\d+\.\d+(:\d+)?$",
+    r"^https:\/\/.*\.vercel\.app$",
+    r"^https:\/\/.*\.onrender\.com$",
+    r"^https:\/\/.*\.github\.io$",
+]
+if DEBUG:
+    CORS_ALLOWED_ORIGIN_REGEXES.append(r"^https?:\/\/.*")
 
 CSRF_TRUSTED_ORIGINS = env_list("CSRF_TRUSTED_ORIGINS", CORS_ALLOWED_ORIGINS)
 if not CSRF_TRUSTED_ORIGINS:
@@ -72,6 +96,9 @@ if not CSRF_TRUSTED_ORIGINS:
         "http://127.0.0.1:8000",
         "https://*.onrender.com",
         "https://*.vercel.app",
+        "https://macfiesta.vercel.app",
+        "https://joelzacharia.github.io",
+        "https://macfiesta-pro-api.onrender.com",
         "https://localhost",
         "capacitor://localhost",
         "http://localhost",
@@ -99,6 +126,7 @@ REST_FRAMEWORK = {
         "rest_framework.permissions.AllowAny",
     ],
     "DEFAULT_AUTHENTICATION_CLASSES": [
+        "config.authentication.QueryParamJWTAuthentication",
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ],
     "DEFAULT_THROTTLE_CLASSES": [
@@ -124,7 +152,7 @@ MEDIA_ROOT = BASE_DIR / "media"
 SERVE_MEDIA = env_bool("SERVE_MEDIA", True)
 
 # Frontend origin for password-reset links (e.g. https://macfiesta-pro.vercel.app)
-FRONTEND_BASE_URL = os.environ.get("FRONTEND_BASE_URL", "").rstrip("/")
+FRONTEND_BASE_URL = os.environ.get("FRONTEND_BASE_URL", "https://macfiesta.vercel.app").rstrip("/")
 if FRONTEND_BASE_URL:
     if FRONTEND_BASE_URL not in CSRF_TRUSTED_ORIGINS:
         CSRF_TRUSTED_ORIGINS.append(FRONTEND_BASE_URL)
@@ -136,8 +164,8 @@ if FRONTEND_BASE_URL:
 
 PAYMENT_ACCOUNT_NAME = os.environ.get("PAYMENT_ACCOUNT_NAME", "MANAGER MAR ATHANASIOS COLLEGE FOR ADVANCED STUDIES TIRUVALLA")
 PAYMENT_UPI_ID = os.environ.get("PAYMENT_UPI_ID", "macfast12230qr@fbl")
-HOSTEL_PAYMENT_ACCOUNT_NAME = os.environ.get("HOSTEL_PAYMENT_ACCOUNT_NAME", "ST ALPHONSA HOSTEL")
-HOSTEL_PAYMENT_UPI_ID = os.environ.get("HOSTEL_PAYMENT_UPI_ID", "stalphonsahostel@iob")
+HOSTEL_PAYMENT_ACCOUNT_NAME = os.environ.get("HOSTEL_PAYMENT_ACCOUNT_NAME", "MACFAST HOSTELS")
+HOSTEL_PAYMENT_UPI_ID = os.environ.get("HOSTEL_PAYMENT_UPI_ID", "macfast12230qr@fbl")
 PAYMENT_BANK_NAME = os.environ.get("PAYMENT_BANK_NAME", "")
 PAYMENT_ACCOUNT_NUMBER = os.environ.get("PAYMENT_ACCOUNT_NUMBER", "")
 PAYMENT_IFSC = os.environ.get("PAYMENT_IFSC", "")
@@ -173,6 +201,7 @@ DESK_PASSWORD_TEMPLATE = os.environ.get("DESK_PASSWORD_TEMPLATE", "")
 # QR / pass HMAC salt (uses Django SECRET_KEY under the hood; salt should be unique per deploy)
 REGISTRATION_SIGNER_SALT = os.environ.get("REGISTRATION_SIGNER_SALT", "macfiesta.registration.pass")
 REGISTRATION_PASS_MAX_AGE_DAYS = int(os.environ.get("REGISTRATION_PASS_MAX_AGE_DAYS", "60"))
+REGISTRATION_OPEN = os.environ.get("REGISTRATION_OPEN", "true").lower() in ("true", "1", "yes")
 
 # Public contact fallbacks (CMS site-settings can override on the site)
 CONTACT_EMAIL = os.environ.get("CONTACT_EMAIL", "macfiesta@macfast.org")
@@ -202,6 +231,7 @@ INSTALLED_APPS = [
     "cms",
     "accounts",
     "accommodation",
+    "rest_framework_simplejwt.token_blacklist",
 ]
 
 MIDDLEWARE = [
@@ -335,6 +365,7 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
+    "BLACKLIST_AFTER_ROTATION": True,
     "UPDATE_LAST_LOGIN": False,
 }
 
@@ -349,11 +380,11 @@ EMAIL_HOST = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
 EMAIL_PORT = int(os.environ.get("EMAIL_PORT", "587"))
 EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
 EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", False)
-EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "")
-EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "")
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", "").strip()
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", "").replace(" ", "").replace('"', "").replace("'", "").strip()
 DEFAULT_FROM_EMAIL = os.environ.get(
     "DEFAULT_FROM_EMAIL",
-    f"MACFIESTA 2026 <{os.environ.get('EMAIL_HOST_USER') or 'macfiesta@macfast.org'}>",
+    f"MACFIESTA 2026 <{EMAIL_HOST_USER or 'macfiesta@macfast.org'}>",
 )
 EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT", "45"))
 

@@ -1,14 +1,21 @@
 import axios from "axios";
 import { logout, notifyAuthChange } from "../utils/auth";
 
+export const PRODUCTION_API_URL = "https://macfiesta-pro-api.onrender.com/api";
+
 /**
  * Resolve API base for desktop, LAN phone browsers, and Capacitor.
- * - VITE_API_BASE_URL always wins (required for production / APK builds).
+ * - Valid VITE_API_BASE_URL always wins (required for custom backend deploys).
  * - In Vite DEV, use same-origin `/api` so phones hit the Vite proxy.
+ * - On Vercel / Netlify without custom backend configured, fall back to live Render backend.
  */
 function resolveApiBase() {
   const fromEnv = import.meta.env.VITE_API_BASE_URL;
-  if (fromEnv) {
+  if (
+    fromEnv &&
+    !fromEnv.includes("YOUR-BACKEND-DOMAIN") &&
+    !fromEnv.includes("YOUR_BACKEND_HOST")
+  ) {
     const stripped = fromEnv.trim().replace(/\/+$/, "");
     return stripped.endsWith("/api") ? stripped : `${stripped}/api`;
   }
@@ -17,16 +24,19 @@ function resolveApiBase() {
     return "/api";
   }
 
-  // Production builds must set VITE_API_BASE_URL — never bake LAN IPs into the client.
+  // Cloud hosting / preview checks (e.g. Vercel, Netlify)
   if (typeof window !== "undefined") {
     const { protocol, hostname } = window.location;
     const isLoopback = hostname === "localhost" || hostname === "127.0.0.1";
+    if (hostname.endsWith(".vercel.app") || hostname.endsWith(".netlify.app")) {
+      return "/api";
+    }
     if (hostname && !isLoopback) {
       return `${protocol}//${hostname}/api`;
     }
   }
 
-  return "/api";
+  return PRODUCTION_API_URL || "/api";
 }
 
 const API_BASE = resolveApiBase();
@@ -57,6 +67,16 @@ function cachedGet(key, request) {
   }
   if (hit?.pending) return hit.pending;
   const pending = request()
+    .catch(async (err) => {
+      // Clean up cache immediately on error
+      getCache.delete(key);
+      // Auto-retry once for transient drops or dev server wakeups
+      try {
+        return await request();
+      } catch {
+        throw err;
+      }
+    })
     .then((res) => {
       getCache.set(key, { at: Date.now(), data: res });
       return res;
@@ -81,12 +101,33 @@ export function invalidateApiGetCache(prefix) {
 
 export function mediaUrl(path) {
   if (!path) return null;
-  if (path.startsWith("http")) return path;
-  const normalized = path.startsWith("/") ? path : `/${path}`;
-  return `${SERVER_BASE}${normalized}`;
+  if (typeof path === "string") {
+    if (path.startsWith("http://") || path.startsWith("https://")) {
+      try {
+        const url = new URL(path);
+        // If it points to local dev or LAN port 8000, convert to root-relative so it routes through proxy
+        if (
+          url.hostname === "localhost" ||
+          url.hostname === "127.0.0.1" ||
+          url.hostname.startsWith("192.168.") ||
+          url.hostname.startsWith("10.") ||
+          url.port === "8000"
+        ) {
+          return `${url.pathname}${url.search}`;
+        }
+        return path;
+      } catch {
+        // ignore parse failure and proceed
+      }
+    }
+    const normalized = path.startsWith("/") ? path : `/${path}`;
+    return `${SERVER_BASE}${normalized}`;
+  }
+  return path;
 }
 
-export function getEvents() {
+export function getEvents(forceRefresh = false) {
+  if (forceRefresh) invalidateApiGetCache("events");
   return cachedGet("events", () => api.get("/events/"));
 }
 
@@ -127,8 +168,12 @@ export function getDashboardStats() {
   return api.get("/dashboard/stats/", { headers: authHeaders() });
 }
 
-export function getStaffDirectory() {
-  return api.get("/admin/staff/", { headers: authHeaders() });
+export function getStaffDirectory(params = {}) {
+  return api.get("/admin/staff/", { headers: authHeaders(), params });
+}
+
+export function getStaffAccount(id) {
+  return api.get(`/admin/staff/${id}/`, { headers: authHeaders() });
 }
 
 export async function createStaffAccount(data) {
@@ -137,6 +182,10 @@ export async function createStaffAccount(data) {
 
 export async function updateStaffAccount(id, data) {
   return api.patch(`/admin/staff/${id}/`, data, { headers: authHeaders() });
+}
+
+export async function deleteStaffAccount(id) {
+  return api.delete(`/admin/staff/${id}/`, { headers: authHeaders() });
 }
 
 export function getParticipantList(params = {}) {
@@ -151,11 +200,23 @@ export async function updateParticipant(id, data) {
   return api.patch(`/admin/participants/${id}/`, data, { headers: authHeaders() });
 }
 
+export async function deleteParticipant(id) {
+  return api.delete(`/admin/participants/${id}/`, { headers: authHeaders() });
+}
+
 export function exportParticipantsCSV() {
-  // Returns a URL that the browser can follow to trigger CSV download
-  const token = localStorage.getItem("access_token") || "";
-  const base = api.defaults.baseURL || "";
-  return `${base}/admin/participants/?export=csv&token=${encodeURIComponent(token)}`;
+  return downloadParticipantsCSV();
+}
+
+export async function downloadParticipantsCSV(search = "") {
+  const params = { export: "csv" };
+  if (search) params.q = search;
+  const res = await api.get("/admin/participants/", {
+    params,
+    responseType: "blob",
+    headers: authHeaders(),
+  });
+  return res.data;
 }
 
 
@@ -250,7 +311,7 @@ export function initiateTeamPayment(registrationId) {
 }
 
 export function confirmTeamPaymentDirect(registrationId, data = {}) {
-  return api.post(`/registrations/${registrationId}/submit-payment/`, { auto_confirm: true, ...data }, { headers: authHeaders() });
+  return api.post(`/registrations/${registrationId}/submit-payment/`, { ...data }, { headers: authHeaders() });
 }
 
 export function inviteTeamMember(registrationId, data) {
@@ -304,22 +365,22 @@ export function promoteWaitlist(eventId) {
 }
 
 export async function login(credentials) {
-  return axios.post(`${API_BASE}/auth/login/`, {
+  return api.post("/auth/login/", {
     username: (credentials.username || "").trim(),
     password: credentials.password || "",
   });
 }
 
 export async function registerAccount(data) {
-  return axios.post(`${API_BASE}/auth/register/`, data);
+  return api.post("/auth/register/", data);
 }
 
 export function requestPasswordReset(email) {
-  return axios.post(`${API_BASE}/auth/password-reset/`, { email });
+  return api.post("/auth/password-reset/", { email });
 }
 
 export async function confirmPasswordReset(data) {
-  return axios.post(`${API_BASE}/auth/password-reset/confirm/`, data);
+  return api.post("/auth/password-reset/confirm/", data);
 }
 
 export async function changePassword(data) {
@@ -444,6 +505,22 @@ export function getAdminAccommodationBookings() {
 
 export function updateAdminAccommodationBooking(id, data) {
   return api.patch(`/accommodation/bookings/${id}/`, data, adminConfig(data));
+}
+
+export function approveAccommodationBooking(id, data = {}) {
+  return api.post(`/accommodation/bookings/${id}/approve/`, data, { headers: authHeaders() });
+}
+
+export function rejectAccommodationBooking(id, data = {}) {
+  return api.post(`/accommodation/bookings/${id}/reject/`, data, { headers: authHeaders() });
+}
+
+export function verifyHostelPayment(id) {
+  return api.post(`/accommodation/bookings/${id}/verify-payment/`, {}, { headers: authHeaders() });
+}
+
+export function rejectHostelPayment(id, data = {}) {
+  return api.post(`/accommodation/bookings/${id}/reject-payment/`, data, { headers: authHeaders() });
 }
 
 export function getHospitalityStats() {
@@ -715,10 +792,20 @@ export function getAuditLogs(params = {}) {
   return api.get("/admin/audit-logs/", { headers: authHeaders(), params });
 }
 
-export function downloadSystemBackup() {
-  const token = localStorage.getItem("access_token") || "";
-  const base = api.defaults.baseURL || "";
-  return `${base}/admin/system-backup/?token=${encodeURIComponent(token)}`;
+export async function downloadSystemBackup() {
+  const res = await api.get("/admin/system-backup/", {
+    responseType: "blob",
+    headers: authHeaders(),
+  });
+  return res.data;
+}
+
+export function getUniversePoll() {
+  return api.get("/public/poll/", { headers: authHeaders() });
+}
+
+export function voteUniversePoll(choice) {
+  return api.post("/public/poll/", { choice }, { headers: authHeaders() });
 }
 
 
@@ -736,7 +823,10 @@ let refreshPromise = null;
 async function refreshAccessToken() {
   const refresh = localStorage.getItem("refresh_token");
   if (!refresh) throw new Error("No refresh token");
-  const res = await axios.post(`${API_BASE}/auth/refresh/`, { refresh });
+  const refreshUrl = API_BASE.startsWith("http")
+    ? `${API_BASE}/auth/refresh/`
+    : `/api/auth/refresh/`;
+  const res = await axios.post(refreshUrl, { refresh });
   localStorage.setItem("access_token", res.data.access);
   if (res.data.refresh) {
     localStorage.setItem("refresh_token", res.data.refresh);
@@ -775,6 +865,41 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+/** Ping backend health check endpoint. */
+export async function checkBackendHealth() {
+  try {
+    const res = await api.get("/health/");
+    return { ok: true, data: res.data };
+  } catch (err) {
+    return { ok: false, error: err };
+  }
+}
+
+/** Diagnostic helper for user-friendly error messages from backend or network. */
+export function getApiErrorMessage(error, fallback = "An unexpected error occurred.") {
+  if (!error) return fallback;
+  if (error.response) {
+    const data = error.response.data;
+    if (typeof data === "string") return data;
+    if (data && typeof data === "object") {
+      if (data.detail) return data.detail;
+      if (data.message) return data.message;
+      if (data.error) return data.error;
+      const firstKey = Object.keys(data)[0];
+      if (firstKey) {
+        const val = data[firstKey];
+        if (Array.isArray(val) && val.length) return `${firstKey}: ${val[0]}`;
+        if (typeof val === "string") return `${firstKey}: ${val}`;
+      }
+    }
+    return `Server returned error (${error.response.status}).`;
+  }
+  if (error.request) {
+    return "Cannot connect to server. Please check your network connection or ensure the backend server is running.";
+  }
+  return error.message || fallback;
+}
 
 export { API_BASE, SERVER_BASE };
 export default api;

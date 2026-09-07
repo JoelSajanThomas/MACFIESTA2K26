@@ -29,6 +29,7 @@ from dashboard.views import (
     public_fest_config,
     admin_audit_logs,
     admin_system_backup,
+    public_universe_poll,
 )
 from accounts.staff_views import (
     staff_directory,
@@ -88,6 +89,7 @@ urlpatterns = [
     path('cms/', include(cms_router.urls)),
     path('public/stats/', public_fest_stats),
     path('public/config/', public_fest_config),
+    path('public/poll/', public_universe_poll),
     path('public/institutions/', public_institutions),
     path('dashboard/stats/', dashboard_stats),
     path('auth/me/', current_user),

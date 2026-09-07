@@ -53,6 +53,47 @@ class StaffProfile(models.Model):
         return module in self.modules
 
 
+class ParticipantProfile(models.Model):
+    """College / contact details for student accounts (not staff)."""
+
+    GENDER_CHOICES = [
+        ("male", "Male"),
+        ("female", "Female"),
+        ("other", "Other"),
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="participant_profile")
+    college_name = models.CharField(max_length=200, blank=True)
+    phone = models.CharField(max_length=20, blank=True)
+    gender = models.CharField(max_length=20, choices=GENDER_CHOICES, default="male")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Participant profile"
+        verbose_name_plural = "Participant profiles"
+
+    def __str__(self):
+        return f"{self.user.username} ({self.college_name or 'no college'})"
+
+
+class UniversePollVote(models.Model):
+    CHOICES = [
+        ("marvel", "Marvel"),
+        ("dc", "DC"),
+    ]
+
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="universe_poll_vote")
+    choice = models.CharField(max_length=16, choices=CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Universe poll vote"
+        verbose_name_plural = "Universe poll votes"
+
+    def __str__(self):
+        return f"{self.user_id}:{self.choice}"
+
+
 class AuditLog(models.Model):
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="audit_logs")
     action = models.CharField(max_length=100)

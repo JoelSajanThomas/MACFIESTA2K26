@@ -188,11 +188,11 @@ function AppRoutes() {
 function AppShell() {
   const { pathname } = useLocation();
   const isAdmin = pathname.startsWith("/admin");
-  const { markDone } = useLoading();
+  const { isDone, markDone } = useLoading();
 
   useEffect(() => {
-    if (isAdmin) markDone();
-  }, [isAdmin, markDone]);
+    if (isAdmin || pathname !== "/") markDone();
+  }, [isAdmin, pathname, markDone]);
 
   /* Stop all audio immediately when navigating away from homepage */
   useEffect(() => {
@@ -231,7 +231,7 @@ function AppShell() {
   return (
     <div className={`app${isAdmin ? " app--admin" : ""}`}>
       <a href="#main-content" className="skip-link">Skip to main content</a>
-      {!isAdmin && <LoadingScreen />}
+      {!isAdmin && pathname === "/" && !isDone && <LoadingScreen />}
       {!isAdmin && <CursorGlow />}
       {!isAdmin && <ParticleAtmosphere />}
       {!isAdmin && !isTicketOrDocPage && <JarvisAssistant />}

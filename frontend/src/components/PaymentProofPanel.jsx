@@ -175,8 +175,16 @@ export default function PaymentProofPanel({
   async function handleSubmit(e) {
     e.preventDefault();
     setBusy(true);
-    setError("");
-    setOk("");
+    if (!txnId.trim()) {
+      setError("Transaction ID is required.");
+      setBusy(false);
+      return;
+    }
+    if (!file && (!primary.payment_proof_uploaded || primary.payment_status === "rejected")) {
+      setError("Payment proof screenshot is compulsory. Please attach your payment receipt / screenshot.");
+      setBusy(false);
+      return;
+    }
     try {
       const payload = {
         payment_transaction_id: txnId.trim(),
@@ -402,7 +410,7 @@ export default function PaymentProofPanel({
             <span className="text-white/50 shrink-0">Beneficiary:</span>
             <span className="text-white font-bold text-right">
               {qrType === "hostel"
-                ? (payment.hostelAccountName || "ST ALPHONSA HOSTEL")
+                ? (payment.hostelAccountName || "MACFAST HOSTELS")
                 : payment.accountName}
             </span>
           </div>
@@ -410,7 +418,7 @@ export default function PaymentProofPanel({
             <span className="text-white/50">UPI ID:</span>
             <span className="text-metallic-gold font-mono font-bold">
               {qrType === "hostel"
-                ? (payment.hostelUpiId || "stalphonsahostel@iob")
+                ? (payment.hostelUpiId || "macfast12230qr@fbl")
                 : payment.upiId}
             </span>
           </div>
@@ -458,11 +466,15 @@ export default function PaymentProofPanel({
         <div className="space-y-1.5">
           <label
             htmlFor="payment-proof-file"
-            className="block text-[10px] uppercase font-bold tracking-wider text-white/60 font-excon-bold flex items-center justify-between"
+            className="block text-[10px] uppercase font-bold tracking-wider text-white font-excon-bold flex items-center justify-between"
           >
-            <span>Payment Screenshot / Proof</span>
-            {primary.payment_proof_uploaded && (
+            <span>
+              Payment Screenshot / Proof <span className="text-red-400 font-bold">* (Compulsory)</span>
+            </span>
+            {primary.payment_proof_uploaded && primary.payment_status !== "rejected" ? (
               <span className="text-emerald-400 font-mono text-[10px]">Proof previously uploaded</span>
+            ) : (
+              <span className="text-amber-400 font-mono text-[10px]">Proof required</span>
             )}
           </label>
           <div className="relative">
@@ -471,11 +483,20 @@ export default function PaymentProofPanel({
               type="file"
               accept="image/*"
               onChange={(e) => setFile(e.target.files?.[0] || null)}
-              required={!primary.payment_proof_uploaded}
+              required={!primary.payment_proof_uploaded || primary.payment_status === "rejected"}
               disabled={busy}
               className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white text-xs font-space file:mr-4 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-black file:uppercase file:bg-metallic-gold/20 file:text-metallic-gold hover:file:bg-metallic-gold hover:file:text-black cursor-pointer"
             />
           </div>
+          {file ? (
+            <p className="text-[10px] text-emerald-400 font-mono">
+              ✓ Attached: {file.name}
+            </p>
+          ) : !primary.payment_proof_uploaded || primary.payment_status === "rejected" ? (
+            <p className="text-[10px] text-amber-400/90 font-mono">
+              * Uploading proof screenshot is compulsory to verify your entry pass.
+            </p>
+          ) : null}
         </div>
 
         {error && (
@@ -494,8 +515,8 @@ export default function PaymentProofPanel({
 
         <button
           type="submit"
-          className="w-full py-4 bg-metallic-gold hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_25px_rgba(212,175,55,0.4)] font-excon-black cursor-pointer inline-flex items-center justify-center gap-2"
-          disabled={busy || !txnId.trim()}
+          className="w-full py-4 bg-metallic-gold hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_25px_rgba(212,175,55,0.4)] font-excon-black cursor-pointer inline-flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+          disabled={busy || !txnId.trim() || (!file && (!primary.payment_proof_uploaded || primary.payment_status === "rejected"))}
         >
           <RiUploadCloud2Line className="text-base" />
           <span>{busy ? "Submitting Proof…" : "Submit Payment Verification Proof"}</span>

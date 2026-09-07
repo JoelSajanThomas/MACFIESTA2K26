@@ -79,6 +79,18 @@ def send_mail_async(
                 exc,
                 exc_info=True,
             )
+            if getattr(settings, "DEBUG", False):
+                logger.warning(
+                    "[MailWorker DEV NOTICE] Because SMTP transmission failed, here is the email content for testing:\n"
+                    "==================================================\n"
+                    "Recipient: %s\n"
+                    "Subject:   %s\n"
+                    "Body:\n%s\n"
+                    "==================================================",
+                    recipients,
+                    subject,
+                    message,
+                )
             return 0
 
     return _email_executor.submit(_worker)

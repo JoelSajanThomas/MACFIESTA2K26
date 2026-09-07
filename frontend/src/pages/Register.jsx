@@ -15,6 +15,7 @@ import { notifyAuthChange } from "../utils/auth";
 import { saveParticipantProfile } from "../utils/participantProfile";
 import { BackgroundVideo } from "../components/ui/BackgroundVideo";
 import { usePageSeo } from "../hooks/usePageSeo";
+import { useFestivalControl } from "../lib/festivalStore";
 import CollegeSchoolPicker from "../components/CollegeSchoolPicker";
 
 function parseApiError(err) {
@@ -87,6 +88,9 @@ export default function Register() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
 
+  const { settings } = useFestivalControl();
+  const registrationOpen = settings?.registrationOpen ?? true;
+
   usePageSeo({
     title: "Agent Registration · MacFiesta 2026",
     description: "Create your S.H.I.E.L.D. agent account to register for competitions and access your tournament badge.",
@@ -112,6 +116,10 @@ export default function Register() {
 
   function handleNextStep(e) {
     e.preventDefault();
+    if (!registrationOpen) {
+      setErrorMsg("Registrations are currently closed. New accounts cannot be created.");
+      return;
+    }
     setErrorMsg("");
 
     const name = form.full_name.trim();
@@ -137,6 +145,10 @@ export default function Register() {
 
   async function handleSubmit(e) {
     e.preventDefault();
+    if (!registrationOpen) {
+      setErrorMsg("Registrations are currently closed. New accounts cannot be created.");
+      return;
+    }
     setErrorMsg("");
 
     // Full pre-flight validation across all fields
@@ -244,261 +256,278 @@ export default function Register() {
 
       <div className="max-w-md w-full mx-auto px-4 relative z-10">
         <div className="marvel-card p-6 sm:p-8 rounded-3xl border border-arc-cyan/40 bg-[#0A0D1A]/95 shadow-2xl relative space-y-6">
-          
-          {/* Header */}
-          <div className="flex items-center justify-between">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-arc-cyan/30 bg-arc-cyan/10 text-arc-cyan text-[10px] font-bold uppercase tracking-widest font-mono">
-              <RiShieldFlashLine />
-              <span>S.H.I.E.L.D. RECRUITMENT</span>
+          {!registrationOpen ? (
+            <div className="space-y-6 text-center py-4">
+              <div className="w-16 h-16 mx-auto rounded-2xl bg-rose-500/15 border border-rose-500/30 flex items-center justify-center text-rose-400 text-3xl shadow-[0_0_25px_rgba(244,63,94,0.25)]">
+                <RiLockLine />
+              </div>
+
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-rose-500/30 bg-rose-500/10 text-rose-400 text-[10px] font-black uppercase tracking-widest font-mono">
+                  REGISTRATION STATUS: CLOSED
+                </div>
+                <h2 className="text-2xl font-black uppercase tracking-tight text-white font-excon-black">
+                  Registrations Are Closed
+                </h2>
+                <p className="text-xs text-white/70 leading-relaxed max-w-sm mx-auto font-excon">
+                  New delegate account registrations have concluded for MacFiesta 2026. If you already have an existing agent account, you can sign in below to manage your mission passes and certificates.
+                </p>
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <Link
+                  to={loginHref}
+                  className="w-full py-3.5 bg-arc-cyan hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_20px_#00D4FF] font-excon-black flex items-center justify-center gap-2"
+                >
+                  <RiUserLine className="text-sm" />
+                  <span>Agent Login</span>
+                </Link>
+
+                <Link
+                  to="/events"
+                  className="w-full py-3 bg-white/5 hover:bg-white/10 text-white/80 hover:text-white border border-white/10 font-bold text-xs uppercase tracking-wider rounded-2xl transition-all font-excon flex items-center justify-center"
+                >
+                  Explore Missions &amp; Schedule
+                </Link>
+              </div>
             </div>
-            <span className="text-[10px] font-black text-metallic-gold uppercase tracking-wider font-excon-black">
-              Phase {step} of 2
-            </span>
-          </div>
-
-          <div className="space-y-1">
-            <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white font-excon-black">
-              {step === 1 ? "Agent Registration" : "Clearance & Security"}
-            </h2>
-            <p className="text-xs text-white/60 font-excon">
-              {step === 1
-                ? "Register your delegate profile for MacFiesta 2026."
-                : "Assign your institution and access password."}
-            </p>
-          </div>
-
-          {errorMsg && (
-            <motion.div
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-3 bg-marvel-red/20 border border-marvel-red/40 text-marvel-red text-xs rounded-xl font-mono text-center"
-            >
-              {errorMsg}
-            </motion.div>
-          )}
-
-          {step === 1 ? (
-            <form onSubmit={handleNextStep} className="space-y-4 font-excon">
-              <div>
-                <label
-                  htmlFor="reg-fullname"
-                  className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold"
-                >
-                  Full Name (As on ID Card)
-                </label>
-                <div className="relative">
-                  <RiUserLine className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
-                  <input
-                    id="reg-fullname"
-                    type="text"
-                    name="full_name"
-                    required
-                    value={form.full_name}
-                    onChange={handleChange}
-                    placeholder="Tony Stark"
-                    className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-arc-cyan focus:outline-none text-white text-xs font-excon"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="reg-email"
-                  className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold"
-                >
-                  Email Address
-                </label>
-                <div className="relative">
-                  <RiMailLine className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
-                  <input
-                    id="reg-email"
-                    type="email"
-                    name="email"
-                    required
-                    value={form.email}
-                    onChange={handleChange}
-                    placeholder="tony@starkindustries.com"
-                    className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-arc-cyan focus:outline-none text-white text-xs font-excon"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="reg-phone"
-                  className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold"
-                >
-                  Mobile Number (WhatsApp)
-                </label>
-                <div className="relative">
-                  <RiSmartphoneLine className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
-                  <input
-                    id="reg-phone"
-                    type="tel"
-                    inputMode="numeric"
-                    name="phone"
-                    required
-                    value={form.phone}
-                    onChange={handleChange}
-                    placeholder="9876543210"
-                    maxLength={10}
-                    className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-xl focus:outline-none text-white text-xs font-excon font-mono transition-colors ${
-                      phoneError
-                        ? "border-marvel-red focus:border-marvel-red"
-                        : "border-white/10 focus:border-arc-cyan"
-                    }`}
-                  />
-                </div>
-                {phoneError && (
-                  <p className="text-[11px] text-marvel-red mt-1 font-mono">{phoneError}</p>
-                )}
-                {!phoneError && form.phone && form.phone.length === 10 && (
-                  <p className="text-[11px] text-emerald-400 mt-1 font-mono">✓ Valid 10-digit mobile number</p>
-                )}
-              </div>
-
-              {/* Gender Selection */}
-              <div>
-                <label className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold">
-                  Gender *
-                </label>
-                <div className="grid grid-cols-3 gap-2.5">
-                  {[
-                    { id: "male", label: "Male", symbol: "♂" },
-                    { id: "female", label: "Female", symbol: "♀" },
-                    { id: "others", label: "Others", symbol: "⚧" },
-                  ].map((opt) => {
-                    const isSelected = form.gender === opt.id;
-                    return (
-                      <button
-                        key={opt.id}
-                        type="button"
-                        onClick={() => setForm((prev) => ({ ...prev, gender: opt.id }))}
-                        className={`py-2.5 px-3 rounded-xl border text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all font-excon-bold cursor-pointer ${
-                          isSelected
-                            ? "bg-arc-cyan text-black border-arc-cyan shadow-[0_0_15px_rgba(0,212,255,0.4)] ring-1 ring-arc-cyan"
-                            : "bg-white/5 text-white/70 border-white/10 hover:border-white/30 hover:text-white"
-                        }`}
-                      >
-                        <span className="text-sm font-black">{opt.symbol}</span>
-                        <span>{opt.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                className="w-full py-3.5 bg-arc-cyan hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_20px_#00D4FF] font-excon-black cursor-pointer mt-2"
-              >
-                Proceed to Security Clearance →
-              </button>
-            </form>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4 font-excon">
-              <div>
-                <CollegeSchoolPicker
-                  label="College or School Name *"
-                  placeholder="Search your college or school name in Kerala..."
-                  name="college_name"
-                  value={form.college_name}
-                  onChange={(college_name) => setForm((prev) => ({ ...prev, college_name }))}
-                  required
-                  disabled={loading}
-                />
+            <>
+              {/* Header */}
+              <div className="flex items-center justify-between">
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full border border-arc-cyan/30 bg-arc-cyan/10 text-arc-cyan text-[10px] font-bold uppercase tracking-widest font-mono">
+                  <RiShieldFlashLine />
+                  <span>S.H.I.E.L.D. RECRUITMENT</span>
+                </div>
+                <span className="text-[10px] font-black text-metallic-gold uppercase tracking-wider font-excon-black">
+                  Phase {step} of 2
+                </span>
               </div>
 
-              <div>
-                <label
-                  htmlFor="reg-password"
-                  className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold"
+              <div className="space-y-1">
+                <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-tight text-white font-excon-black">
+                  {step === 1 ? "Agent Registration" : "Clearance & Security"}
+                </h2>
+                <p className="text-xs text-white/60 font-excon">
+                  {step === 1
+                    ? "Register your delegate profile for MacFiesta 2026."
+                    : "Assign your institution and access password."}
+                </p>
+              </div>
+
+              {errorMsg && (
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-3 bg-marvel-red/20 border border-marvel-red/40 text-marvel-red text-xs rounded-xl font-mono text-center"
                 >
-                  Password (Min 8 Characters)
-                </label>
-                <div className="relative">
-                  <RiLockLine className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
-                  <input
-                    id="reg-password"
-                    type={showPassword ? "text" : "password"}
-                    name="password"
-                    required
-                    minLength={8}
-                    autoComplete="new-password"
-                    spellCheck="false"
-                    onCopy={(e) => e.preventDefault()}
-                    onCut={(e) => e.preventDefault()}
-                    value={form.password}
-                    onChange={handleChange}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-arc-cyan focus:outline-none text-white text-xs font-mono select-none"
-                  />
+                  {errorMsg}
+                </motion.div>
+              )}
+
+              {step === 1 ? (
+                <form onSubmit={handleNextStep} className="space-y-4 font-excon">
+                  <div>
+                    <label
+                      htmlFor="reg-fullname"
+                      className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold"
+                    >
+                      Full Name (As on ID Card)
+                    </label>
+                    <div className="relative">
+                      <RiUserLine className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
+                      <input
+                        id="reg-fullname"
+                        type="text"
+                        name="full_name"
+                        required
+                        value={form.full_name}
+                        onChange={handleChange}
+                        placeholder="Tony Stark"
+                        className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-arc-cyan focus:outline-none text-white text-xs font-excon"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="reg-email"
+                      className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold"
+                    >
+                      Email Address
+                    </label>
+                    <div className="relative">
+                      <RiMailLine className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
+                      <input
+                        id="reg-email"
+                        type="email"
+                        name="email"
+                        required
+                        value={form.email}
+                        onChange={handleChange}
+                        placeholder="tony@starkindustries.com"
+                        className="w-full pl-10 pr-4 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-arc-cyan focus:outline-none text-white text-xs font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label
+                        htmlFor="reg-phone"
+                        className="block text-[10px] uppercase font-bold tracking-wider text-white/50 font-excon-bold"
+                      >
+                        Mobile Number
+                      </label>
+                      <span className="text-[10px] font-mono text-white/40">
+                        {form.phone.length}/10 digits
+                      </span>
+                    </div>
+                    <div className="relative">
+                      <RiSmartphoneLine className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
+                      <input
+                        id="reg-phone"
+                        type="tel"
+                        name="phone"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        maxLength={10}
+                        required
+                        value={form.phone}
+                        onChange={handleChange}
+                        placeholder="9876543210"
+                        className={`w-full pl-10 pr-4 py-3 bg-white/5 border rounded-xl focus:outline-none text-white text-xs font-mono tracking-wider transition-colors ${
+                          phoneError ? "border-marvel-red focus:border-marvel-red" : "border-white/10 focus:border-arc-cyan"
+                        }`}
+                      />
+                    </div>
+                    {phoneError && (
+                      <p className="text-[11px] text-marvel-red mt-1 font-mono">{phoneError}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="reg-gender"
+                      className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold"
+                    >
+                      Gender
+                    </label>
+                    <select
+                      id="reg-gender"
+                      name="gender"
+                      value={form.gender}
+                      onChange={handleChange}
+                      className="w-full px-4 py-3 bg-[#0A0D1A] border border-white/10 rounded-xl focus:border-arc-cyan focus:outline-none text-white text-xs font-excon cursor-pointer"
+                    >
+                      <option value="male">Male</option>
+                      <option value="female">Female</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+
                   <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+                    type="submit"
+                    className="w-full py-3.5 bg-arc-cyan hover:bg-white text-black font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_20px_#00D4FF] font-excon-black cursor-pointer mt-2"
                   >
-                    {showPassword ? <RiEyeOffLine size={16} /> : <RiEyeLine size={16} />}
+                    Proceed to Security Setup →
                   </button>
-                </div>
-              </div>
-
-              <div>
-                <label
-                  htmlFor="reg-password-confirm"
-                  className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold"
-                >
-                  Confirm Password
-                </label>
-                <div className="relative">
-                  <RiLockLine className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
-                  <input
-                    id="reg-password-confirm"
-                    type={showPassword ? "text" : "password"}
-                    name="password_confirm"
+                </form>
+              ) : (
+                <form onSubmit={handleSubmit} className="space-y-4 font-excon">
+                  <CollegeSchoolPicker
+                    value={form.college_name}
+                    onChange={(val) => {
+                      setForm((prev) => ({ ...prev, college_name: val }));
+                      setErrorMsg("");
+                    }}
+                    label="School / College / Institution"
                     required
-                    minLength={8}
-                    autoComplete="new-password"
-                    spellCheck="false"
-                    onCopy={(e) => e.preventDefault()}
-                    onCut={(e) => e.preventDefault()}
-                    value={form.password_confirm}
-                    onChange={handleChange}
-                    placeholder="••••••••"
-                    className="w-full pl-10 pr-10 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-arc-cyan focus:outline-none text-white text-xs font-mono select-none"
+                    placeholder="Search or type your institution name..."
                   />
-                </div>
-              </div>
 
-              <div className="flex gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setStep(1)}
-                  className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider rounded-2xl transition-colors font-excon-bold"
-                >
-                  ← Back
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="flex-1 py-3.5 bg-marvel-red hover:bg-white hover:text-black text-white font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_20px_#ED1D24] font-excon-black cursor-pointer"
-                >
-                  {loading ? "Authorizing Clearance..." : "Complete Registration"}
-                </button>
+                  <div>
+                    <label
+                      htmlFor="reg-password"
+                      className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold"
+                    >
+                      Access Password (Min. 8 characters)
+                    </label>
+                    <div className="relative">
+                      <RiLockLine className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
+                      <input
+                        id="reg-password"
+                        type={showPassword ? "text" : "password"}
+                        name="password"
+                        required
+                        minLength={8}
+                        value={form.password}
+                        onChange={handleChange}
+                        placeholder="••••••••"
+                        className="w-full pl-10 pr-10 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-arc-cyan focus:outline-none text-white text-xs font-mono select-none"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/40 hover:text-white"
+                      >
+                        {showPassword ? <RiEyeOffLine size={16} /> : <RiEyeLine size={16} />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="reg-confirm-password"
+                      className="block text-[10px] uppercase font-bold tracking-wider text-white/50 mb-1.5 font-excon-bold"
+                    >
+                      Confirm Password
+                    </label>
+                    <div className="relative">
+                      <RiLockLine className="absolute left-3.5 top-1/2 -translate-y-1/2 text-white/40 text-sm" />
+                      <input
+                        id="reg-confirm-password"
+                        type={showPassword ? "text" : "password"}
+                        name="password_confirm"
+                        required
+                        value={form.password_confirm}
+                        onChange={handleChange}
+                        placeholder="••••••••"
+                        className="w-full pl-10 pr-10 py-3 bg-white/5 border border-white/10 rounded-xl focus:border-arc-cyan focus:outline-none text-white text-xs font-mono select-none"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => setStep(1)}
+                      className="px-4 py-3 bg-white/10 hover:bg-white/20 text-white font-bold text-xs uppercase tracking-wider rounded-2xl transition-colors font-excon-bold"
+                    >
+                      ← Back
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={loading}
+                      className="flex-1 py-3.5 bg-marvel-red hover:bg-white hover:text-black text-white font-black text-xs uppercase tracking-widest rounded-2xl transition-all shadow-[0_0_20px_#ED1D24] font-excon-black cursor-pointer"
+                    >
+                      {loading ? "Authorizing Clearance..." : "Complete Registration"}
+                    </button>
+                  </div>
+                </form>
+              )}
+
+              {/* Switch to Login */}
+              <div className="text-center pt-2 border-t border-white/10">
+                <p className="text-xs text-white/60 font-excon">
+                  Already have an Agent Clearance?{" "}
+                  <Link to={loginHref} className="text-arc-cyan hover:text-white font-bold font-excon-bold">
+                    Sign In
+                  </Link>
+                </p>
               </div>
-            </form>
+            </>
           )}
-
-          {/* Switch to Login */}
-          <div className="text-center pt-2 border-t border-white/10">
-            <p className="text-xs text-white/60 font-excon">
-              Already have an Agent Clearance?{" "}
-              <Link to={loginHref} className="text-arc-cyan hover:text-white font-bold font-excon-bold">
-                Sign In
-              </Link>
-            </p>
-          </div>
-
         </div>
       </div>
     </div>

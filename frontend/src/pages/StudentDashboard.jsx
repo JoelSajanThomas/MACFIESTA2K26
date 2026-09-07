@@ -19,6 +19,7 @@ import {
   RiErrorWarningLine,
   RiNotification3Line,
   RiCheckLine,
+  RiHotelBedLine,
 } from "react-icons/ri";
 import StatusChip from "../components/theme/StatusChip";
 import LoadingState from "../components/ui/LoadingState";
@@ -37,6 +38,7 @@ import {
   cancelRegistration,
   getMyInvitations,
   respondTeamInvitation,
+  getMyAccommodationBookings,
 } from "../services/api";
 import { applyPublicFestConfig, MACFIESTA_PAYMENT, calculateBatchFees } from "../utils/registrationFees";
 import { isUnauthorized, logout } from "../utils/auth";
@@ -56,6 +58,7 @@ export default function StudentDashboard() {
   const [user, setUser] = useState(null);
   const [registrations, setRegistrations] = useState([]);
   const [invitations, setInvitations] = useState([]);
+  const [stayRequests, setStayRequests] = useState([]);
   const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("all"); // "all" | "individual" | "teams"
 
@@ -124,11 +127,15 @@ export default function StudentDashboard() {
     setError("");
     Promise.all([
       getCurrentUser(),
-      getMyRegistrations(),
-      getEvents(),
+      getMyRegistrations().catch((err) => {
+        if (isUnauthorized(err)) throw err;
+        return { data: [] };
+      }),
+      getEvents().catch(() => ({ data: [] })),
       getMyInvitations().catch(() => ({ data: [] })),
+      getMyAccommodationBookings().catch(() => ({ data: [] })),
     ])
-      .then(([userRes, regsRes, eventsRes, invitesRes]) => {
+      .then(([userRes, regsRes, eventsRes, invitesRes, stayRes]) => {
         const eventsList = Array.isArray(eventsRes.data)
           ? eventsRes.data
           : eventsRes.data?.results || [];
@@ -143,6 +150,7 @@ export default function StudentDashboard() {
         setUser(userRes.data);
         setRegistrations(merged);
         setInvitations(invitesRes.data || []);
+        setStayRequests(Array.isArray(stayRes.data) ? stayRes.data : stayRes.data?.results || []);
         setAuthState("ready");
       })
       .catch((err) => {
@@ -309,6 +317,60 @@ export default function StudentDashboard() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {stayRequests.length > 0 && (
+          <div className="marvel-card p-5 sm:p-6 rounded-3xl border border-arc-cyan/30 bg-[#0A0D1A]/95 shadow-[0_0_40px_rgba(0,210,255,0.12)] space-y-4">
+            <div className="flex items-center gap-2.5 text-arc-cyan font-black uppercase text-xs tracking-wider font-mono">
+              <RiHotelBedLine className="text-base" />
+              <span>Hostel Stay Requests ({stayRequests.length})</span>
+            </div>
+            <div className="space-y-3">
+              {stayRequests.map((b) => {
+                const pending = b.status === "pending";
+                const reserved = b.status === "allocated" || b.status === "confirmed" || b.status === "checked_in";
+                const declined = b.status === "cancelled";
+                return (
+                  <div
+                    key={b.id}
+                    className="p-4 rounded-2xl bg-black/60 border border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
+                  >
+                    <div className="space-y-1">
+                      <span className="text-[10px] text-arc-cyan uppercase font-mono font-bold block">
+                        {b.booking_id} · {b.hostel_name || b.allocated_hostel || "Hostel"}
+                      </span>
+                      <h4 className="text-base font-black text-white uppercase font-excon-bold">
+                        {b.check_in_date} → {b.check_out_date}
+                      </h4>
+                      <p className="text-xs text-white/60 font-mono">
+                        {b.persons_count || 1} head(s)
+                        {b.allocated_room ? ` · Room ${b.allocated_room}` : ""}
+                      </p>
+                    </div>
+                    <span
+                      className={`inline-flex items-center px-3 py-1 rounded-full border text-[11px] font-bold uppercase font-mono ${
+                        pending
+                          ? "bg-amber-500/10 text-amber-300 border-amber-400/30"
+                          : reserved
+                          ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
+                          : declined
+                          ? "bg-red-500/10 text-red-400 border-red-500/30"
+                          : "bg-white/5 text-white/70 border-white/15"
+                      }`}
+                    >
+                      {pending
+                        ? "Booked · room to be allocated"
+                        : reserved
+                        ? "Room allocated"
+                        : declined
+                        ? "Cancelled"
+                        : b.status}
+                    </span>
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}

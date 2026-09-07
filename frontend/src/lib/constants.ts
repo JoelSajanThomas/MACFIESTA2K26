@@ -17,7 +17,7 @@ export const FESTIVAL_CONFIG = {
   festivalEndDate: new Date("2026-09-25T22:00:00+05:30"),
   registrationFee: 150,
   lunchFee: 200,
-  totalEvents: 23,
+  totalEvents: 22,
   logoUrl: "/logo.png",
 } as const;
 
@@ -69,13 +69,13 @@ export const SOCIAL_LINKS = [
 ] as const;
 
 /** API base URL */
-const PRODUCTION_API_URL = "https://macfiesta-api.onrender.com/api";
-const PRODUCTION_SOCKET_URL = "https://macfiesta-api.onrender.com";
+const PRODUCTION_API_URL = "https://macfiesta-pro-api.onrender.com/api";
+const PRODUCTION_SOCKET_URL = "https://macfiesta-pro-api.onrender.com";
 
 /**
  * Normalize the API URL — ensures it always ends with /api.
- * This fixes the case where NEXT_PUBLIC_API_URL on Vercel/production is set
- * to https://macfiesta-api.onrender.com (without /api), which would cause
+ * This fixes the case where VITE_API_BASE_URL on Vercel/production is set
+ * to https://macfiesta-pro-api.onrender.com (without /api), which would cause
  * all requests to return 404 since the server routes are at /api/*.
  */
 function normalizeApiUrl(url: string): string {

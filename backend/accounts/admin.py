@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.contrib.auth.models import User
 
-from .models import StaffProfile, AuditLog
+from accounts.models import StaffProfile, AuditLog, ParticipantProfile
 
 
 class StaffProfileInline(admin.StackedInline):
@@ -24,6 +24,12 @@ class StaffProfileAdmin(admin.ModelAdmin):
     list_display = ("user", "committee", "display_name", "phone", "must_change_password")
     list_filter = ("committee", "must_change_password")
     search_fields = ("user__username", "display_name", "phone")
+
+
+@admin.register(ParticipantProfile)
+class ParticipantProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "college_name", "phone", "gender", "updated_at")
+    search_fields = ("user__username", "user__email", "college_name", "phone")
 
 
 @admin.register(AuditLog)

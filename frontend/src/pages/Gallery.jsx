@@ -2,15 +2,11 @@ import { useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   RiCloseLine,
-  RiPlayLine,
-  RiZoomInLine,
   RiGalleryLine,
   RiImageAddLine,
   RiVideoLine,
   RiArrowLeftSLine,
   RiArrowRightSLine,
-  RiFullscreenLine,
-  RiFullscreenExitLine,
   RiShieldFlashLine,
 } from "react-icons/ri";
 import { DEFAULT_GALLERY, normalizeMediaPath } from "../lib/galleryStore";
@@ -23,7 +19,6 @@ export default function Gallery() {
   const [filterType, setFilterType] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
   const [selectedIndex, setSelectedIndex] = useState(null);
-  const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
 
   usePageSeo({
     title: "Marvel Archives & Gallery · MacFiesta 2026",
@@ -87,17 +82,6 @@ export default function Gallery() {
       return prev > 0 ? prev - 1 : totalFiltered - 1;
     });
   }, [totalFiltered]);
-
-  const toggleNativeFullscreen = () => {
-    if (!document.fullscreenElement) {
-      document.documentElement.requestFullscreen().catch(() => {});
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen().catch(() => {});
-        setIsNativeFullscreen(false);
-      }
-    }
-  };
 
   return (
     <div className="bg-[#05050A] min-h-screen pt-28 pb-16 text-white font-excon relative overflow-hidden">
@@ -202,7 +186,7 @@ export default function Gallery() {
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 font-excon">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 font-excon items-stretch">
             <AnimatePresence mode="popLayout">
               {filteredMedia.map((item, idx) => (
                 <motion.div
@@ -213,46 +197,34 @@ export default function Gallery() {
                   exit={{ opacity: 0, scale: 0.9 }}
                   transition={{ duration: 0.35, delay: idx * 0.03 }}
                   onClick={() => setSelectedIndex(idx)}
-                  className="marvel-card group relative h-72 sm:h-80 rounded-2xl overflow-hidden cursor-pointer border border-white/10 hover:border-arc-cyan/60 transition-all duration-500 shadow-2xl bg-[#0A0D1A]"
+                  className="marvel-card group relative flex flex-col rounded-2xl overflow-hidden cursor-pointer border border-white/10 hover:border-arc-cyan/60 transition-all duration-500 shadow-2xl bg-[#0A0D1A]"
                 >
-                  <img
-                    src={encodeURI(item.thumbnailUrl || item.url)}
-                    alt={item.title}
-                    loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  />
-
-                  {/* Media Badges */}
-                  <div className="absolute top-3 left-3 z-10 flex gap-2">
-                    <span
-                      className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase border font-excon-bold ${
-                        item.type === "image"
-                          ? "bg-arc-cyan/20 border-arc-cyan/40 text-arc-cyan"
-                          : "bg-marvel-red/20 border-marvel-red/40 text-marvel-red"
-                      }`}
-                    >
-                      {item.type === "image" ? "📷 PHOTO" : "🎬 VIDEO"}
-                    </span>
-                  </div>
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#0A0D1A] via-black/30 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
-
-                  <div className="absolute inset-0 p-5 flex flex-col justify-end">
-                    <div className="space-y-1 transform group-hover:-translate-y-1 transition-transform">
-                      <span className="text-[10px] text-metallic-gold font-bold uppercase tracking-wider font-excon-bold block">
-                        {item.category}
+                  <div className="relative w-full h-64 sm:h-72 bg-black flex items-center justify-center">
+                    <img
+                      src={encodeURI(item.thumbnailUrl || item.url)}
+                      alt={item.title}
+                      loading="lazy"
+                      className="max-w-full max-h-full w-auto h-auto object-contain"
+                    />
+                    <div className="absolute top-3 left-3 z-10 flex gap-2">
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-[9px] font-black uppercase border font-excon-bold ${
+                          item.type === "image"
+                            ? "bg-arc-cyan/20 border-arc-cyan/40 text-arc-cyan"
+                            : "bg-marvel-red/20 border-marvel-red/40 text-marvel-red"
+                        }`}
+                      >
+                        {item.type === "image" ? "📷 PHOTO" : "🎬 VIDEO"}
                       </span>
-                      <h3 className="text-white text-base font-black uppercase tracking-tight font-excon-black block group-hover:text-metallic-gold transition-colors">
-                        {item.title}
-                      </h3>
                     </div>
                   </div>
-
-                  {/* Hover Play / Zoom Icon */}
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <span className="p-4 bg-arc-cyan text-black rounded-full text-xl shadow-[0_0_20px_#00D4FF] transform scale-75 group-hover:scale-100 transition-transform">
-                      {item.type === "video" ? <RiPlayLine /> : <RiZoomInLine />}
+                  <div className="p-4 space-y-1 border-t border-white/10 min-h-[4.5rem]">
+                    <span className="text-[10px] text-metallic-gold font-bold uppercase tracking-wider font-excon-bold block">
+                      {item.category}
                     </span>
+                    <h3 className="text-white text-base font-black uppercase tracking-tight font-excon-black block group-hover:text-metallic-gold transition-colors line-clamp-2">
+                      {item.title}
+                    </h3>
                   </div>
                 </motion.div>
               ))}
@@ -339,38 +311,6 @@ export default function Gallery() {
                   Your browser does not support playing this video format directly.
                 </video>
               )}
-            </div>
-
-            {/* FLOATING MARVEL HUD BOTTOM CONTROL BAR */}
-            <div className="gallery-viewer-controls fixed left-1/2 -translate-x-1/2 z-[10000] max-w-3xl w-[92vw] px-4 sm:px-6 py-3 rounded-2xl bg-black/80 border border-arc-cyan/30 backdrop-blur-xl flex items-center justify-between shadow-[0_10px_40px_rgba(0,0,0,0.8)] font-excon text-xs">
-              <div className="flex items-center gap-3 truncate pr-4">
-                <span
-                  className={`px-3 py-0.5 rounded-full text-[10px] font-black uppercase shrink-0 font-excon-bold ${
-                    activeItem.type === "image"
-                      ? "bg-arc-cyan/20 border border-arc-cyan/40 text-arc-cyan"
-                      : "bg-marvel-red/20 border border-marvel-red/40 text-marvel-red"
-                  }`}
-                >
-                  {activeItem.type.toUpperCase()} • {activeItem.category}
-                </span>
-                <h3 className="text-white font-black uppercase truncate text-sm font-excon-black">
-                  {activeItem.title}
-                </h3>
-              </div>
-
-              <div className="flex items-center gap-3 shrink-0">
-                <span className="text-metallic-gold font-bold font-excon-bold">
-                  {selectedIndex + 1} / {filteredMedia.length}
-                </span>
-
-                <button
-                  onClick={toggleNativeFullscreen}
-                  className="min-w-11 min-h-11 p-2 rounded-xl bg-white/10 hover:bg-arc-cyan hover:text-black text-white transition-colors cursor-pointer border border-white/10"
-                  title="Toggle Display Fullscreen Mode"
-                >
-                  {isNativeFullscreen ? <RiFullscreenExitLine size={18} /> : <RiFullscreenLine size={18} />}
-                </button>
-              </div>
             </div>
           </motion.div>
         )}

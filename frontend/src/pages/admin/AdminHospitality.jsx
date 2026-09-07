@@ -5,10 +5,10 @@ import LoadingState from "../../components/ui/LoadingState";
 import ErrorState from "../../components/ui/ErrorState";
 import EmptyState from "../../components/ui/EmptyState";
 import StatusChip from "../../components/theme/StatusChip";
-import { getAdminRegistrations, getHostels, updateAdminRegistration } from "../../services/api";
+import { getAdminRegistrations, getHostels, updateAdminRegistration, getAdminAccommodationBookings, approveAccommodationBooking, rejectAccommodationBooking, updateAdminAccommodationBooking } from "../../services/api";
 import { exportCsv, exportExcel } from "../../utils/adminUtils";
 
-const VALID_TABS = new Set(["stay", "boys", "girls", "food"]);
+const VALID_TABS = new Set(["requests", "stay", "boys", "girls", "food"]);
 
 const FOOD_LABEL = {
   none: "—",
@@ -34,7 +34,6 @@ const STAY_STATUS = [
 const STANDARD_HOSTEL_OPTIONS = [
   { value: "St. Thomas Mens Hostel", label: "St. Thomas Mens Hostel (Boys)", gender: "male" },
   { value: "St. Teresa Ladies Hostel", label: "St. Teresa Ladies Hostel (Girls)", gender: "female" },
-  { value: "St. Alphonsa Ladies Hostel", label: "St. Alphonsa Ladies Hostel (Girls)", gender: "female" },
 ];
 
 function downloadHostelList(label, rows) {
@@ -70,7 +69,7 @@ export default function AdminHospitality() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const tabParam = searchParams.get("tab");
-  const tab = VALID_TABS.has(tabParam) ? tabParam : "stay";
+  const tab = VALID_TABS.has(tabParam) ? tabParam : "requests";
   const [search, setSearch] = useState("");
   const [gender, setGender] = useState("all");
   const [stayStatus, setStayStatus] = useState("all");
@@ -80,10 +79,13 @@ export default function AdminHospitality() {
   const [draft, setDraft] = useState({});
   const [customHostelMode, setCustomHostelMode] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [bookings, setBookings] = useState([]);
+  const [roomDrafts, setRoomDrafts] = useState({});
+  const [actionBusy, setActionBusy] = useState(null);
 
   function setTab(next) {
     const nextParams = new URLSearchParams(searchParams);
-    if (next === "stay") nextParams.delete("tab");
+    if (next === "requests") nextParams.delete("tab");
     else nextParams.set("tab", next);
     setSearchParams(nextParams, { replace: true });
   }
@@ -94,13 +96,15 @@ export default function AdminHospitality() {
     Promise.all([
       getAdminRegistrations(),
       getHostels().catch(() => ({ data: [] })),
+      getAdminAccommodationBookings().catch(() => ({ data: [] })),
     ])
-      .then(([regRes, hostelRes]) => {
+      .then(([regRes, hostelRes, bookingRes]) => {
         setRows(Array.isArray(regRes.data) ? regRes.data : regRes.data?.results || []);
         const apiHostels = Array.isArray(hostelRes.data) ? hostelRes.data : hostelRes.data?.results || [];
         if (apiHostels.length > 0) {
           setHostels(apiHostels);
         }
+        setBookings(Array.isArray(bookingRes.data) ? bookingRes.data : bookingRes.data?.results || []);
       })
       .catch(() => setError("Could not load hospitality data."))
       .finally(() => setLoading(false));
@@ -141,6 +145,7 @@ export default function AdminHospitality() {
   }, [stayRows]);
 
   const summary = useMemo(() => {
+    const pendingCheckout = bookings.filter((b) => b.status === "pending").length;
     return {
       stay: stayRows.length,
       boys: boysList.length,
@@ -153,8 +158,22 @@ export default function AdminHospitality() {
       veg: foodRows.filter((r) => r.food_preference === "veg").length,
       nonVeg: foodRows.filter((r) => r.food_preference === "non_veg").length,
       jain: foodRows.filter((r) => r.food_preference === "jain").length,
+      checkoutRequests: bookings.length,
+      checkoutPending: pendingCheckout,
     };
-  }, [stayRows, foodRows, boysList, girlsList]);
+  }, [stayRows, foodRows, boysList, girlsList, bookings]);
+
+  const filteredBookings = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return bookings.filter((b) => {
+      if (gender !== "all" && b.gender !== gender) return false;
+      if (stayStatus !== "all" && b.status !== stayStatus) return false;
+      if (!q) return true;
+      return [b.booking_id, b.full_name, b.college, b.phone, b.hostel_name, b.email].some((v) =>
+        String(v || "").toLowerCase().includes(q)
+      );
+    });
+  }, [bookings, search, gender, stayStatus]);
 
   const filteredStay = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -221,26 +240,70 @@ export default function AdminHospitality() {
     }
   }
 
+  async function approveStayRequest(booking) {
+    setActionBusy(booking.id);
+    setError("");
+    try {
+      const res = await approveAccommodationBooking(booking.id, {
+        allocated_room: (roomDrafts[booking.id] || "").trim(),
+      });
+      setBookings((prev) => prev.map((b) => (b.id === booking.id ? res.data : b)));
+    } catch (err) {
+      setError(err?.response?.data?.detail || "Could not allocate this booking.");
+    } finally {
+      setActionBusy(null);
+    }
+  }
+
+  async function markCheckedIn(booking) {
+    setActionBusy(booking.id);
+    setError("");
+    try {
+      const res = await updateAdminAccommodationBooking(booking.id, { status: "checked_in" });
+      setBookings((prev) => prev.map((b) => (b.id === booking.id ? { ...b, ...res.data } : b)));
+    } catch (err) {
+      setError(err?.response?.data?.detail || "Could not mark check-in.");
+    } finally {
+      setActionBusy(null);
+    }
+  }
+
+  async function rejectStayRequest(booking) {
+    const reason = window.prompt("Optional note for the student (leave blank to decline without a note):", "") ?? null;
+    if (reason === null) return;
+    setActionBusy(booking.id);
+    setError("");
+    try {
+      const res = await rejectAccommodationBooking(booking.id, { admin_notes: reason.trim() });
+      setBookings((prev) => prev.map((b) => (b.id === booking.id ? res.data : b)));
+    } catch (err) {
+      setError(err?.response?.data?.detail || "Could not cancel this booking.");
+    } finally {
+      setActionBusy(null);
+    }
+  }
+
   return (
     <div className="admin-ops-page admin-hospitality-page">
       <header className="admin-ops-header">
         <p className="section-eyebrow">Hospitality</p>
         <h1>Hospitality Operations</h1>
-        <p>Accommodation requests, hostel lists, and food requirements for visiting students.</p>
+        <p>Hospitality marks room allocation and check-in for student hostel bookings. Each hostel closes after 50 beds.</p>
       </header>
 
       <div className="admin-kpi-grid">
-        <article className="admin-kpi-card"><strong>{summary.stay}</strong><span>Accommodation requests</span></article>
-        <article className="admin-kpi-card"><strong>{summary.boys}</strong><span>Boys requiring stay</span></article>
-        <article className="admin-kpi-card"><strong>{summary.girls}</strong><span>Girls requiring stay</span></article>
+        <article className="admin-kpi-card"><strong>{summary.checkoutPending}</strong><span>Pending room allocation</span></article>
+        <article className="admin-kpi-card"><strong>{summary.checkoutRequests}</strong><span>Hostel bookings</span></article>
+        <article className="admin-kpi-card"><strong>{summary.stay}</strong><span>Event stay flags</span></article>
         <article className="admin-kpi-card"><strong>{summary.food}</strong><span>Food requests</span></article>
         <article className="admin-kpi-card"><strong>{summary.allocated}</strong><span>Allocated / checked in</span></article>
-        <article className="admin-kpi-card"><strong>{summary.pending}</strong><span>Pending allocation</span></article>
+        <article className="admin-kpi-card"><strong>{summary.pending}</strong><span>Event stay pending</span></article>
       </div>
 
       <div className="admin-ops-tabs" role="tablist" aria-label="Hospitality views">
         {[
-          { id: "stay", label: "Accommodation" },
+          { id: "requests", label: "Stay bookings" },
+          { id: "stay", label: "Event accommodation" },
           { id: "boys", label: "Boys Hostel List" },
           { id: "girls", label: "Girls Hostel List" },
           { id: "food", label: "Food Requirements" },
@@ -258,8 +321,8 @@ export default function AdminHospitality() {
         ))}
       </div>
 
-      {(tab === "stay" || tab === "food") && (
-        <AdminTableToolbar search={search} onSearchChange={setSearch} searchPlaceholder="Name, reg #, institution…">
+      {(tab === "stay" || tab === "food" || tab === "requests") && (
+        <AdminTableToolbar search={search} onSearchChange={setSearch} searchPlaceholder="Name, reference, institution…">
           <select className="admin-select" value={gender} onChange={(e) => setGender(e.target.value)}>
             <option value="all">All genders</option>
             <option value="male">Male</option>
@@ -267,33 +330,130 @@ export default function AdminHospitality() {
             <option value="other">Other</option>
             <option value="unspecified">Unspecified</option>
           </select>
-          {tab === "stay" && (
+          {(tab === "stay" || tab === "requests") && (
             <>
               <select className="admin-select" value={stayStatus} onChange={(e) => setStayStatus(e.target.value)}>
-                <option value="all">All allocation statuses</option>
+                <option value="all">All statuses</option>
                 {STAY_STATUS.map((s) => (
                   <option key={s.value} value={s.value}>{s.label}</option>
                 ))}
+                {tab === "requests" && <option value="confirmed">Confirmed</option>}
+                {tab === "requests" && <option value="cancelled">Cancelled</option>}
               </select>
+              {tab === "stay" && (
               <select className="admin-select" value={hostelFilter} onChange={(e) => setHostelFilter(e.target.value)}>
                 <option value="all">All hostels</option>
                 <option value="boys">Boys Hostel</option>
                 <option value="girls">Girls Hostel</option>
                 <option value="unallocated">Unallocated / Not set</option>
               </select>
+              )}
             </>
           )}
+          {tab !== "requests" && (
           <select className="admin-select" value={foodPref} onChange={(e) => setFoodPref(e.target.value)}>
             <option value="all">All food prefs</option>
             <option value="veg">Vegetarian</option>
             <option value="non_veg">Non-Veg</option>
             <option value="jain">Jain</option>
           </select>
+          )}
         </AdminTableToolbar>
       )}
 
       {loading && <LoadingState message="Loading hospitality data…" />}
       {error && <ErrorState message={error} onRetry={load} />}
+
+      {!loading && !error && tab === "requests" && (
+        <>
+          {filteredBookings.length === 0 ? (
+            <EmptyState title="No hostel bookings" message="Students who book at /checkout?accommodation=true appear here so hospitality can allocate rooms and mark check-in." />
+          ) : (
+            <div className="admin-table-wrap">
+              <table className="dash-table admin-table">
+                <thead>
+                  <tr>
+                    <th>Reference</th>
+                    <th>Name</th>
+                    <th>Institution</th>
+                    <th>Phone</th>
+                    <th>Hostel</th>
+                    <th>Dates</th>
+                    <th>Heads</th>
+                    <th>Stay</th>
+                    <th>Payment</th>
+                    <th>Room</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredBookings.map((b) => (
+                    <tr key={b.id}>
+                      <td><strong>{b.booking_id}</strong></td>
+                      <td>
+                        <strong>{b.full_name}</strong>
+                        <div className="muted-line">{b.email || ""}</div>
+                      </td>
+                      <td>{b.college || "—"}</td>
+                      <td>{b.phone || "—"}</td>
+                      <td>{b.hostel_name || b.allocated_hostel || "—"}</td>
+                      <td>{b.check_in_date} → {b.check_out_date}</td>
+                      <td>{b.persons_count ?? 1}</td>
+                      <td><StatusChip status={b.status || "pending"} /></td>
+                      <td><StatusChip status={b.payment_status || "pending"} /></td>
+                      <td>
+                        {b.status === "pending" ? (
+                          <input
+                            className="admin-select"
+                            placeholder="Room (optional)"
+                            value={roomDrafts[b.id] || ""}
+                            onChange={(e) => setRoomDrafts((prev) => ({ ...prev, [b.id]: e.target.value }))}
+                          />
+                        ) : (
+                          b.allocated_room || "—"
+                        )}
+                      </td>
+                      <td>
+                        {b.status === "pending" ? (
+                          <div className="admin-row-actions" style={{ display: "flex", gap: "0.4rem", flexWrap: "wrap" }}>
+                            <button
+                              type="button"
+                              className="btn btn-gold btn-sm"
+                              disabled={actionBusy === b.id}
+                              onClick={() => approveStayRequest(b)}
+                            >
+                              {actionBusy === b.id ? "Saving…" : "Allocate room"}
+                            </button>
+                            <button
+                              type="button"
+                              className="btn btn-outline btn-sm"
+                              disabled={actionBusy === b.id}
+                              onClick={() => rejectStayRequest(b)}
+                            >
+                              Cancel booking
+                            </button>
+                          </div>
+                        ) : b.status === "allocated" || b.status === "confirmed" ? (
+                          <button
+                            type="button"
+                            className="btn btn-gold btn-sm"
+                            disabled={actionBusy === b.id}
+                            onClick={() => markCheckedIn(b)}
+                          >
+                            {actionBusy === b.id ? "Saving…" : "Mark check-in"}
+                          </button>
+                        ) : (
+                          <span className="muted-line">{b.admin_notes || "—"}</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </>
+      )}
 
       {!loading && !error && tab === "stay" && (
         <>

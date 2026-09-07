@@ -11,6 +11,9 @@ import {
   updateAdminRegistration,
   adminVerifyMemberFinance,
   refundRegistration,
+  getAdminAccommodationBookings,
+  verifyHostelPayment,
+  rejectHostelPayment,
 } from "../../services/api";
 
 function money(v) {
@@ -37,12 +40,21 @@ export default function AdminFinance() {
   const [refundAmount, setRefundAmount] = useState("");
   const [refundTxnId, setRefundTxnId] = useState("");
   const [refundNotes, setRefundNotes] = useState("");
+  const [deskTab, setDeskTab] = useState("events");
+  const [hostelRows, setHostelRows] = useState([]);
 
   function load() {
     setLoading(true);
     setError("");
-    getAdminRegistrations()
-      .then((res) => setRows(Array.isArray(res.data) ? res.data : res.data?.results || []))
+    Promise.all([
+      getAdminRegistrations(),
+      getAdminAccommodationBookings().catch(() => ({ data: [] })),
+    ])
+      .then(([regRes, hostelRes]) => {
+        setRows(Array.isArray(regRes.data) ? regRes.data : regRes.data?.results || []);
+        const hostels = hostelRes?.data;
+        setHostelRows(Array.isArray(hostels) ? hostels : hostels?.results || []);
+      })
       .catch(() => setError("Could not load payment registrations."))
       .finally(() => setLoading(false));
   }
@@ -87,6 +99,41 @@ export default function AdminFinance() {
       pendingAmount: sum(pending),
     };
   }, [rows]);
+
+  const hostelFiltered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return hostelRows.filter((b) => {
+      if (b.status === "cancelled") return false;
+      if (status !== "all" && b.payment_status !== status) return false;
+      if (!q) return true;
+      return [
+        b.booking_id,
+        b.full_name,
+        b.college,
+        b.payment_transaction_id,
+        b.hostel_name,
+        b.phone,
+      ].some((v) => String(v || "").toLowerCase().includes(q));
+    });
+  }, [hostelRows, search, status]);
+
+  async function applyHostelAction(booking, next) {
+    if (!booking) return;
+    setBusy(true);
+    try {
+      const res =
+        next === "paid"
+          ? await verifyHostelPayment(booking.id)
+          : await rejectHostelPayment(booking.id, { reason: rejectReason.trim() || "Payment rejected by finance desk" });
+      setHostelRows((prev) => prev.map((b) => (b.id === booking.id ? { ...b, ...res.data } : b)));
+      setConfirmAction(null);
+      setRejectReason("");
+    } catch {
+      setError("Could not update hostel payment. Check finance permissions.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function handleRefundSubmit(e) {
     e.preventDefault();
@@ -189,8 +236,14 @@ export default function AdminFinance() {
       <header className="admin-ops-header">
         <p className="section-eyebrow">Finance</p>
         <h1>Payments &amp; Squad Verification Desk</h1>
-        <p>Review screenshots, verify captain and individual team member payments. Only verified amounts count as collected.</p>
+        <p>Review screenshots, verify captain, team-member, and hostel stay payments. Only verified amounts count as collected.</p>
         <div className="admin-action-grid" style={{ marginTop: "0.85rem" }}>
+          <button type="button" className={`admin-action-btn ${deskTab === "events" ? "admin-action-btn--primary" : ""}`} onClick={() => setDeskTab("events")}>
+            Event payments
+          </button>
+          <button type="button" className={`admin-action-btn ${deskTab === "hostel" ? "admin-action-btn--primary" : ""}`} onClick={() => setDeskTab("hostel")}>
+            Hostel stays
+          </button>
           <button type="button" className="admin-action-btn admin-action-btn--primary" onClick={() => setStatus("pending")}>
             Review Pending Payments
           </button>
@@ -226,11 +279,11 @@ export default function AdminFinance() {
       {loading && <LoadingState message="Loading payments…" />}
       {error && <ErrorState message={error} onRetry={load} />}
 
-      {!loading && !error && filtered.length === 0 && (
+      {deskTab === "events" && !loading && !error && filtered.length === 0 && (
         <EmptyState title="No payments found" message="No payments awaiting verification for this filter." icon="" />
       )}
 
-      {!loading && !error && filtered.length > 0 && (
+      {deskTab === "events" && !loading && !error && filtered.length > 0 && (
         <>
           <div className="admin-ops-card-list admin-show-mobile-cards">
             {filtered.map((r) => (
@@ -510,6 +563,63 @@ export default function AdminFinance() {
               )}
             </footer>
           </aside>
+        </div>
+      )}
+
+      {deskTab === "hostel" && !loading && !error && hostelFiltered.length === 0 && (
+        <EmptyState title="No hostel payments" message="Stay bookings with this payment filter will appear here." icon="" />
+      )}
+
+      {deskTab === "hostel" && !loading && !error && hostelFiltered.length > 0 && (
+        <div className="admin-table-wrap">
+          <table className="dash-table admin-table">
+            <thead>
+              <tr>
+                <th>Reference</th>
+                <th>Name</th>
+                <th>Hostel</th>
+                <th>Amount</th>
+                <th>UTR</th>
+                <th>Proof</th>
+                <th>Payment</th>
+                <th>Stay</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {hostelFiltered.map((b) => (
+                <tr key={b.id}>
+                  <td><strong>{b.booking_id}</strong></td>
+                  <td>
+                    <strong>{b.full_name}</strong>
+                    <div className="muted-line">{b.college || ""}</div>
+                  </td>
+                  <td>{b.hostel_name || "—"}</td>
+                  <td>{money(b.payment_amount)}</td>
+                  <td>{b.payment_transaction_id || "—"}</td>
+                  <td>
+                    {b.payment_proof_url ? (
+                      <a href={b.payment_proof_url} target="_blank" rel="noreferrer">View</a>
+                    ) : "—"}
+                  </td>
+                  <td><StatusChip status={b.payment_status || "pending"} /></td>
+                  <td><StatusChip status={b.status || "pending"} /></td>
+                  <td>
+                    {b.payment_status !== "paid" && (
+                      <button type="button" className="btn btn-gold btn-sm" disabled={busy} onClick={() => applyHostelAction(b, "paid")}>
+                        Verify
+                      </button>
+                    )}
+                    {b.payment_status !== "rejected" && b.payment_status !== "paid" && (
+                      <button type="button" className="btn btn-outline btn-sm" disabled={busy} onClick={() => applyHostelAction(b, "rejected")}>
+                        Reject
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 

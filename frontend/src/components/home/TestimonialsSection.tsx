@@ -186,7 +186,7 @@ export function TestimonialsSection() {
             </h2>
 
             <p className="text-white/85 text-sm sm:text-base font-excon max-w-xl mx-auto drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">
-              Real experiences from verified student delegates, champions, and performers across 23 national challenges.
+              Real experiences from verified student delegates, champions, and performers across 22 national challenges.
             </p>
 
             <div className="h-px w-32 mx-auto bg-gradient-to-r from-transparent via-metallic-gold to-marvel-red to-transparent origin-center" />

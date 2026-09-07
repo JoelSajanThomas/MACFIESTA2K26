@@ -282,9 +282,17 @@ export function Marvel3DScrollCanvas({
               imageRendering: "auto",
               // Fallback for older WebKit / Blink
               WebkitFontSmoothing: "antialiased",
+              filter: "brightness(0.62)",
             }}
           />
         </div>
+        <div
+          className="absolute inset-0 z-[1] pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(5,5,10,0.58) 0%, rgba(5,5,10,0.68) 50%, rgba(5,5,10,0.78) 100%)",
+          }}
+        />
       </div>
 
       {/* ─── Stark S.H.I.E.L.D. Holographic Frame HUD ─── */}

@@ -3,6 +3,7 @@ import re
 import secrets
 
 from config.mail_utils import send_mail_async
+from config.registration_status import is_registration_open
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -190,6 +191,15 @@ class SignupView(APIView):
     throttle_classes = [SignupRateThrottle]
 
     def post(self, request):
+        if not is_registration_open():
+            return Response(
+                {
+                    "detail": "Registrations are currently closed. New accounts cannot be created at this time.",
+                    "code": "registration_closed",
+                },
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         serializer = SignupSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
@@ -200,6 +210,19 @@ class SignupView(APIView):
         college_name = getattr(user, "_signup_college_name", "") or ""
         phone = getattr(user, "_signup_phone", "") or ""
         gender = getattr(user, "_signup_gender", "male") or "male"
+        try:
+            from accounts.models import ParticipantProfile
+
+            ParticipantProfile.objects.update_or_create(
+                user=user,
+                defaults={
+                    "college_name": college_name,
+                    "phone": phone,
+                    "gender": gender,
+                },
+            )
+        except Exception:
+            logger.exception("Failed to persist participant profile from signup")
         if college_name:
             try:
                 from registrations.institutions import ensure_institution
@@ -299,14 +322,14 @@ class PasswordResetRequestView(APIView):
             is_active=True,
         ).order_by("id").first()
 
+        generic = {
+            "detail": "If an account exists for this email, a 6-digit OTP has been sent. Check your inbox and spam folder.",
+            "otp_required": True,
+            "email": email,
+        }
+
         if not user:
-            return Response(
-                {
-                    "detail": "No registered account was found with this email address. Please register for an account first or check your email spelling.",
-                    "not_registered": True,
-                },
-                status=status.HTTP_404_NOT_FOUND,
-            )
+            return Response(generic, status=status.HTTP_200_OK)
 
         target_email = user.email if user.email else email
         otp = f"{secrets.randbelow(1_000_000):06d}"
@@ -355,17 +378,7 @@ class PasswordResetRequestView(APIView):
             context_id=f"pwd_reset_user_{user.id}",
         )
 
-        if settings.DEBUG:
-            logger.info("Password OTP generated for user_id=%s (email=%s, otp=%s)", user.id, target_email, otp)
-
-        return Response(
-            {
-                "detail": f"A 6-digit OTP code has been sent to {target_email}. Please check your inbox (and spam folder).",
-                "otp_required": True,
-                "email": target_email,
-            },
-            status=status.HTTP_200_OK,
-        )
+        return Response(generic, status=status.HTTP_200_OK)
 
 
 class PasswordResetConfirmSerializer(serializers.Serializer):

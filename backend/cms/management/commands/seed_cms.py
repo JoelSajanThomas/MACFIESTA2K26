@@ -11,6 +11,7 @@ from cms.models import (
     FAQ,
     Sponsor,
     HomepageSection,
+    FestivalRule,
 )
 
 
@@ -50,6 +51,7 @@ class Command(BaseCommand):
         self._seed_faqs()
         self._seed_sponsors()
         self._seed_homepage_sections()
+        self._seed_rules()
         self.stdout.write(self.style.SUCCESS("CMS seed complete."))
 
     def _seed_site_settings(self):
@@ -197,3 +199,28 @@ class Command(BaseCommand):
             if was_created:
                 created += 1
         self.stdout.write(f"Homepage sections: {created} created, {len(HOMEPAGE_SECTIONS) - created} already existed.")
+
+    def _seed_rules(self):
+        if FestivalRule.objects.exists():
+            self.stdout.write("Festival rules already exist — skipped.")
+            return
+        rules = [
+            ("school", "School ID", "Students must carry a valid school ID card.", 1),
+            ("school", "Registration", "Registration must be completed before the event. Participants must report 15–20 minutes early.", 2),
+            ("school", "Fair play", "Judges' decisions are final. Plagiarism, cheating, or outside help results in disqualification.", 3),
+            ("college", "College ID", "Participants must carry a valid college / university ID and institutional bonafide letter.", 4),
+            ("college", "Reporting", "Report to the venue 30 minutes before the scheduled slot.", 5),
+            ("general", "Verification", "Complete registration verification before competing. Late entry is at the Event Head's discretion.", 6),
+            ("general", "Conduct", "Misconduct, harassment, intoxication, violence, or property damage leads to removal and disqualification.", 7),
+            ("fairness", "Scoring", "Every event uses a written scoring system. Event officials' decisions are final.", 8),
+            ("safety", "Campus code", "Follow coordinator, volunteer, and faculty instructions. Restricted areas and unsafe behaviour are not permitted.", 9),
+        ]
+        for category, title, description, order in rules:
+            FestivalRule.objects.create(
+                category=category,
+                title=title,
+                description=description,
+                order=order,
+                is_active=True,
+            )
+        self.stdout.write(f"Created {len(rules)} festival rules.")

@@ -30,6 +30,14 @@ class SiteSetting(models.Model):
     privacy_body = models.TextField(blank=True)
     brochure_file = models.FileField(upload_to="cms/brochure/", blank=True, null=True)
     brochure_url = models.URLField(blank=True)
+    is_registration_open = models.BooleanField(
+        default=True,
+        help_text="Allow participants to create new accounts and register for events.",
+    )
+    is_maintenance_mode = models.BooleanField(
+        default=False,
+        help_text="When enabled, the public site shows the maintenance screen.",
+    )
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
