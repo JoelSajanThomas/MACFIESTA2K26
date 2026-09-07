@@ -566,8 +566,6 @@ export default function AdminFinance() {
         </div>
       )}
 
-      )}
-
       {deskTab === "hostel" && !loading && !error && hostelFiltered.length === 0 && (
         <EmptyState title="No hostel payments" message="Stay bookings with this payment filter will appear here." icon="" />
       )}
