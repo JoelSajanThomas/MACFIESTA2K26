@@ -340,7 +340,7 @@ export default function Events() {
             <span>Showing {filteredEvents.length} Active Missions</span>
           </div>
           <span className="text-metallic-gold hidden sm:inline-block">
-            {selectedScope === "school" ? "School Pass: Free Entry (₹0)" : "College Total Bounty: ₹1,11,000"}
+            {selectedScope === "school" ? "School Pass: Free Entry (₹0)" : "Total Bounty: ₹1,11,000+"}
           </span>
         </div>
 
