@@ -67,6 +67,16 @@ function cachedGet(key, request) {
   }
   if (hit?.pending) return hit.pending;
   const pending = request()
+    .catch(async (err) => {
+      // Clean up cache immediately on error
+      getCache.delete(key);
+      // Auto-retry once for transient drops or dev server wakeups
+      try {
+        return await request();
+      } catch {
+        throw err;
+      }
+    })
     .then((res) => {
       getCache.set(key, { at: Date.now(), data: res });
       return res;
@@ -116,7 +126,8 @@ export function mediaUrl(path) {
   return path;
 }
 
-export function getEvents() {
+export function getEvents(forceRefresh = false) {
+  if (forceRefresh) invalidateApiGetCache("events");
   return cachedGet("events", () => api.get("/events/"));
 }
 
