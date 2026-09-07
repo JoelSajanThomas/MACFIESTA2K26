@@ -465,7 +465,15 @@ class RegistrationViewSet(
         if not college_name:
             return Response({"college_name": "College / institution name is required."}, status=status.HTTP_400_BAD_REQUEST)
 
-        phone = (request.data.get("phone") or "").strip()
+        phone = (request.data.get("phone") or "").strip() or getattr(getattr(request.user, 'profile', None), 'phone', '')
+        if phone:
+            from config.validators import validate_phone_number
+            from django.core.exceptions import ValidationError as DjangoValidationError
+            try:
+                phone = validate_phone_number(phone)
+            except DjangoValidationError as exc:
+                msg = exc.messages[0] if getattr(exc, "messages", None) else str(exc)
+                return Response({"phone": msg}, status=status.HTTP_400_BAD_REQUEST)
         department = (request.data.get("department") or "").strip()
         register_number = (request.data.get("register_number") or "").strip()
         gender = (request.data.get("gender") or "unspecified").strip()
@@ -480,7 +488,7 @@ class RegistrationViewSet(
             department=department,
             register_number=register_number,
             email=request.user.email,
-            phone=phone or getattr(getattr(request.user, 'profile', None), 'phone', ''),
+            phone=phone,
             gender=gender,
             payment_status="waived" if Decimal(event.registration_fee or 0) <= 0 else "pending",
             payment_amount=Decimal(event.registration_fee or 0),
@@ -547,9 +555,26 @@ class RegistrationViewSet(
         if not email:
             return Response({"email": "Member email is required."}, status=status.HTTP_400_BAD_REQUEST)
 
+        from django.core.validators import validate_email as django_validate_email
+        from django.core.exceptions import ValidationError as DjangoValidationError
+        try:
+            django_validate_email(email)
+        except DjangoValidationError:
+            return Response({"email": "Enter a valid email address."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if phone:
+            from config.validators import validate_phone_number
+            try:
+                phone = validate_phone_number(phone)
+            except DjangoValidationError as exc:
+                msg = exc.messages[0] if getattr(exc, "messages", None) else str(exc)
+                return Response({"phone": msg}, status=status.HTTP_400_BAD_REQUEST)
+
         target_user = User.objects.filter(email__iexact=email).first()
 
-        # Check if already added in this team
+        # Check if already added in this team or is captain email
+        if email.lower() == registration.email.strip().lower():
+            return Response({"email": "Captain is already a team member."}, status=status.HTTP_400_BAD_REQUEST)
         if registration.team_members.filter(email__iexact=email).exclude(invitation_status="declined").exists():
             return Response({"email": "This member is already in the team or has a pending invite."}, status=status.HTTP_400_BAD_REQUEST)
 
