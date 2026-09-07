@@ -81,6 +81,22 @@ export function invalidateApiGetCache(prefix) {
 
 export function mediaUrl(path) {
   if (!path) return null;
+  // If the path contains an absolute URL pointing to local Django dev server,
+  // strip the origin so it routes through Vite's /media proxy (avoiding direct port 8000 hits and HTTPS upgrade mismatch).
+  if (
+    typeof path === "string" &&
+    (path.startsWith("http://127.0.0.1:8000") ||
+      path.startsWith("http://localhost:8000") ||
+      path.startsWith("https://127.0.0.1:8000") ||
+      path.startsWith("https://localhost:8000"))
+  ) {
+    try {
+      const url = new URL(path);
+      return `${url.pathname}${url.search}`;
+    } catch {
+      // ignore parse failure and proceed
+    }
+  }
   if (path.startsWith("http")) return path;
   const normalized = path.startsWith("/") ? path : `/${path}`;
   return `${SERVER_BASE}${normalized}`;

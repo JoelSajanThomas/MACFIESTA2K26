@@ -46,17 +46,41 @@ export default function AdminEventsList() {
     setSearchParams(nextParams, { replace: true });
   }
 
-  function load() {
+  function load(forceRefresh = false) {
     setLoading(true);
     setError("");
+    if (forceRefresh) {
+      invalidateApiGetCache("events");
+      invalidateApiGetCache("results");
+    }
     Promise.all([
-      getEvents(),
+      getEvents().catch((err) => ({ data: null, error: err })),
       getAdminRegistrations().catch(() => ({ data: [] })),
       getResults().catch(() => ({ data: [] })),
     ])
       .then(([eventsRes, regsRes, resultsRes]) => {
-        setEvents(Array.isArray(eventsRes.data) ? eventsRes.data : []);
-        const regs = Array.isArray(regsRes.data) ? regsRes.data : regsRes.data?.results || [];
+        let eventList = [];
+        if (Array.isArray(eventsRes?.data)) {
+          eventList = eventsRes.data;
+        } else if (Array.isArray(eventsRes?.data?.results)) {
+          eventList = eventsRes.data.results;
+        } else if (Array.isArray(eventsRes?.data?.events)) {
+          eventList = eventsRes.data.events;
+        }
+
+        if (eventList.length === 0 && eventsRes?.error) {
+          const detail =
+            eventsRes.error?.response?.data?.detail ||
+            eventsRes.error?.message ||
+            "Could not load events from server.";
+          setError(detail);
+        } else {
+          setEvents(eventList);
+        }
+
+        const regs = Array.isArray(regsRes?.data)
+          ? regsRes.data
+          : regsRes?.data?.results || [];
         setRawRegistrations(regs);
         const counts = {};
         const participants = {};
@@ -79,14 +103,19 @@ export default function AdminEventsList() {
           }
         });
         setRegCounts({ counts, participants, eventAttended, gateAttended });
-        const results = Array.isArray(resultsRes.data) ? resultsRes.data : resultsRes.data?.results || [];
+        const results = Array.isArray(resultsRes?.data)
+          ? resultsRes.data
+          : resultsRes?.data?.results || [];
         const byEvent = {};
         results.forEach((r) => {
           byEvent[r.event] = (byEvent[r.event] || 0) + 1;
         });
         setResultMap(byEvent);
       })
-      .catch(() => setError("Could not load events."))
+      .catch((err) => {
+        console.error("AdminEventsList load failed:", err);
+        setError("Could not load events. Please try again.");
+      })
       .finally(() => setLoading(false));
   }
 
@@ -220,7 +249,17 @@ export default function AdminEventsList() {
         <p className="section-eyebrow">Event Operations</p>
         <div className="admin-list-head">
           <h1>Missions</h1>
-          <Link to="/admin/events/new" className="btn btn-gold btn-sm">Add Mission</Link>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button
+              type="button"
+              className="btn btn-outline btn-sm"
+              onClick={() => load(true)}
+              title="Force reload events from server"
+            >
+              Refresh
+            </button>
+            <Link to="/admin/events/new" className="btn btn-gold btn-sm">Add Mission</Link>
+          </div>
         </div>
         <p>Open a mission to view participants, set winners, or edit details.</p>
       </header>
@@ -250,7 +289,7 @@ export default function AdminEventsList() {
       </AdminTableToolbar>
 
       {loading && <LoadingState message="Loading events…" />}
-      {error && <ErrorState message={error} onRetry={load} />}
+      {error && <ErrorState message={error} onRetry={() => load(true)} />}
 
       {!loading && !error && filtered.length === 0 && (
         <EmptyState title="No events found" message="No events match your filters." />
