@@ -44,9 +44,9 @@ def _apply_payment_proof(registration, *, user, txn, proof, payment_method="upi_
         raise serializers.ValidationError(
             {"payment_transaction_id": "Transaction / reference ID is required."}
         )
-    if not proof and not registration.payment_proof:
+    if not proof and (not registration.payment_proof or registration.payment_status == "rejected"):
         raise serializers.ValidationError(
-            {"payment_proof": "Upload a screenshot of the successful payment."}
+            {"payment_proof": "Payment proof screenshot is compulsory. Please upload your payment receipt / screenshot."}
         )
 
     # Same batch may share one txn; block only other batches / solo regs
@@ -674,10 +674,22 @@ class RegistrationViewSet(
         if not txn:
             return Response({"payment_transaction_id": "Transaction ID is required."}, status=status.HTTP_400_BAD_REQUEST)
 
+        if not proof and (not member.payment_proof or member.payment_status == "rejected"):
+            return Response({"payment_proof": "Payment proof screenshot is compulsory. Please upload your payment receipt / screenshot."}, status=status.HTTP_400_BAD_REQUEST)
+
+        if proof:
+            from django.core.exceptions import ValidationError as DjangoValidationError
+            from config.validators import validate_uploaded_image
+
+            try:
+                validate_uploaded_image(proof)
+            except DjangoValidationError as exc:
+                msg = exc.messages[0] if getattr(exc, "messages", None) else "Invalid image file."
+                return Response({"payment_proof": msg}, status=status.HTTP_400_BAD_REQUEST)
+            member.payment_proof = proof
+
         member.payment_transaction_id = txn
         member.payment_method = method
-        if proof:
-            member.payment_proof = proof
         member.payment_status = "pending"
         member.finance_status = "pending"
         member.save()
